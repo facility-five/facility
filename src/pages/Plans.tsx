@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { LoadingSpinner } from "@/components/LoadingSpinner"; // Importa o LoadingSpinner
 
 type DbPlan = {
   id: string;
@@ -128,7 +129,9 @@ const Plans = () => {
 
       <div className="flex flex-wrap gap-6 justify-center">
         {loading ? (
-          <div className="text-gray-300">Carregando planos...</div>
+          <div className="flex justify-center items-center w-full h-48">
+            <LoadingSpinner size="lg" className="border-primary shadow-lg shadow-primary/50" />
+          </div>
         ) : filteredPlans.length === 0 ? (
           <div className="text-gray-300">Nenhum plano disponível.</div>
         ) : (

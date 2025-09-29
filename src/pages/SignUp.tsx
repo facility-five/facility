@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SignUpForm } from "@/components/SignUpForm";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
+import { LoadingSpinner } from "@/components/LoadingSpinner"; // Importa o LoadingSpinner
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -20,7 +21,11 @@ const SignUp = () => {
   }, [navigate]);
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-black">
+        <LoadingSpinner size="lg" className="border-primary shadow-lg shadow-primary/50" />
+      </div>
+    );
   }
 
   return (
