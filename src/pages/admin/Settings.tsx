@@ -1,18 +1,9 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SystemSettingsTab } from "@/components/admin/SystemSettingsTab";
 import { SystemUsersTab } from "@/components/admin/SystemUsersTab";
 import { EmailTemplatesTab } from "@/components/admin/EmailTemplatesTab";
+import StripeSettings from "@/components/admin/StripeSettings";
 
 const Settings = () => {
   return (
@@ -41,27 +32,7 @@ const Settings = () => {
             <EmailTemplatesTab />
           </TabsContent>
           <TabsContent value="stripe">
-            <Card className="bg-admin-card border-admin-border text-admin-foreground">
-              <CardHeader>
-                <CardTitle>Configuração do Stripe</CardTitle>
-                <CardDescription className="text-admin-foreground-muted">
-                  Conecte sua conta Stripe para processar pagamentos.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="publishable-key">Chave Publicável</Label>
-                  <Input id="publishable-key" placeholder="pk_test_..." className="bg-admin-background border-admin-border" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="secret-key">Chave Secreta</Label>
-                  <Input id="secret-key" type="password" placeholder="sk_test_..." className="bg-admin-background border-admin-border" />
-                </div>
-                <div className="flex justify-end">
-                  <Button>Salvar Configurações</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <StripeSettings />
           </TabsContent>
         </Tabs>
       </div>
