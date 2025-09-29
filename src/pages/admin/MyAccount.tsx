@@ -107,7 +107,6 @@ const MyAccount = () => {
 
     const loadingId = showLoading("Alterando senha...");
 
-    // Reautenticar com a senha atual para garantir sessão válida
     const { error: reauthError } = await supabase.auth.signInWithPassword({
       email,
       password: values.currentPassword,
@@ -142,20 +141,32 @@ const MyAccount = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Minha Conta</h1>
-          <p className="text-gray-500">
+          <p className="text-admin-foreground-muted">
             Gerencie as informações do seu perfil e configurações de senha.
           </p>
         </div>
+
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="profile">Perfil</TabsTrigger>
-            <TabsTrigger value="password">Senha</TabsTrigger>
+          <TabsList className="grid w-full max-w-md grid-cols-2 bg-admin-card border border-admin-border rounded-md">
+            <TabsTrigger
+              value="profile"
+              className="text-admin-foreground-muted data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none hover:bg-admin-border"
+            >
+              Perfil
+            </TabsTrigger>
+            <TabsTrigger
+              value="password"
+              className="text-admin-foreground-muted data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none hover:bg-admin-border"
+            >
+              Senha
+            </TabsTrigger>
           </TabsList>
+
           <TabsContent value="profile">
-            <Card>
+            <Card className="bg-admin-card border-admin-border text-admin-foreground">
               <CardHeader>
                 <CardTitle>Informações do Perfil</CardTitle>
-                <CardDescription>
+                <CardDescription className="text-admin-foreground-muted">
                   Atualize a foto e os dados pessoais da sua conta.
                 </CardDescription>
               </CardHeader>
@@ -172,10 +183,15 @@ const MyAccount = () => {
                           <UserIcon className="h-10 w-10" />
                         </AvatarFallback>
                       </Avatar>
-                      <Button type="button" variant="outline">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="bg-transparent border-admin-border hover:bg-admin-border text-admin-foreground"
+                      >
                         Alterar Foto
                       </Button>
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={profileForm.control}
@@ -184,7 +200,11 @@ const MyAccount = () => {
                           <FormItem>
                             <FormLabel>Nome</FormLabel>
                             <FormControl>
-                              <Input placeholder="Seu nome" {...field} />
+                              <Input
+                                placeholder="Seu nome"
+                                {...field}
+                                className="bg-admin-background border-admin-border"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -197,17 +217,28 @@ const MyAccount = () => {
                           <FormItem>
                             <FormLabel>Sobrenome</FormLabel>
                             <FormControl>
-                              <Input placeholder="Seu sobrenome" {...field} />
+                              <Input
+                                placeholder="Seu sobrenome"
+                                {...field}
+                                className="bg-admin-background border-admin-border"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
+
                     <div>
-                      <Label>Email</Label>
-                      <Input type="email" value={email} disabled />
+                      <Label className="text-admin-foreground">Email</Label>
+                      <Input
+                        type="email"
+                        value={email}
+                        disabled
+                        className="bg-admin-background border-admin-border"
+                      />
                     </div>
+
                     <div className="flex justify-end">
                       <Button type="submit">Salvar Alterações</Button>
                     </div>
@@ -216,11 +247,12 @@ const MyAccount = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
           <TabsContent value="password">
-            <Card>
+            <Card className="bg-admin-card border-admin-border text-admin-foreground">
               <CardHeader>
                 <CardTitle>Alterar Senha</CardTitle>
-                <CardDescription>
+                <CardDescription className="text-admin-foreground-muted">
                   Para sua segurança, confirme sua senha atual antes de definir uma nova.
                 </CardDescription>
               </CardHeader>
@@ -241,6 +273,7 @@ const MyAccount = () => {
                               type="password"
                               placeholder="••••••••"
                               {...field}
+                              className="bg-admin-background border-admin-border"
                             />
                           </FormControl>
                           <FormMessage />
@@ -258,6 +291,7 @@ const MyAccount = () => {
                               type="password"
                               placeholder="••••••••"
                               {...field}
+                              className="bg-admin-background border-admin-border"
                             />
                           </FormControl>
                           <FormMessage />
@@ -275,6 +309,7 @@ const MyAccount = () => {
                               type="password"
                               placeholder="••••••••"
                               {...field}
+                              className="bg-admin-background border-admin-border"
                             />
                           </FormControl>
                           <FormMessage />
