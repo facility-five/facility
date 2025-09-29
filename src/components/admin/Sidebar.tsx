@@ -24,8 +24,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { href: "/admin", icon: LayoutGrid, label: "Painel" },
@@ -44,9 +44,10 @@ const navItems = [
 export const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     showSuccess("Você saiu com sucesso!");
     navigate("/");
   };
