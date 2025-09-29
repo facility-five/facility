@@ -10,34 +10,30 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SystemSettingsTab } from "@/components/admin/SystemSettingsTab";
+import { SystemUsersTab } from "@/components/admin/SystemUsersTab";
 
 const Settings = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Configuraciones del Sistema</h1>
+          <h1 className="text-3xl font-bold">Configurações</h1>
           <p className="text-gray-500">
-            Administre las configuraciones globales del sistema
+            Administre as configurações globais e usuários do sistema
           </p>
         </div>
-        <Tabs defaultValue="stripe" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="general">General</TabsTrigger>
+        <Tabs defaultValue="system" className="w-full">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
+            <TabsTrigger value="system">Configurações do Sistema</TabsTrigger>
+            <TabsTrigger value="users">Usuários do Sistema</TabsTrigger>
             <TabsTrigger value="stripe">Stripe</TabsTrigger>
           </TabsList>
-          <TabsContent value="general">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configuraciones Generales</CardTitle>
-                <CardDescription>
-                  Configure las opciones básicas del sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>As configurações gerais estarão disponíveis aqui em breve.</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="system">
+            <SystemSettingsTab />
+          </TabsContent>
+          <TabsContent value="users">
+            <SystemUsersTab />
           </TabsContent>
           <TabsContent value="stripe">
             <Card>
