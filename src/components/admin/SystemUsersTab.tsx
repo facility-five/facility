@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, User } from "lucide-react";
+import { Pencil, Trash2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AddUserModal } from "./AddUserModal";
+import { NewUserModal } from "./NewUserModal";
+import { DeleteUserModal } from "./DeleteUserModal";
 
 type SystemUser = {
   id: string;
@@ -25,12 +26,16 @@ type SystemUser = {
   role: string;
   status: string;
   last_sign_in_at: string;
+  whatsapp: string;
 };
 
 export const SystemUsersTab = () => {
   const [users, setUsers] = useState<SystemUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selected, setSelected] = useState<SystemUser | null>(null);
+  const [query, setQuery] = useState("");
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -38,7 +43,7 @@ export const SystemUsersTab = () => {
     if (error) {
       showError("Erro ao buscar usuários.");
     } else {
-      setUsers(data || []);
+      setUsers((data as SystemUser[]) || []);
     }
     setLoading(false);
   };
@@ -47,8 +52,48 @@ export const SystemUsersTab = () => {
     fetchUsers();
   }, []);
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u) =>
+      `${u.first_name ?? ""} ${u.last_name ?? ""} ${u.email ?? ""}`
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [users, query]);
+
   const getInitials = (firstName = "", lastName = "") => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
+  const openNew = () => {
+    setSelected(null);
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (u: SystemUser) => {
+    setSelected(u);
+    setIsModalOpen(true);
+  };
+
+  const openDelete = (u: SystemUser) => {
+    setSelected(u);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selected) return;
+    const { error } = await supabase.functions.invoke("delete-user", {
+      body: { userId: selected.id },
+    });
+    if (error) {
+      showError(`Erro ao eliminar usuário: ${error.message}`);
+    } else {
+      showSuccess("Usuário eliminado com sucesso!");
+      fetchUsers();
+    }
+    setIsDeleteOpen(false);
+    setSelected(null);
   };
 
   return (
@@ -58,14 +103,19 @@ export const SystemUsersTab = () => {
           <h2 className="text-2xl font-bold">Usuários do Sistema</h2>
           <p className="text-admin-foreground-muted">Gerencie todos os usuários da plataforma</p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => setIsModalOpen(true)}>
+        <Button className="bg-purple-600 hover:bg-purple-700" onClick={openNew}>
           + Adicionar Usuário
         </Button>
       </div>
       <div className="border border-admin-border rounded-lg p-4 bg-admin-card">
         <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold">Lista de Usuários</h3>
-            <Input placeholder="Buscar usuários..." className="w-64 bg-admin-background border-admin-border" />
+            <Input
+              placeholder="Buscar usuários..."
+              className="w-64 bg-admin-background border-admin-border"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
         </div>
         <Table>
           <TableHeader>
@@ -74,7 +124,7 @@ export const SystemUsersTab = () => {
               <TableHead>Papel</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Último Acesso</TableHead>
-              <TableHead></TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -84,7 +134,7 @@ export const SystemUsersTab = () => {
                   <TableCell colSpan={5}><Skeleton className="h-10 w-full bg-admin-border" /></TableCell>
                 </TableRow>
               ))
-            ) : users.map((user) => (
+            ) : filtered.map((user) => (
               <TableRow key={user.id} className="border-b-admin-border">
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -109,15 +159,31 @@ export const SystemUsersTab = () => {
                 <TableCell>
                   {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'N/A'}
                 </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                <TableCell className="text-right">
+                  <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => openDelete(user)}>
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
-      <AddUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={fetchUsers} />
+
+      <NewUserModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchUsers}
+        user={selected}
+      />
+      <DeleteUserModal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

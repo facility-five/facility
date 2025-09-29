@@ -33,13 +33,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const formSchema = z.object({
+const baseSchema = z.object({
   first_name: z.string().min(1, "O nome é obrigatório."),
   last_name: z.string().min(1, "O apelido é obrigatório."),
   email: z.string().email("E-mail inválido."),
   whatsapp: z.string().optional(),
   role: z.string().min(1, "O tipo de usuário é obrigatório."),
   status: z.string().min(1, "O estado é obrigatório."),
+  password: z.string().optional(), // exigido somente na criação
 });
 
 interface NewUserModalProps {
@@ -55,13 +56,21 @@ export const NewUserModal = ({
   onSuccess,
   user,
 }: NewUserModalProps) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof baseSchema>>({
+    resolver: zodResolver(baseSchema),
   });
 
   useEffect(() => {
     if (user) {
-      form.reset(user);
+      form.reset({
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        email: user.email || "",
+        whatsapp: user.whatsapp || "",
+        role: user.role || "Usuário",
+        status: user.status || "Ativo",
+        password: "",
+      });
     } else {
       form.reset({
         first_name: "",
@@ -70,24 +79,26 @@ export const NewUserModal = ({
         whatsapp: "",
         role: "Usuário",
         status: "Ativo",
+        password: "",
       });
     }
   }, [user, isOpen, form]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof baseSchema>) {
     if (user) {
-      // Update user
-      const { error } = await supabase
-        .from('profiles')
-        .update({
+      // Atualização via edge (bypass RLS)
+      const { error } = await supabase.functions.invoke("admin-update-user", {
+        body: {
+          id: user.id,
           first_name: values.first_name,
           last_name: values.last_name,
           whatsapp: values.whatsapp,
           role: values.role,
           status: values.status,
-        })
-        .eq('id', user.id);
-      
+          // email desabilitado em edição para simplificar
+        },
+      });
+
       if (error) {
         showError(`Erro ao atualizar usuário: ${error.message}`);
       } else {
@@ -96,65 +107,79 @@ export const NewUserModal = ({
         onClose();
       }
     } else {
-      // Invite new user
-      const { error } = await supabase.functions.invoke('invite-user', {
+      // Criação exige senha
+      if (!values.password || values.password.length < 6) {
+        showError("Defina uma senha com pelo menos 6 caracteres.");
+        return;
+      }
+
+      const { error } = await supabase.functions.invoke("create-user-with-password", {
         body: {
           email: values.email,
+          password: values.password,
+          email_confirm: true,
           data: {
             first_name: values.first_name,
             last_name: values.last_name,
             whatsapp: values.whatsapp,
             role: values.role,
             status: values.status,
-          }
-        }
+          },
+        },
       });
 
       if (error) {
-        showError(`Erro ao convidar usuário: ${error.message}`);
+        showError(`Erro ao criar usuário: ${error.message}`);
       } else {
-        showSuccess("Convite enviado com sucesso!");
+        showSuccess("Usuário criado com sucesso!");
         onSuccess();
         onClose();
       }
     }
   }
 
+  const isEditing = !!user;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg bg-admin-card border-admin-border text-admin-foreground">
         <DialogHeader>
-          <DialogTitle>{user ? "Editar Usuário" : "Adicionar Usuário"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Editar Usuário" : "Adicionar Usuário"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="first_name" render={({ field }) => (
-                <FormItem><FormLabel>Nombre</FormLabel><FormControl><Input placeholder="Escriba el nombre" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Nome</FormLabel><FormControl><Input placeholder="Escreva o nome" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="last_name" render={({ field }) => (
-                <FormItem><FormLabel>Apellido</FormLabel><FormControl><Input placeholder="Escriba el apellido" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Sobrenome</FormLabel><FormControl><Input placeholder="Escreva o sobrenome" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Correo electrónico</FormLabel><FormControl><Input placeholder="Escriba el correo" {...field} disabled={!!user} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>E-mail</FormLabel><FormControl><Input placeholder="email@exemplo.com" {...field} disabled={isEditing} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="whatsapp" render={({ field }) => (
-                <FormItem><FormLabel>WhatsApp</FormLabel><FormControl><Input placeholder="Escriba el número" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>WhatsApp</FormLabel><FormControl><Input placeholder="(xx) xxxxx-xxxx" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
+            {!isEditing && (
+              <FormField control={form.control} name="password" render={({ field }) => (
+                <FormItem><FormLabel>Senha</FormLabel><FormControl><Input type="password" placeholder="Mínimo 6 caracteres" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
+              )} />
+            )}
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="role" render={({ field }) => (
-                <FormItem><FormLabel>Tipo de usuario</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Administrador">Administrador</SelectItem><SelectItem value="Gestor">Gestor</SelectItem><SelectItem value="Usuário">Usuário</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormItem><FormLabel>Tipo de usuário</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Administrador">Administrador</SelectItem><SelectItem value="Gestor">Gestor</SelectItem><SelectItem value="Usuário">Usuário</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="status" render={({ field }) => (
-                <FormItem><FormLabel>Estado</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Ativo">Activo</SelectItem><SelectItem value="Inativo">Inactivo</SelectItem><SelectItem value="Suspenso">Suspendido</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Ativo">Ativo</SelectItem><SelectItem value="Inativo">Inativo</SelectItem><SelectItem value="Suspenso">Suspenso</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )} />
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-              <Button type="submit" className="bg-purple-600 hover:bg-purple-700">{user ? "Salvar" : "Registrar"}</Button>
+              <Button type="submit" className="bg-purple-600 hover:bg-purple-700">{isEditing ? "Salvar" : "Registrar"}</Button>
             </DialogFooter>
           </form>
         </Form>
