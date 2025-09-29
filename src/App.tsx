@@ -11,6 +11,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import Plans from "./pages/Plans";
 import Dashboard from "./pages/admin/Dashboard";
 import MyAccount from "./pages/admin/MyAccount";
+import Administrators from "./pages/admin/Administrators";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/planos" element={<Plans />} />
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/minha-conta" element={<MyAccount />} />
+          <Route path="/admin/administradoras" element={<Administrators />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
