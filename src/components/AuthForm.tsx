@@ -4,7 +4,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ const formSchema = z.object({
 
 export function AuthForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -40,6 +41,8 @@ export function AuthForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     // A lógica de autenticação será implementada aqui
+    // Por enquanto, redirecionando para o painel
+    navigate("/painel");
   }
 
   return (

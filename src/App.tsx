@@ -9,6 +9,7 @@ import SignUp from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Plans from "./pages/Plans";
+import Dashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/recuperar-senha" element={<ForgotPassword />} />
           <Route path="/verificar-email" element={<VerifyEmail />} />
           <Route path="/planos" element={<Plans />} />
+          <Route path="/painel" element={<Dashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
