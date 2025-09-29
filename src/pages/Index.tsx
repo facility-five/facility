@@ -25,7 +25,7 @@ const Index = () => {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-black">
-        <LoadingSpinner size="lg" className="border-cyan-400 shadow-lg shadow-cyan-500/50" />
+        <LoadingSpinner size="lg" className="border-primary shadow-lg shadow-primary/50" />
       </div>
     );
   }
