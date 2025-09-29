@@ -79,7 +79,7 @@ export const Sidebar = () => {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/admin/minha-conta")}>
               <User className="mr-2 h-4 w-4" />
               <span>Minha Conta</span>
             </DropdownMenuItem>
