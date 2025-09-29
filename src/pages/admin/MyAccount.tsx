@@ -35,6 +35,7 @@ const profileFormSchema = z.object({
 
 const passwordFormSchema = z
   .object({
+    currentPassword: z.string().min(6, "A senha atual deve ter pelo menos 6 caracteres."),
     password: z.string().min(6, "A nova senha deve ter pelo menos 6 caracteres."),
     confirmPassword: z.string(),
   })
@@ -58,6 +59,7 @@ const MyAccount = () => {
   const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
     resolver: zodResolver(passwordFormSchema),
     defaultValues: {
+      currentPassword: "",
       password: "",
       confirmPassword: "",
     },
@@ -96,6 +98,22 @@ const MyAccount = () => {
   }
 
   async function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
+    if (!email) {
+      showError("Não foi possível identificar seu e-mail.");
+      return;
+    }
+
+    // Reautenticar com a senha atual para garantir sessão válida
+    const { error: reauthError } = await supabase.auth.signInWithPassword({
+      email,
+      password: values.currentPassword,
+    });
+
+    if (reauthError) {
+      showError("Senha atual incorreta. Tente novamente.");
+      return;
+    }
+
     const { error } = await supabase.auth.updateUser({
       password: values.password,
     });
@@ -104,7 +122,11 @@ const MyAccount = () => {
       showError(error.message);
     } else {
       showSuccess("Senha alterada com sucesso!");
-      passwordForm.reset();
+      passwordForm.reset({
+        currentPassword: "",
+        password: "",
+        confirmPassword: "",
+      });
     }
   }
 
@@ -192,7 +214,7 @@ const MyAccount = () => {
               <CardHeader>
                 <CardTitle>Alterar Senha</CardTitle>
                 <CardDescription>
-                  Escolha uma nova senha para a sua conta.
+                  Para sua segurança, confirme sua senha atual antes de definir uma nova.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -201,6 +223,23 @@ const MyAccount = () => {
                     onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
                     className="space-y-4"
                   >
+                    <FormField
+                      control={passwordForm.control}
+                      name="currentPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha Atual</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="••••••••"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={passwordForm.control}
                       name="password"
