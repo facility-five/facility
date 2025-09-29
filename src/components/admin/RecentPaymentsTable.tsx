@@ -55,17 +55,17 @@ export const RecentPaymentsTable = () => {
   };
 
   return (
-    <Card>
+    <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Pagamentos Recentes</CardTitle>
-        <Link to="#" className="text-sm font-medium text-purple-600 hover:underline">
+        <Link to="#" className="text-sm font-medium text-purple-400 hover:underline">
           Ver Todos
         </Link>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader className="bg-purple-600">
-            <TableRow>
+            <TableRow className="border-b-purple-700">
               <TableHead className="text-white">Data</TableHead>
               <TableHead className="text-white">Cliente</TableHead>
               <TableHead className="text-white">Plano</TableHead>
@@ -76,13 +76,13 @@ export const RecentPaymentsTable = () => {
           <TableBody>
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
+                <TableRow key={i} className="border-b-admin-border">
+                  <TableCell colSpan={5}><Skeleton className="h-8 w-full bg-admin-border" /></TableCell>
                 </TableRow>
               ))
             ) : payments.length > 0 ? (
               payments.map((payment, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} className="border-b-admin-border">
                   <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                       <p className="font-medium">{`${payment.profiles?.first_name || ''} ${payment.profiles?.last_name || ''}`.trim()}</p>
@@ -97,8 +97,8 @@ export const RecentPaymentsTable = () => {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">Nenhum pagamento encontrado.</TableCell>
+              <TableRow className="border-b-admin-border">
+                <TableCell colSpan={5} className="text-center text-admin-foreground-muted">Nenhum pagamento encontrado.</TableCell>
               </TableRow>
             )}
           </TableBody>

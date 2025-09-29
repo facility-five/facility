@@ -14,7 +14,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -84,10 +83,10 @@ export const SystemSettingsTab = () => {
   }
 
   return (
-    <Card>
+    <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader>
         <CardTitle>Configurações do Sistema</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-admin-foreground-muted">
           Configure as opções básicas do sistema
         </CardDescription>
       </CardHeader>
@@ -102,7 +101,7 @@ export const SystemSettingsTab = () => {
                   <FormItem>
                     <FormLabel>Nome do Sistema</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} className="bg-admin-background border-admin-border" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -115,9 +114,9 @@ export const SystemSettingsTab = () => {
                     <FormLabel>Idioma Padrão</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                         <SelectItem value="pt-br">Português (Brasil)</SelectItem>
                         <SelectItem value="en-us">English (US)</SelectItem>
                       </SelectContent>
@@ -133,9 +132,9 @@ export const SystemSettingsTab = () => {
                     <FormLabel>Fuso Horário</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                         <SelectItem value="utc-3">UTC-3</SelectItem>
                         <SelectItem value="utc-0">UTC</SelectItem>
                       </SelectContent>
@@ -151,9 +150,9 @@ export const SystemSettingsTab = () => {
                     <FormLabel>Formato de Data</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                         <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
                         <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
                       </SelectContent>
@@ -169,9 +168,9 @@ export const SystemSettingsTab = () => {
                     <FormLabel>Moeda</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                         <SelectItem value="EUR">EUR (€)</SelectItem>
                         <SelectItem value="BRL">BRL (R$)</SelectItem>
                         <SelectItem value="USD">USD ($)</SelectItem>
@@ -188,7 +187,7 @@ export const SystemSettingsTab = () => {
                 <FormItem>
                   <FormLabel>Descrição do Sistema</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                 </FormItem>
               )}
@@ -198,10 +197,10 @@ export const SystemSettingsTab = () => {
                     control={form.control}
                     name="maintenance_mode"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-admin-border p-4">
                             <div className="space-y-0.5">
                                 <FormLabel>Modo de Manutenção</FormLabel>
-                                <FormDescription>
+                                <FormDescription className="text-admin-foreground-muted">
                                     Pausa o sistema para todos, exceto administradores.
                                 </FormDescription>
                             </div>
@@ -215,10 +214,10 @@ export const SystemSettingsTab = () => {
                     control={form.control}
                     name="allow_registrations"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-admin-border p-4">
                             <div className="space-y-0.5">
                                 <FormLabel>Permitir Registros</FormLabel>
-                                <FormDescription>
+                                <FormDescription className="text-admin-foreground-muted">
                                     Permite que novos usuários se cadastrem no sistema.
                                 </FormDescription>
                             </div>

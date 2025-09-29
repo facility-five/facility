@@ -19,12 +19,12 @@ const Settings = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Configurações</h1>
-          <p className="text-gray-500">
+          <p className="text-admin-foreground-muted">
             Administre as configurações globais e usuários do sistema
           </p>
         </div>
         <Tabs defaultValue="system" className="w-full">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
+          <TabsList className="grid w-full max-w-lg grid-cols-3 bg-admin-card border-admin-border">
             <TabsTrigger value="system">Configurações do Sistema</TabsTrigger>
             <TabsTrigger value="users">Usuários do Sistema</TabsTrigger>
             <TabsTrigger value="stripe">Stripe</TabsTrigger>
@@ -36,21 +36,21 @@ const Settings = () => {
             <SystemUsersTab />
           </TabsContent>
           <TabsContent value="stripe">
-            <Card>
+            <Card className="bg-admin-card border-admin-border text-admin-foreground">
               <CardHeader>
                 <CardTitle>Configuração do Stripe</CardTitle>
-                <CardDescription>
+                <CardDescription className="text-admin-foreground-muted">
                   Conecte sua conta Stripe para processar pagamentos.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="publishable-key">Chave Publicável</Label>
-                  <Input id="publishable-key" placeholder="pk_test_..." />
+                  <Input id="publishable-key" placeholder="pk_test_..." className="bg-admin-background border-admin-border" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="secret-key">Chave Secreta</Label>
-                  <Input id="secret-key" type="password" placeholder="sk_test_..." />
+                  <Input id="secret-key" type="password" placeholder="sk_test_..." className="bg-admin-background border-admin-border" />
                 </div>
                 <div className="flex justify-end">
                   <Button>Salvar Configurações</Button>

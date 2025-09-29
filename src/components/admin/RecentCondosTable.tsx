@@ -45,17 +45,17 @@ export const RecentCondosTable = () => {
   }, []);
 
   return (
-    <Card>
+    <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Condominios Recientes</CardTitle>
-        <Link to="#" className="text-sm font-medium text-purple-600 hover:underline">
+        <Link to="#" className="text-sm font-medium text-purple-400 hover:underline">
           Ver Todos
         </Link>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader className="bg-purple-600">
-            <TableRow>
+            <TableRow className="border-b-purple-700">
               <TableHead className="text-white">Código</TableHead>
               <TableHead className="text-white">Nombre del administrador</TableHead>
               <TableHead className="text-white">Responsável</TableHead>
@@ -66,26 +66,26 @@ export const RecentCondosTable = () => {
           <TableBody>
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
+                <TableRow key={i} className="border-b-admin-border">
+                  <TableCell colSpan={5}><Skeleton className="h-8 w-full bg-admin-border" /></TableCell>
                 </TableRow>
               ))
             ) : condos.length > 0 ? (
               condos.map((condo) => (
-                <TableRow key={condo.code}>
+                <TableRow key={condo.code} className="border-b-admin-border">
                   <TableCell className="font-medium">{condo.code}</TableCell>
                   <TableCell>{condo.name}</TableCell>
                   <TableCell>
                       <p className="font-medium">{condo.responsible_name}</p>
-                      <p className="text-xs text-gray-500">{condo.responsible_email}</p>
+                      <p className="text-xs text-admin-foreground-muted">{condo.responsible_email}</p>
                   </TableCell>
                   <TableCell>{condo.phone}</TableCell>
                   <TableCell className="text-right">{new Date(condo.created_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">Nenhum condomínio encontrado.</TableCell>
+              <TableRow className="border-b-admin-border">
+                <TableCell colSpan={5} className="text-center text-admin-foreground-muted">Nenhum condomínio encontrado.</TableCell>
               </TableRow>
             )}
           </TableBody>

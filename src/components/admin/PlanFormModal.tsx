@@ -120,10 +120,10 @@ export const PlanFormModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl bg-admin-card border-admin-border text-admin-foreground">
         <DialogHeader>
           <DialogTitle>{plan ? "Editar Plano" : "Criar Novo Plano"}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-admin-foreground-muted">
             Preencha os dados do plano. Todos os campos são obrigatórios.
           </DialogDescription>
         </DialogHeader>
@@ -137,7 +137,7 @@ export const PlanFormModal = ({
                   <FormItem>
                     <FormLabel>Nome do Plano</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Plano Básico" {...field} />
+                      <Input placeholder="Ex: Plano Básico" {...field} className="bg-admin-background border-admin-border" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -150,7 +150,7 @@ export const PlanFormModal = ({
                   <FormItem>
                     <FormLabel>Preço (€)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Ex: 199.90" {...field} />
+                      <Input type="number" placeholder="Ex: 199.90" {...field} className="bg-admin-background border-admin-border" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -164,7 +164,7 @@ export const PlanFormModal = ({
                 <FormItem>
                   <FormLabel>Price ID Stripe</FormLabel>
                   <FormControl>
-                    <Input placeholder="price_..." {...field} />
+                    <Input placeholder="price_..." {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -177,7 +177,7 @@ export const PlanFormModal = ({
                 <FormItem>
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Ideal para condomínios pequenos" {...field} />
+                    <Input placeholder="Ex: Ideal para condomínios pequenos" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -192,11 +192,11 @@ export const PlanFormModal = ({
                     <FormLabel>Período</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-admin-background border-admin-border">
                           <SelectValue placeholder="Selecione o período" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                         <SelectItem value="monthly">Mensal</SelectItem>
                         <SelectItem value="annual">Anual</SelectItem>
                       </SelectContent>
@@ -213,11 +213,11 @@ export const PlanFormModal = ({
                     <FormLabel>Status</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-admin-background border-admin-border">
                           <SelectValue placeholder="Selecione o status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                         <SelectItem value="active">Ativo</SelectItem>
                         <SelectItem value="inactive">Inativo</SelectItem>
                       </SelectContent>
@@ -235,7 +235,7 @@ export const PlanFormModal = ({
                   <FormItem>
                     <FormLabel>Administradoras</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Type here..." {...field} />
+                      <Input type="number" placeholder="Type here..." {...field} className="bg-admin-background border-admin-border" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -248,7 +248,7 @@ export const PlanFormModal = ({
                   <FormItem>
                     <FormLabel>Condomínios</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Type here..." {...field} />
+                      <Input type="number" placeholder="Type here..." {...field} className="bg-admin-background border-admin-border" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -261,7 +261,7 @@ export const PlanFormModal = ({
                   <FormItem>
                     <FormLabel>Unidades</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Type here..." {...field} />
+                      <Input type="number" placeholder="Type here..." {...field} className="bg-admin-background border-admin-border" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -275,7 +275,7 @@ export const PlanFormModal = ({
                 <FormItem>
                   <FormLabel>Recursos do Plano</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Ex: Gestão financeira, Suporte por email" {...field} />
+                    <Textarea placeholder="Ex: Gestão financeira, Suporte por email" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

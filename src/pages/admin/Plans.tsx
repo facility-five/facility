@@ -99,10 +99,10 @@ const Plans = () => {
         </Button>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="rounded-lg border border-admin-border bg-admin-card">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="border-b-admin-border">
               <TableHead>Nome</TableHead>
               <TableHead>Preço</TableHead>
               <TableHead>Período</TableHead>
@@ -113,18 +113,18 @@ const Plans = () => {
           <TableBody>
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>
+                <TableRow key={i} className="border-b-admin-border">
                   <TableCell colSpan={5}>
-                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full bg-admin-border" />
                   </TableCell>
                 </TableRow>
               ))
             ) : plans.length > 0 ? (
               plans.map((plan) => (
-                <TableRow key={plan.id}>
+                <TableRow key={plan.id} className="border-b-admin-border">
                   <TableCell>
                     <p className="font-medium">{plan.name}</p>
-                    <p className="text-sm text-gray-500">{plan.description}</p>
+                    <p className="text-sm text-admin-foreground-muted">{plan.description}</p>
                   </TableCell>
                   <TableCell>{formatCurrency(plan.price)}</TableCell>
                   <TableCell className="capitalize">{plan.period}</TableCell>
@@ -144,8 +144,8 @@ const Plans = () => {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
+              <TableRow className="border-b-admin-border">
+                <TableCell colSpan={5} className="text-center text-admin-foreground-muted">
                   Nenhum plano encontrado.
                 </TableCell>
               </TableRow>

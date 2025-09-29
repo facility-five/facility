@@ -48,17 +48,17 @@ export const RecentUnitsTable = () => {
   }, []);
 
   return (
-    <Card>
+    <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Unidades Recentes</CardTitle>
-        <Link to="#" className="text-sm font-medium text-purple-600 hover:underline">
+        <Link to="#" className="text-sm font-medium text-purple-400 hover:underline">
           Ver Todos
         </Link>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader className="bg-purple-600">
-            <TableRow>
+            <TableRow className="border-b-purple-700">
               <TableHead className="text-white">Código</TableHead>
               <TableHead className="text-white">Nombre del administrador</TableHead>
               <TableHead className="text-white">Condominio</TableHead>
@@ -69,13 +69,13 @@ export const RecentUnitsTable = () => {
           <TableBody>
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
+                <TableRow key={i} className="border-b-admin-border">
+                  <TableCell colSpan={5}><Skeleton className="h-8 w-full bg-admin-border" /></TableCell>
                 </TableRow>
               ))
             ) : units.length > 0 ? (
               units.map((unit) => (
-                <TableRow key={unit.code}>
+                <TableRow key={unit.code} className="border-b-admin-border">
                   <TableCell className="font-medium">{unit.code}</TableCell>
                   <TableCell>{unit.condos?.administrators?.name || 'N/A'}</TableCell>
                   <TableCell>{unit.condos?.name || 'N/A'}</TableCell>
@@ -84,8 +84,8 @@ export const RecentUnitsTable = () => {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">Nenhuma unidade encontrada.</TableCell>
+              <TableRow className="border-b-admin-border">
+                <TableCell colSpan={5} className="text-center text-admin-foreground-muted">Nenhuma unidade encontrada.</TableCell>
               </TableRow>
             )}
           </TableBody>

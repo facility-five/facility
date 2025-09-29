@@ -88,7 +88,7 @@ export const AddUserModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-admin-card border-admin-border text-admin-foreground">
         <DialogHeader>
           <DialogTitle>Adicionar Usuário</DialogTitle>
         </DialogHeader>
@@ -101,7 +101,7 @@ export const AddUserModal = ({
                 <FormItem>
                   <FormLabel>Nome Completo</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite o nome completo" {...field} />
+                    <Input placeholder="Digite o nome completo" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -114,7 +114,7 @@ export const AddUserModal = ({
                 <FormItem>
                   <FormLabel>E-mail</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite o e-mail" {...field} />
+                    <Input placeholder="Digite o e-mail" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -128,11 +128,11 @@ export const AddUserModal = ({
                   <FormLabel>Papel no Sistema</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Selecione o papel" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                       <SelectItem value="Administrador">Administrador</SelectItem>
                       <SelectItem value="Gestor">Gestor</SelectItem>
                       <SelectItem value="Usuário">Usuário</SelectItem>
@@ -150,11 +150,11 @@ export const AddUserModal = ({
                   <FormLabel>Status</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Selecione o status" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                       <SelectItem value="Ativo">Ativo</SelectItem>
                       <SelectItem value="Suspenso">Suspenso</SelectItem>
                     </SelectContent>

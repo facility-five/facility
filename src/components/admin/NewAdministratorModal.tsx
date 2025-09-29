@@ -111,11 +111,11 @@ export const NewAdministratorModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-admin-card border-admin-border text-admin-foreground">
         <DialogHeader>
           <DialogTitle>Registrar Nueva Administradora</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-gray-500 -mt-2">
+        <p className="text-sm text-admin-foreground-muted -mt-2">
           Complete los datos de la administradora. Todos los campos son obligatorios.
         </p>
         <Form {...form}>
@@ -127,7 +127,7 @@ export const NewAdministratorModal = ({
                 <FormItem>
                   <FormLabel>Nombre de la administradora</FormLabel>
                   <FormControl>
-                    <Input placeholder="Escriba el nombre de la administradora" {...field} />
+                    <Input placeholder="Escriba el nombre de la administradora" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -140,7 +140,7 @@ export const NewAdministratorModal = ({
                 <FormItem>
                   <FormLabel>NIF</FormLabel>
                   <FormControl>
-                    <Input placeholder="NIF" {...field} />
+                    <Input placeholder="NIF" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,7 +153,7 @@ export const NewAdministratorModal = ({
                 <FormItem>
                   <FormLabel>Correo electrónico</FormLabel>
                   <FormControl>
-                    <Input placeholder="Escriba el correo electrónico" {...field} />
+                    <Input placeholder="Escriba el correo electrónico" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -166,7 +166,7 @@ export const NewAdministratorModal = ({
                 <FormItem>
                   <FormLabel>Teléfono</FormLabel>
                   <FormControl>
-                    <Input placeholder="Escriba el teléfono" {...field} />
+                    <Input placeholder="Escriba el teléfono" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -180,11 +180,11 @@ export const NewAdministratorModal = ({
                   <FormLabel>Nombre del responsable</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione el usuario..." />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
                       {profiles.map((profile) => (
                         <SelectItem key={profile.id} value={profile.id}>
                           {`${profile.first_name || ''} ${profile.last_name || ''}`.trim()}

@@ -56,20 +56,20 @@ export const SystemUsersTab = () => {
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-2xl font-bold">Usuários do Sistema</h2>
-          <p className="text-gray-500">Gerencie todos os usuários da plataforma</p>
+          <p className="text-admin-foreground-muted">Gerencie todos os usuários da plataforma</p>
         </div>
         <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => setIsModalOpen(true)}>
           + Adicionar Usuário
         </Button>
       </div>
-      <div className="border rounded-lg p-4">
+      <div className="border border-admin-border rounded-lg p-4 bg-admin-card">
         <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold">Lista de Usuários</h3>
-            <Input placeholder="Buscar usuários..." className="w-64" />
+            <Input placeholder="Buscar usuários..." className="w-64 bg-admin-background border-admin-border" />
         </div>
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="border-b-admin-border">
               <TableHead>Usuário</TableHead>
               <TableHead>Papel</TableHead>
               <TableHead>Status</TableHead>
@@ -80,12 +80,12 @@ export const SystemUsersTab = () => {
           <TableBody>
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={5}><Skeleton className="h-10 w-full" /></TableCell>
+                <TableRow key={i} className="border-b-admin-border">
+                  <TableCell colSpan={5}><Skeleton className="h-10 w-full bg-admin-border" /></TableCell>
                 </TableRow>
               ))
             ) : users.map((user) => (
-              <TableRow key={user.id}>
+              <TableRow key={user.id} className="border-b-admin-border">
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar>
@@ -96,7 +96,7 @@ export const SystemUsersTab = () => {
                     </Avatar>
                     <div>
                       <p className="font-medium">{`${user.first_name || ''} ${user.last_name || ''}`.trim()}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
+                      <p className="text-sm text-admin-foreground-muted">{user.email}</p>
                     </div>
                   </div>
                 </TableCell>
