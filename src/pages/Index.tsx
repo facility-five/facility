@@ -8,10 +8,10 @@ const Index = () => {
         <Logo />
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800">
-            Insira seu e-mail para continuar
+            Acesse sua conta
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Faça login em sua conta. Se você não tem uma, poderá criar uma.
+            Bem-vindo de volta! Por favor, insira seus dados.
           </p>
         </div>
         <AuthForm />
