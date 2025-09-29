@@ -50,6 +50,21 @@ interface NewUserModalProps {
   user?: SystemUser | null;
 }
 
+// Máscara simples BR: (99) 99999-9999 (adapta para 8 ou 9 dígitos no final)
+function formatWhatsapp(input: string): string {
+  const digits = (input || "").replace(/\D/g, "").slice(0, 11);
+  const len = digits.length;
+
+  if (len <= 2) return digits;
+  if (len <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (len <= 10) {
+    // formato 8 dígitos no fim: (99) 9999-9999
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  // formato 9 dígitos no fim: (99) 99999-9999
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+}
+
 export const NewUserModal = ({
   isOpen,
   onClose,
@@ -66,7 +81,7 @@ export const NewUserModal = ({
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         email: user.email || "",
-        whatsapp: user.whatsapp || "",
+        whatsapp: user.whatsapp ? formatWhatsapp(user.whatsapp) : "",
         role: user.role || "Usuário",
         status: user.status || "Ativo",
         password: "",
@@ -92,7 +107,7 @@ export const NewUserModal = ({
           id: user.id,
           first_name: values.first_name,
           last_name: values.last_name,
-          whatsapp: values.whatsapp,
+          whatsapp: values.whatsapp ?? "",
           role: values.role,
           status: values.status,
           // email desabilitado em edição para simplificar
@@ -121,7 +136,7 @@ export const NewUserModal = ({
           data: {
             first_name: values.first_name,
             last_name: values.last_name,
-            whatsapp: values.whatsapp,
+            whatsapp: values.whatsapp ?? "",
             role: values.role,
             status: values.status,
           },
@@ -161,7 +176,20 @@ export const NewUserModal = ({
                 <FormItem><FormLabel>E-mail</FormLabel><FormControl><Input placeholder="email@exemplo.com" {...field} disabled={isEditing} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="whatsapp" render={({ field }) => (
-                <FormItem><FormLabel>WhatsApp</FormLabel><FormControl><Input placeholder="(xx) xxxxx-xxxx" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel>WhatsApp</FormLabel>
+                  <FormControl>
+                    <Input
+                      inputMode="tel"
+                      maxLength={15}
+                      placeholder="(99) 99999-9999"
+                      {...field}
+                      onChange={(e) => field.onChange(formatWhatsapp(e.target.value))}
+                      className="bg-admin-background border-admin-border"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
             </div>
             {!isEditing && (
