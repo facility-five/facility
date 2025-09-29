@@ -2,7 +2,7 @@ import React from 'react';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
-  className?: string; // Para classes adicionais do Tailwind
+  className?: string; // classes adicionais do Tailwind
 }
 
 export const LoadingSpinner = ({ size = 'md', className = '' }: LoadingSpinnerProps) => {
@@ -26,7 +26,7 @@ export const LoadingSpinner = ({ size = 'md', className = '' }: LoadingSpinnerPr
 
   return (
     <div
-      className={`inline-block animate-spin rounded-full ${spinnerSizeClasses} ${borderWidthClasses} border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] ${className}`}
+      className={`inline-block animate-spin rounded-full ${spinnerSizeClasses} ${borderWidthClasses} border-solid border-current border-r-transparent align-[-0.125em] text-primary ${className}`}
       role="status"
     >
       <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
