@@ -13,6 +13,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import MyAccount from "./pages/admin/MyAccount";
 import Administrators from "./pages/admin/Administrators";
 import Condominios from "./pages/admin/Condominios";
+import Blocks from "./pages/admin/Blocks";
 import AdminPlans from "./pages/admin/Plans";
 import Settings from "./pages/admin/Settings";
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/admin/minha-conta" element={<MyAccount />} />
           <Route path="/admin/administradoras" element={<Administrators />} />
           <Route path="/admin/condominios" element={<Condominios />} />
+          <Route path="/admin/bloques" element={<Blocks />} />
           <Route path="/admin/planes" element={<AdminPlans />} />
           <Route path="/admin/configuracoes" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
