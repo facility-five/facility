@@ -12,11 +12,8 @@ const Index = () => {
   useEffect(() => {
     if (!loading && !session) {
       const checkFirstUser = async () => {
-        const { count } = await supabase
-          .from("profiles")
-          .select("*", { count: "exact", head: true });
-
-        if (count === 0) {
+        const { data: isSetup } = await supabase.rpc('is_system_setup');
+        if (!isSetup) {
           navigate("/setup-master");
         }
       };
