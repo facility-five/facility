@@ -7,7 +7,6 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { SystemUser } from "@/pages/admin/Users";
-import { formatPhoneBR } from "@/utils/phone";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -67,7 +66,7 @@ export const NewUserModal = ({
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         email: user.email || "",
-        whatsapp: formatPhoneBR(user.whatsapp || ""),
+        whatsapp: user.whatsapp || "",
         role: user.role || "Usuário",
         status: user.status || "Ativo",
         password: "",
@@ -93,9 +92,10 @@ export const NewUserModal = ({
           id: user.id,
           first_name: values.first_name,
           last_name: values.last_name,
-          whatsapp: values.whatsapp || "",
+          whatsapp: values.whatsapp,
           role: values.role,
           status: values.status,
+          // email desabilitado em edição para simplificar
         },
       });
 
@@ -121,7 +121,7 @@ export const NewUserModal = ({
           data: {
             first_name: values.first_name,
             last_name: values.last_name,
-            whatsapp: values.whatsapp || "",
+            whatsapp: values.whatsapp,
             role: values.role,
             status: values.status,
           },
@@ -161,19 +161,7 @@ export const NewUserModal = ({
                 <FormItem><FormLabel>E-mail</FormLabel><FormControl><Input placeholder="email@exemplo.com" {...field} disabled={isEditing} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="whatsapp" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>WhatsApp</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="(xx) xxxxx-xxxx"
-                      inputMode="numeric"
-                      {...field}
-                      onChange={(e) => field.onChange(formatPhoneBR(e.target.value))}
-                      className="bg-admin-background border-admin-border"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <FormItem><FormLabel>WhatsApp</FormLabel><FormControl><Input placeholder="(xx) xxxxx-xxxx" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
             {!isEditing && (
