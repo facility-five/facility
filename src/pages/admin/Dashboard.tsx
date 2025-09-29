@@ -4,6 +4,7 @@ import { RecentAdminsTable } from "@/components/admin/RecentAdminsTable";
 import { RecentCondosTable } from "@/components/admin/RecentCondosTable";
 import { RecentUnitsTable } from "@/components/admin/RecentUnitsTable";
 import { RecentPaymentsTable } from "@/components/admin/RecentPaymentsTable";
+import { RevenueChart } from "@/components/admin/RevenueChart";
 import { Building, Users, Building2, Euro } from "lucide-react";
 
 const Dashboard = () => {
@@ -16,11 +17,14 @@ const Dashboard = () => {
         <StatCard title="Unidades Totales" value="5" icon={Building2} />
         <StatCard title="Ingresos mensuales" value="€4.276,00" icon={Euro} />
       </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <RevenueChart />
+        <RecentPaymentsTable />
+      </div>
       <div className="space-y-8">
         <RecentAdminsTable />
         <RecentCondosTable />
         <RecentUnitsTable />
-        <RecentPaymentsTable />
       </div>
     </AdminLayout>
   );
