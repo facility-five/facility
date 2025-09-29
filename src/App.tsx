@@ -19,6 +19,7 @@ import CommonAreas from "./pages/admin/CommonAreas";
 import Communications from "./pages/admin/Communications";
 import Users from "./pages/admin/Users";
 import AdminPlans from "./pages/admin/Plans";
+import Payments from "./pages/admin/Payments";
 import Settings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/admin/comunicados" element={<Communications />} />
           <Route path="/admin/usuarios" element={<Users />} />
           <Route path="/admin/planes" element={<AdminPlans />} />
+          <Route path="/admin/pagos" element={<Payments />} />
           <Route path="/admin/configuracoes" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
