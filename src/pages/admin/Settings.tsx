@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SystemSettingsTab } from "@/components/admin/SystemSettingsTab";
 import { SystemUsersTab } from "@/components/admin/SystemUsersTab";
+import { EmailTemplatesTab } from "@/components/admin/EmailTemplatesTab";
 
 const Settings = () => {
   return (
@@ -24,9 +25,10 @@ const Settings = () => {
           </p>
         </div>
         <Tabs defaultValue="system" className="w-full">
-          <TabsList className="grid w-full max-w-lg grid-cols-3 bg-admin-card border-admin-border">
+          <TabsList className="grid w-full grid-cols-4 bg-admin-card border-admin-border">
             <TabsTrigger value="system">Configurações do Sistema</TabsTrigger>
             <TabsTrigger value="users">Usuários do Sistema</TabsTrigger>
+            <TabsTrigger value="email">Modelos de E-mail</TabsTrigger>
             <TabsTrigger value="stripe">Stripe</TabsTrigger>
           </TabsList>
           <TabsContent value="system">
@@ -34,6 +36,9 @@ const Settings = () => {
           </TabsContent>
           <TabsContent value="users">
             <SystemUsersTab />
+          </TabsContent>
+          <TabsContent value="email">
+            <EmailTemplatesTab />
           </TabsContent>
           <TabsContent value="stripe">
             <Card className="bg-admin-card border-admin-border text-admin-foreground">
