@@ -4,6 +4,7 @@ import { AuthForm } from "@/components/AuthForm";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { LoadingSpinner } from "@/components/LoadingSpinner"; // Importa o novo spinner
 
 const Index = () => {
   const { profile, loading, session } = useAuth();
@@ -22,7 +23,11 @@ const Index = () => {
   }, [loading, session, navigate]);
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-black">
+        <LoadingSpinner size="lg" className="border-cyan-400 shadow-lg shadow-cyan-500/50" />
+      </div>
+    );
   }
 
   if (session && profile) {
