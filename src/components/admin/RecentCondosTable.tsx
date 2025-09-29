@@ -16,6 +16,9 @@ import { Link } from "react-router-dom";
 
 const condos = [
     { code: "CO-ICZEUV", name: "Condomínio Dunas", responsible: "Fernando Teste 1", email: "5fiveagencia+teste1@gmail.com", phone: "22 3344 5566", date: "23/05/2025" },
+    { code: "CO-55HKOX", name: "Condomínio Construix", responsible: "Carlos Fernando", email: "tools.construix@gmail.com", phone: "", date: "27/05/2025" },
+    { code: "CO-4T7SGL", name: "Condomínio Jardim Five", responsible: "Fernando Teste 1", email: "5fiveagencia+teste1@gmail.com", phone: "", date: "30/05/2025" },
+    { code: "CO-GDPFD7", name: "Vila do Chaves", responsible: "Fernando Teste 1", email: "5fiveagencia+teste1@gmail.com", phone: "82981266172", date: "11/06/2025" },
 ];
 
 export const RecentCondosTable = () => {

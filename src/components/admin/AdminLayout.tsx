@@ -7,11 +7,11 @@ interface AdminLayoutProps {
 
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
-    <div className="min-h-screen w-full bg-gray-50">
+    <div className="min-h-screen w-full bg-white">
       <Sidebar />
       <div className="ml-64">
         <Header />
-        <main className="p-8">
+        <main className="p-6">
           {children}
         </main>
       </div>

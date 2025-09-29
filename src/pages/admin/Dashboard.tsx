@@ -2,6 +2,8 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatCard } from "@/components/admin/StatCard";
 import { RecentAdminsTable } from "@/components/admin/RecentAdminsTable";
 import { RecentCondosTable } from "@/components/admin/RecentCondosTable";
+import { RecentUnitsTable } from "@/components/admin/RecentUnitsTable";
+import { RecentPaymentsTable } from "@/components/admin/RecentPaymentsTable";
 import { Building, Users, Building2, Euro } from "lucide-react";
 
 const Dashboard = () => {
@@ -17,6 +19,8 @@ const Dashboard = () => {
       <div className="space-y-8">
         <RecentAdminsTable />
         <RecentCondosTable />
+        <RecentUnitsTable />
+        <RecentPaymentsTable />
       </div>
     </AdminLayout>
   );
