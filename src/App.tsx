@@ -28,6 +28,7 @@ import Notifications from "./pages/admin/Notifications";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import ResidentDashboard from "./pages/ResidentDashboard";
 import ResidentAccess from "./pages/ResidentAccess";
+import SetupMaster from "./pages/SetupMaster";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/setup-master" element={<SetupMaster />} />
             <Route path="/criar-conta" element={<SignUp />} />
             <Route path="/recuperar-senha" element={<ForgotPassword />} />
             <Route path="/verificar-email" element={<VerifyEmail />} />

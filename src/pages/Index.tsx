@@ -1,10 +1,28 @@
+import { useEffect } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
 import { AuthForm } from "@/components/AuthForm";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { profile, loading, session } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !session) {
+      const checkFirstUser = async () => {
+        const { count } = await supabase
+          .from("profiles")
+          .select("*", { count: "exact", head: true });
+
+        if (count === 0) {
+          navigate("/setup-master");
+        }
+      };
+      checkFirstUser();
+    }
+  }, [loading, session, navigate]);
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center">Carregando...</div>;
@@ -19,7 +37,7 @@ const Index = () => {
       case 'Usuário':
         return <Navigate to="/morador-dashboard" replace />;
       default:
-        break;
+        return <Navigate to="/" replace />;
     }
   }
 

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SignUpForm } from "@/components/SignUpForm";
+import { SetupMasterForm } from "@/components/SetupMasterForm";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 
-const SignUp = () => {
+const SetupMaster = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
@@ -14,8 +14,8 @@ const SignUp = () => {
         .from("profiles")
         .select("*", { count: "exact", head: true });
 
-      if (count === 0) {
-        navigate("/setup-master");
+      if (count !== null && count > 0) {
+        navigate("/");
       }
       setLoading(false);
     };
@@ -32,16 +32,16 @@ const SignUp = () => {
         <Logo />
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800">
-            Crie sua conta de Gestor
+            Configuração Inicial do Sistema
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Cadastre sua administradora ou condomínio para começar a usar a plataforma.
+            Crie a conta do administrador principal para iniciar a configuração da plataforma.
           </p>
         </div>
-        <SignUpForm />
+        <SetupMasterForm />
       </div>
     </div>
   );
 };
 
-export default SignUp;
+export default SetupMaster;
