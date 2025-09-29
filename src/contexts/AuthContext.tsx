@@ -24,10 +24,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const setData = async (session: Session | null) => {
+  const setData = async (sess: Session | null) => {
     try {
-      setSession(session);
-      const currentUser = session?.user ?? null;
+      setSession(sess);
+      const currentUser = sess?.user ?? null;
       setUser(currentUser);
 
       if (currentUser) {
@@ -37,12 +37,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .eq('id', currentUser.id)
           .single();
         if (error && error.code !== 'PGRST116') throw error;
-        setProfile(profileData);
+        setProfile(profileData || null);
       } else {
         setProfile(null);
       }
     } catch (error) {
-      console.error("Error setting auth data:", error);
+      console.error('Error setting auth data:', error);
       setProfile(null);
     } finally {
       setLoading(false);
@@ -50,21 +50,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      await setData(session);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        await setData(session);
+      } catch (err) {
+        console.error('supabase.auth.getSession failed:', err);
+        if (!isMounted) return;
+        // Garante que a UI não fique travada
+        await setData(null);
+      }
     };
 
     getInitialSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      await setData(session);
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, sess) => {
+      try {
+        if (!isMounted) return;
+        await setData(sess);
+      } catch (err) {
+        console.error('onAuthStateChange handler failed:', err);
+        if (!isMounted) return;
+        await setData(null);
+      }
     });
 
+    // Timeout de segurança: evita ficar preso em loading em ambientes problemáticos
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted && loading) {
+        console.warn('Auth initialization timeout — releasing loading state.');
+        setLoading(false);
+      }
+    }, 8000);
+
     return () => {
+      isMounted = false;
       authListener?.subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
     };
-  }, []);
+  }, [loading]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
