@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -13,15 +14,39 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const units = [
-    { code: "UN-INXAVN", admin: "Grupo Dunas", condo: "Vila do Chaves", block: "Bloco B", date: "15/06/2025" },
-    { code: "UN-9FRXXR", admin: "Grupo Dunas", condo: "Vila do Chaves", block: "Bloco A", date: "15/06/2025" },
-    { code: "UN-IJ61KQ", admin: "Condomínio Jardim Five", condo: "Condomínio Jardim Five", block: "Bloco A", date: "01/07/2025" },
-    { code: "UN-ALHOC2", admin: "Grupo Dunas", condo: "Vila do Chaves", block: "Bloco A", date: "25/07/2025" },
-];
+type Unit = {
+  code: string;
+  block: string;
+  created_at: string;
+  condos: {
+    name: string;
+    administrators: {
+      name: string;
+    } | null;
+  } | null;
+};
 
 export const RecentUnitsTable = () => {
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUnits = async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("units")
+        .select("*, condos(*, administrators(*))")
+        .order("created_at", { ascending: false })
+        .limit(4);
+      setUnits(data as Unit[] || []);
+      setLoading(false);
+    };
+    fetchUnits();
+  }, []);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -42,15 +67,27 @@ export const RecentUnitsTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {units.map((unit) => (
-              <TableRow key={unit.code}>
-                <TableCell className="font-medium">{unit.code}</TableCell>
-                <TableCell>{unit.admin}</TableCell>
-                <TableCell>{unit.condo}</TableCell>
-                <TableCell>{unit.block}</TableCell>
-                <TableCell className="text-right">{unit.date}</TableCell>
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
+                </TableRow>
+              ))
+            ) : units.length > 0 ? (
+              units.map((unit) => (
+                <TableRow key={unit.code}>
+                  <TableCell className="font-medium">{unit.code}</TableCell>
+                  <TableCell>{unit.condos?.administrators?.name || 'N/A'}</TableCell>
+                  <TableCell>{unit.condos?.name || 'N/A'}</TableCell>
+                  <TableCell>{unit.block}</TableCell>
+                  <TableCell className="text-right">{new Date(unit.created_at).toLocaleDateString()}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">Nenhuma unidade encontrada.</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </CardContent>

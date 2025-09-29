@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -15,15 +16,44 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const payments = [
-    { date: "13/09/2025", clientName: "Gerente", clientEmail: "tools.condosystem@gmail.com", plan: "Básico", value: "€ 497,00" },
-    { date: "02/07/2025", clientName: "Rangel Viana", clientEmail: "rangelconstruccionwebsite@gmail.com", plan: "Básico", value: "€ 199,00" },
-    { date: "27/06/2025", clientName: "Klebete Teste 1", clientEmail: "kleber.technet+1@gmail.com", plan: "Básico", value: "€ 199,00" },
-    { date: "24/06/2025", clientName: "Klebete Teste", clientEmail: "kleber.technet@gmail.com", plan: "Básico", value: "€ 199,00" },
-];
+type Payment = {
+  created_at: string;
+  plan: string;
+  amount: number;
+  profiles: {
+    first_name: string;
+    last_name: string;
+  } | null;
+};
 
 export const RecentPaymentsTable = () => {
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("payments")
+        .select("*, profiles(first_name, last_name)")
+        .order("created_at", { ascending: false })
+        .limit(4);
+      setPayments(data as Payment[] || []);
+      setLoading(false);
+    };
+    fetchPayments();
+  }, []);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-PT", {
+      style: "currency",
+      currency: "EUR",
+    }).format(value);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -44,22 +74,33 @@ export const RecentPaymentsTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {payments.map((payment, index) => (
-              <TableRow key={index}>
-                <TableCell>{payment.date}</TableCell>
-                <TableCell>
-                    <p className="font-medium">{payment.clientName}</p>
-                    <p className="text-xs text-gray-500">{payment.clientEmail}</p>
-                </TableCell>
-                <TableCell>{payment.plan}</TableCell>
-                <TableCell>{payment.value}</TableCell>
-                <TableCell className="text-right">
-                    <Button variant="ghost" size="icon">
-                        <Eye className="h-4 w-4" />
-                    </Button>
-                </TableCell>
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
+                </TableRow>
+              ))
+            ) : payments.length > 0 ? (
+              payments.map((payment, index) => (
+                <TableRow key={index}>
+                  <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                      <p className="font-medium">{`${payment.profiles?.first_name || ''} ${payment.profiles?.last_name || ''}`.trim()}</p>
+                  </TableCell>
+                  <TableCell>{payment.plan}</TableCell>
+                  <TableCell>{formatCurrency(payment.amount)}</TableCell>
+                  <TableCell className="text-right">
+                      <Button variant="ghost" size="icon">
+                          <Eye className="h-4 w-4" />
+                      </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">Nenhum pagamento encontrado.</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </CardContent>

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -13,15 +14,36 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const admins = [
-  { code: "AD-DG3SCC", name: "Jequiá Admin", responsible: "Gerente", email: "tools.condosystem@gmail.com", phone: "8282828282", date: "13/09/2025" },
-  { code: "AD-GHAFJO", name: "Test Admin", responsible: "Fernando Morador Kepler", email: "clientes.bilingo@gmail.com", phone: "2525252525", date: "06/08/2025" },
-  { code: "ISRKOS", name: "Grupo Thanks", responsible: "", email: "", phone: "5555555555", date: "25/07/2025" },
-  { code: "AD-CW7R3D", name: "Finca teste 1", responsible: "Rangel Viana", email: "rangelconstruccionwebsite@gmail.com", phone: "643909129", date: "02/07/2025" },
-];
+type Admin = {
+  code: string;
+  name: string;
+  responsible_name: string;
+  responsible_email: string;
+  phone: string;
+  created_at: string;
+};
 
 export const RecentAdminsTable = () => {
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("administrators")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(4);
+      setAdmins(data || []);
+      setLoading(false);
+    };
+    fetchAdmins();
+  }, []);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -42,18 +64,30 @@ export const RecentAdminsTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {admins.map((admin) => (
-              <TableRow key={admin.code}>
-                <TableCell className="font-medium">{admin.code}</TableCell>
-                <TableCell>{admin.name}</TableCell>
-                <TableCell>
-                    <p className="font-medium">{admin.responsible}</p>
-                    <p className="text-xs text-gray-500">{admin.email}</p>
-                </TableCell>
-                <TableCell>{admin.phone}</TableCell>
-                <TableCell className="text-right">{admin.date}</TableCell>
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
+                </TableRow>
+              ))
+            ) : admins.length > 0 ? (
+              admins.map((admin) => (
+                <TableRow key={admin.code}>
+                  <TableCell className="font-medium">{admin.code}</TableCell>
+                  <TableCell>{admin.name}</TableCell>
+                  <TableCell>
+                      <p className="font-medium">{admin.responsible_name}</p>
+                      <p className="text-xs text-gray-500">{admin.responsible_email}</p>
+                  </TableCell>
+                  <TableCell>{admin.phone}</TableCell>
+                  <TableCell className="text-right">{new Date(admin.created_at).toLocaleDateString()}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">Nenhuma administradora encontrada.</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </CardContent>
