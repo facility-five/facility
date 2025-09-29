@@ -60,7 +60,7 @@ export function SetupMasterForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -71,10 +71,25 @@ export function SetupMasterForm() {
       },
     });
 
-    if (error) {
-      showError(error.message);
+    if (signUpError) {
+      showError(signUpError.message);
+      return;
+    }
+
+    if (!signUpData.user) {
+      showError("Não foi possível criar o usuário. Tente novamente.");
+      return;
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    });
+
+    if (signInError) {
+      showError(signInError.message);
     } else {
-      navigate("/verificar-email", { state: { email: values.email } });
+      navigate('/admin');
     }
   }
 
