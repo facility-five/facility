@@ -66,6 +66,13 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        admin: {
+          background: '#111827',
+          card: '#1F2937',
+          border: '#374151',
+          foreground: '#F9FAFB',
+          'foreground-muted': '#9CA3AF',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

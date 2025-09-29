@@ -45,17 +45,17 @@ export const RecentAdminsTable = () => {
   }, []);
 
   return (
-    <Card>
+    <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Administradoras recientes</CardTitle>
-        <Link to="#" className="text-sm font-medium text-purple-600 hover:underline">
+        <Link to="#" className="text-sm font-medium text-purple-400 hover:underline">
           Ver Todos
         </Link>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader className="bg-purple-600">
-            <TableRow>
+            <TableRow className="border-b-purple-700">
               <TableHead className="text-white">Código</TableHead>
               <TableHead className="text-white">Nombre del administrador</TableHead>
               <TableHead className="text-white">Responsável</TableHead>
@@ -66,26 +66,26 @@ export const RecentAdminsTable = () => {
           <TableBody>
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
+                <TableRow key={i} className="border-b-admin-border">
+                  <TableCell colSpan={5}><Skeleton className="h-8 w-full bg-admin-border" /></TableCell>
                 </TableRow>
               ))
             ) : admins.length > 0 ? (
               admins.map((admin) => (
-                <TableRow key={admin.code}>
+                <TableRow key={admin.code} className="border-b-admin-border">
                   <TableCell className="font-medium">{admin.code}</TableCell>
                   <TableCell>{admin.name}</TableCell>
                   <TableCell>
                       <p className="font-medium">{admin.responsible_name}</p>
-                      <p className="text-xs text-gray-500">{admin.responsible_email}</p>
+                      <p className="text-xs text-admin-foreground-muted">{admin.responsible_email}</p>
                   </TableCell>
                   <TableCell>{admin.phone}</TableCell>
                   <TableCell className="text-right">{new Date(admin.created_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">Nenhuma administradora encontrada.</TableCell>
+              <TableRow className="border-b-admin-border">
+                <TableCell colSpan={5} className="text-center text-admin-foreground-muted">Nenhuma administradora encontrada.</TableCell>
               </TableRow>
             )}
           </TableBody>

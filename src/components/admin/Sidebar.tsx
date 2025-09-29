@@ -52,39 +52,39 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r shadow-sm flex flex-col">
-      <div className="p-4 border-b">
+    <aside className="fixed left-0 top-0 h-full w-64 bg-admin-card border-r border-admin-border flex flex-col">
+      <div className="p-4 border-b border-admin-border">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded-lg transition-colors -m-2">
+            <div className="flex items-center gap-3 cursor-pointer hover:bg-admin-border p-2 rounded-lg transition-colors -m-2">
               <Avatar>
                 <AvatarImage src="https://github.com/shadcn.png" alt="Wagner" />
                 <AvatarFallback>W</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-sm">Wagner</p>
-                <p className="text-xs text-gray-500">wfss1982@gmail.com</p>
+                <p className="font-semibold text-sm text-admin-foreground">Wagner</p>
+                <p className="text-xs text-admin-foreground-muted">wfss1982@gmail.com</p>
               </div>
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuContent className="w-56 bg-admin-card border-admin-border text-admin-foreground" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-xs leading-none text-muted-foreground">
+                <p className="text-xs leading-none text-admin-foreground-muted">
                   Entrou como
                 </p>
-                <p className="text-sm font-medium leading-none text-purple-600">
+                <p className="text-sm font-medium leading-none text-purple-400">
                   Wagner Fernando
                 </p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/admin/minha-conta")}>
+            <DropdownMenuSeparator className="bg-admin-border" />
+            <DropdownMenuItem className="focus:bg-admin-border focus:text-admin-foreground" onClick={() => navigate("/admin/minha-conta")}>
               <User className="mr-2 h-4 w-4" />
               <span>Minha Conta</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuSeparator className="bg-admin-border" />
+            <DropdownMenuItem className="focus:bg-admin-border focus:text-admin-foreground" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Sair</span>
             </DropdownMenuItem>
@@ -98,7 +98,7 @@ export const Sidebar = () => {
               <Link
                 to={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-purple-100 hover:text-purple-700 transition-colors",
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-admin-foreground-muted hover:bg-admin-border hover:text-admin-foreground transition-colors",
                   location.pathname === item.href &&
                     "bg-purple-600 text-white hover:bg-purple-700 hover:text-white"
                 )}

@@ -9,10 +9,10 @@ interface StatCardProps {
 
 export const StatCard = ({ title, value, icon: Icon }: StatCardProps) => {
   return (
-    <Card>
+    <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-gray-500">{title}</CardTitle>
-        <Icon className="h-5 w-5 text-gray-400" />
+        <CardTitle className="text-sm font-medium text-admin-foreground-muted">{title}</CardTitle>
+        <Icon className="h-5 w-5 text-admin-foreground-muted" />
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>

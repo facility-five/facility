@@ -68,7 +68,7 @@ const Administrators = () => {
         <div className="flex items-center gap-4">
           <Input
             placeholder="Buscar por nombre"
-            className="w-64"
+            className="w-64 bg-admin-card border-admin-border placeholder:text-admin-foreground-muted"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -84,7 +84,7 @@ const Administrators = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full" />
+            <Skeleton key={i} className="h-40 w-full bg-admin-border" />
           ))}
         </div>
       ) : (
