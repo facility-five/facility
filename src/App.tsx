@@ -16,6 +16,7 @@ import Condominios from "./pages/admin/Condominios";
 import Blocks from "./pages/admin/Blocks";
 import Units from "./pages/admin/Units";
 import CommonAreas from "./pages/admin/CommonAreas";
+import Communications from "./pages/admin/Communications";
 import AdminPlans from "./pages/admin/Plans";
 import Settings from "./pages/admin/Settings";
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/admin/bloques" element={<Blocks />} />
           <Route path="/admin/unidades" element={<Units />} />
           <Route path="/admin/areas-comunes" element={<CommonAreas />} />
+          <Route path="/admin/comunicados" element={<Communications />} />
           <Route path="/admin/planes" element={<AdminPlans />} />
           <Route path="/admin/configuracoes" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
