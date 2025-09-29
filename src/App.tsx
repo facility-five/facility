@@ -31,6 +31,7 @@ import ManagerDashboard from "./pages/ManagerDashboard";
 import ResidentDashboard from "./pages/ResidentDashboard";
 import ResidentAccess from "./pages/ResidentAccess";
 import SetupMaster from "./pages/SetupMaster";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/criar-conta" element={<SignUp />} />
             <Route path="/recuperar-senha" element={<ForgotPassword />} />
             <Route path="/verificar-email" element={<VerifyEmail />} />
+            <Route path="/nova-senha" element={<ResetPassword />} />
             <Route path="/planos" element={<Plans />} />
             <Route path="/acesso-morador" element={<ResidentAccess />} />
             

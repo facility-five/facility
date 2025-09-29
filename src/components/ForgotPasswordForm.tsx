@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Link } from "react-router-dom";
 import { Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { showError, showSuccess } from "@/utils/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,9 +33,18 @@ export function ForgotPasswordForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // A lógica de recuperação de senha será implementada aqui
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const redirectTo = `${window.location.origin}/nova-senha`;
+    const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+      redirectTo,
+    });
+
+    if (error) {
+      showError(error.message);
+      return;
+    }
+
+    showSuccess("Enviamos um e-mail com instruções para redefinir sua senha.");
   }
 
   return (
