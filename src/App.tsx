@@ -27,6 +27,7 @@ import Settings from "./pages/admin/Settings";
 import Notifications from "./pages/admin/Notifications";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import ResidentDashboard from "./pages/ResidentDashboard";
+import ResidentAccess from "./pages/ResidentAccess";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/recuperar-senha" element={<ForgotPassword />} />
             <Route path="/verificar-email" element={<VerifyEmail />} />
             <Route path="/planos" element={<Plans />} />
+            <Route path="/acesso-morador" element={<ResidentAccess />} />
             
             <Route path="/gestor-dashboard" element={<ProtectedRoute allowedRoles={['Gestor']}><ManagerDashboard /></ProtectedRoute>} />
             <Route path="/morador-dashboard" element={<ProtectedRoute allowedRoles={['Usuário']}><ResidentDashboard /></ProtectedRoute>} />

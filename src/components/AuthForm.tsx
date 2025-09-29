@@ -142,19 +142,18 @@ export function AuthForm() {
         >
           Entrar
         </Button>
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-muted-foreground">
-              Não tem uma conta?
-            </span>
+        <div className="text-center text-sm pt-4">
+          <p className="text-muted-foreground">Não tem uma conta?</p>
+          <div className="flex justify-center items-center gap-2 mt-1">
+            <Link to="/criar-conta" className="font-medium text-purple-600 hover:text-purple-500">
+              Cadastre sua administradora
+            </Link>
+            <span className="text-muted-foreground">|</span>
+            <Link to="/acesso-morador" className="font-medium text-purple-600 hover:text-purple-500">
+              Acessar como morador
+            </Link>
           </div>
         </div>
-        <Button variant="outline" className="w-full" asChild>
-          <Link to="/criar-conta">Criar nova conta</Link>
-        </Button>
       </form>
     </Form>
   );

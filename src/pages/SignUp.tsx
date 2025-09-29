@@ -8,10 +8,10 @@ const SignUp = () => {
         <Logo />
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800">
-            Crie sua conta
+            Crie sua conta de Gestor
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Crie sua conta para acessar nossa plataforma.
+            Cadastre sua administradora ou condomínio para começar a usar a plataforma.
           </p>
         </div>
         <SignUpForm />
