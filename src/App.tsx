@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import InactiveOverlay from "./components/InactiveOverlay";
+import SystemTitle from "./components/SystemTitle";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -39,6 +40,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
+        <SystemTitle />
         <BrowserRouter>
           <Routes future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Route path="/" element={<Index />} />
