@@ -39,7 +39,7 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
-          <Routes>
+          <Routes future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Route path="/" element={<Index />} />
             <Route path="/setup-master" element={<SetupMaster />} />
             <Route path="/criar-conta" element={<SignUp />} />
