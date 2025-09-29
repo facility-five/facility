@@ -25,7 +25,7 @@ const App = () => (
           <Route path="/recuperar-senha" element={<ForgotPassword />} />
           <Route path="/verificar-email" element={<VerifyEmail />} />
           <Route path="/planos" element={<Plans />} />
-          <Route path="/painel" element={<Dashboard />} />
+          <Route path="/admin" element={<Dashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

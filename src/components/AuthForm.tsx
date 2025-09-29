@@ -42,7 +42,7 @@ export function AuthForm() {
     console.log(values);
     // A lógica de autenticação será implementada aqui
     // Por enquanto, redirecionando para o painel
-    navigate("/painel");
+    navigate("/admin");
   }
 
   return (
