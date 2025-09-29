@@ -15,6 +15,7 @@ interface PlanCardProps {
   period: string;
   features: string[];
   buttonText: string;
+  onClick?: () => void;
 }
 
 export const PlanCard = ({
@@ -24,6 +25,7 @@ export const PlanCard = ({
   period,
   features,
   buttonText,
+  onClick,
 }: PlanCardProps) => {
   return (
     <Card className="w-full max-w-sm bg-white text-gray-800 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300">
@@ -46,7 +48,7 @@ export const PlanCard = ({
             </li>
           ))}
         </ul>
-        <Button className="w-full bg-purple-600 hover:bg-purple-700">
+        <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={onClick}>
           {buttonText}
         </Button>
       </CardContent>
