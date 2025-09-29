@@ -58,7 +58,23 @@ export function VerifyEmailForm() {
       showError(error.message);
     } else {
       showSuccess("E-mail verificado com sucesso! Você será redirecionado.");
-      navigate("/planos");
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+          
+        if (profile?.role === 'Administrador') {
+          navigate('/admin');
+        } else {
+          navigate('/planos');
+        }
+      } else {
+        navigate('/');
+      }
     }
   }
 

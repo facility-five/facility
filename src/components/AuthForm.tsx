@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { showError } from "@/utils/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -38,11 +40,40 @@ export function AuthForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // A lógica de autenticação será implementada aqui
-    // Por enquanto, redirecionando para o painel
-    navigate("/admin");
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    });
+
+    if (error) {
+      showError(error.message);
+    } else if (data.user) {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profileError) {
+        showError("Não foi possível obter a função do usuário. Tente novamente.");
+        supabase.auth.signOut();
+      } else {
+        switch (profile.role) {
+          case 'Administrador':
+            navigate('/admin');
+            break;
+          case 'Gestor':
+            navigate('/gestor-dashboard');
+            break;
+          case 'Usuário':
+            navigate('/morador-dashboard');
+            break;
+          default:
+            navigate('/');
+        }
+      }
+    }
   }
 
   return (

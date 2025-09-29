@@ -3,6 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SignUp from "./pages/SignUp";
@@ -22,6 +25,8 @@ import AdminPlans from "./pages/admin/Plans";
 import Payments from "./pages/admin/Payments";
 import Settings from "./pages/admin/Settings";
 import Notifications from "./pages/admin/Notifications";
+import ManagerDashboard from "./pages/ManagerDashboard";
+import ResidentDashboard from "./pages/ResidentDashboard";
 
 const queryClient = new QueryClient();
 
@@ -30,30 +35,38 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/criar-conta" element={<SignUp />} />
-          <Route path="/recuperar-senha" element={<ForgotPassword />} />
-          <Route path="/verificar-email" element={<VerifyEmail />} />
-          <Route path="/planos" element={<Plans />} />
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/minha-conta" element={<MyAccount />} />
-          <Route path="/admin/administradoras" element={<Administrators />} />
-          <Route path="/admin/condominios" element={<Condominios />} />
-          <Route path="/admin/bloques" element={<Blocks />} />
-          <Route path="/admin/unidades" element={<Units />} />
-          <Route path="/admin/areas-comunes" element={<CommonAreas />} />
-          <Route path="/admin/comunicados" element={<Communications />} />
-          <Route path="/admin/usuarios" element={<Users />} />
-          <Route path="/admin/planes" element={<AdminPlans />} />
-          <Route path="/admin/pagos" element={<Payments />} />
-          <Route path="/admin/configuracoes" element={<Settings />} />
-          <Route path="/admin/notificacoes" element={<Notifications />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/criar-conta" element={<SignUp />} />
+            <Route path="/recuperar-senha" element={<ForgotPassword />} />
+            <Route path="/verificar-email" element={<VerifyEmail />} />
+            <Route path="/planos" element={<Plans />} />
+            
+            <Route path="/gestor-dashboard" element={<ProtectedRoute allowedRoles={['Gestor']}><ManagerDashboard /></ProtectedRoute>} />
+            <Route path="/morador-dashboard" element={<ProtectedRoute allowedRoles={['Usuário']}><ResidentDashboard /></ProtectedRoute>} />
+
+            <Route element={<ProtectedRoute allowedRoles={['Administrador']} />}>
+              <Route path="/admin" element={<Dashboard />} />
+              <Route path="/admin/minha-conta" element={<MyAccount />} />
+              <Route path="/admin/administradoras" element={<Administrators />} />
+              <Route path="/admin/condominios" element={<Condominios />} />
+              <Route path="/admin/bloques" element={<Blocks />} />
+              <Route path="/admin/unidades" element={<Units />} />
+              <Route path="/admin/areas-comunes" element={<CommonAreas />} />
+              <Route path="/admin/comunicados" element={<Communications />} />
+              <Route path="/admin/usuarios" element={<Users />} />
+              <Route path="/admin/planes" element={<AdminPlans />} />
+              <Route path="/admin/pagos" element={<Payments />} />
+              <Route path="/admin/configuracoes" element={<Settings />} />
+              <Route path="/admin/notificacoes" element={<Notifications />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
