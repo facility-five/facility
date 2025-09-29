@@ -33,15 +33,19 @@ const Payments = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("payments")
-        .select("*, profiles(first_name, last_name, email)")
-        .order("created_at", { ascending: false });
-
+      const { data, error } = await supabase.rpc("get_all_payments_with_profile");
       if (error) {
         showError("Erro ao buscar pagamentos.");
+        setPayments([]);
       } else {
-        setPayments(data as any[] || []);
+        const mapped = (data || []).map((row: any) => ({
+          id: row.id,
+          created_at: row.created_at,
+          plan: row.plan,
+          amount: Number(row.amount),
+          profiles: row.first_name || row.last_name || row.email ? { first_name: row.first_name, last_name: row.last_name, email: row.email } : null,
+        })) as Payment[];
+        setPayments(mapped);
       }
       setLoading(false);
     };

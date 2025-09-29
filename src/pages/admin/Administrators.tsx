@@ -19,14 +19,21 @@ const Administrators = () => {
 
   const fetchAdmins = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("administrators")
-      .select("*, condos(count), profiles(first_name, last_name)");
 
+    const { data, error } = await supabase.rpc("get_administrators_with_details");
     if (error) {
       showError("Erro ao buscar administradoras.");
+      setAdmins([]);
     } else {
-      setAdmins(data as any[] || []);
+      const mapped = (data || []).map((row: any) => ({
+        id: row.id,
+        code: row.code,
+        name: row.name,
+        nif: row.nif,
+        condos: [{ count: row.condos_count || 0 }],
+        profiles: row.first_name || row.last_name ? { first_name: row.first_name, last_name: row.last_name } : null,
+      })) as Administrator[];
+      setAdmins(mapped);
     }
     setLoading(false);
   };

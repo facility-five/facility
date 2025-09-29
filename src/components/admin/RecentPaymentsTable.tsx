@@ -36,12 +36,18 @@ export const RecentPaymentsTable = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("payments")
-        .select("*, profiles(first_name, last_name)")
-        .order("created_at", { ascending: false })
-        .limit(4);
-      setPayments(data as Payment[] || []);
+      const { data, error } = await supabase.rpc("get_recent_payments_with_profile", { limit_count: 4 });
+      if (error) {
+        setPayments([]);
+      } else {
+        const mapped = (data || []).map((row: any) => ({
+          created_at: row.created_at,
+          plan: row.plan,
+          amount: Number(row.amount),
+          profiles: row.first_name || row.last_name ? { first_name: row.first_name, last_name: row.last_name } : null,
+        })) as Payment[];
+        setPayments(mapped);
+      }
       setLoading(false);
     };
     fetchPayments();

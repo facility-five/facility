@@ -36,15 +36,23 @@ const Blocks = () => {
 
   const fetchBlocks = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("blocks")
-      .select("*, condos(name), profiles(first_name, last_name, email)")
-      .order("created_at");
+    const { data, error } = await supabase.rpc("get_blocks_with_details");
 
     if (error) {
       showError("Erro ao buscar blocos.");
+      setBlocks([]);
     } else {
-      setBlocks(data as any[] || []);
+      const mapped = (data || []).map((row: any) => ({
+        id: row.id,
+        code: row.code,
+        name: row.name,
+        condo_id: row.condo_id,
+        responsible_id: row.responsible_id,
+        status: row.status,
+        condos: row.condo_name ? { name: row.condo_name } : null,
+        profiles: row.first_name || row.last_name || row.email ? { first_name: row.first_name, last_name: row.last_name, email: row.email } : null,
+      })) as Block[];
+      setBlocks(mapped);
     }
     setLoading(false);
   };
