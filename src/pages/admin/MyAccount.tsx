@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showError, showSuccess, showLoading, dismissToast } from "@/utils/toast";
 import { useEffect, useState } from "react";
 import { User as UserIcon } from "lucide-react";
 import { User } from "@supabase/supabase-js";
@@ -83,12 +83,14 @@ const MyAccount = () => {
   }, [profileForm]);
 
   async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
+    const loadingId = showLoading("Salvando alterações do perfil...");
     const { error } = await supabase.auth.updateUser({
       data: {
         first_name: values.firstName,
         last_name: values.lastName,
       },
     });
+    dismissToast(loadingId);
 
     if (error) {
       showError(error.message);
@@ -103,6 +105,8 @@ const MyAccount = () => {
       return;
     }
 
+    const loadingId = showLoading("Alterando senha...");
+
     // Reautenticar com a senha atual para garantir sessão válida
     const { error: reauthError } = await supabase.auth.signInWithPassword({
       email,
@@ -110,6 +114,7 @@ const MyAccount = () => {
     });
 
     if (reauthError) {
+      dismissToast(loadingId);
       showError("Senha atual incorreta. Tente novamente.");
       return;
     }
@@ -117,6 +122,8 @@ const MyAccount = () => {
     const { error } = await supabase.auth.updateUser({
       password: values.password,
     });
+
+    dismissToast(loadingId);
 
     if (error) {
       showError(error.message);
