@@ -40,8 +40,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <SystemTitle />
         <BrowserRouter>
+          <SystemTitle />
           <Routes future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Route path="/" element={<Index />} />
             <Route path="/setup-master" element={<SetupMaster />} />
@@ -74,7 +74,6 @@ const App = () => (
           </Routes>
         </BrowserRouter>
 
-        {/* Overlay global que bloqueia a aplicação para usuários inativos */}
         <InactiveOverlay />
       </AuthProvider>
     </TooltipProvider>
