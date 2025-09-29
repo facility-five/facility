@@ -84,55 +84,66 @@ const MyAccount = () => {
 
   async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
     const loadingId = showLoading("Salvando alterações do perfil...");
-    const { error } = await supabase.auth.updateUser({
-      data: {
-        first_name: values.firstName,
-        last_name: values.lastName,
-      },
-    });
-    dismissToast(loadingId);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          first_name: values.firstName,
+          last_name: values.lastName,
+        },
+      });
 
-    if (error) {
-      showError(error.message);
-    } else {
-      showSuccess("Perfil atualizado com sucesso!");
+      if (error) {
+        showError(error.message);
+      } else {
+        showSuccess("Perfil atualizado com sucesso!");
+      }
+    } catch (err: any) {
+      console.error("Unhandled error during profile update:", err);
+      showError("Ocorreu um erro inesperado ao atualizar o perfil.");
+    } finally {
+      dismissToast(loadingId);
     }
   }
 
   async function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
-    if (!email) {
-      showError("Não foi possível identificar seu e-mail.");
-      return;
-    }
-
     const loadingId = showLoading("Alterando senha...");
+    try {
+      if (!email) {
+        showError("Não foi possível identificar seu e-mail.");
+        return;
+      }
 
-    const { error: reauthError } = await supabase.auth.signInWithPassword({
-      email,
-      password: values.currentPassword,
-    });
-
-    if (reauthError) {
-      dismissToast(loadingId);
-      showError("Senha atual incorreta. Tente novamente.");
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({
-      password: values.password,
-    });
-
-    dismissToast(loadingId);
-
-    if (error) {
-      showError(error.message);
-    } else {
-      showSuccess("Senha alterada com sucesso!");
-      passwordForm.reset({
-        currentPassword: "",
-        password: "",
-        confirmPassword: "",
+      // Re-authenticate the user to verify current password
+      const { error: reauthError } = await supabase.auth.signInWithPassword({
+        email,
+        password: values.currentPassword,
       });
+
+      if (reauthError) {
+        showError("Senha atual incorreta. Tente novamente.");
+        return;
+      }
+
+      // Update the user's password
+      const { error } = await supabase.auth.updateUser({
+        password: values.password,
+      });
+
+      if (error) {
+        showError(error.message);
+      } else {
+        showSuccess("Senha alterada com sucesso!");
+        passwordForm.reset({
+          currentPassword: "",
+          password: "",
+          confirmPassword: "",
+        });
+      }
+    } catch (err: any) {
+      console.error("Unhandled error during password change:", err);
+      showError("Ocorreu um erro inesperado ao alterar a senha.");
+    } finally {
+      dismissToast(loadingId);
     }
   }
 
