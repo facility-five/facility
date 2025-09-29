@@ -65,7 +65,7 @@ export const RecentPaymentsTable = () => {
       <CardContent>
         <Table>
           <TableHeader className="bg-purple-600">
-            <TableRow className="border-b-purple-700">
+            <TableRow className="border-b-purple-700 hover:bg-purple-600">
               <TableHead className="text-white">Data</TableHead>
               <TableHead className="text-white">Cliente</TableHead>
               <TableHead className="text-white">Plano</TableHead>
