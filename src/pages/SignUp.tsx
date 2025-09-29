@@ -3,7 +3,7 @@ import { Logo } from "@/components/Logo";
 
 const SignUp = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 to-purple-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-10 space-y-4">
         <Logo />
         <div className="text-center">
