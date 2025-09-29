@@ -24,35 +24,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const setData = async (session: Session | null) => {
       try {
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-          const { data: profileData, error: profileError } = await supabase
+          const { data: profileData, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', currentUser.id)
             .single();
-          
-          // PGRST116 means no rows found, which is not an error in this context.
-          if (profileError && profileError.code !== 'PGRST116') {
-            throw profileError;
-          }
+          if (error && error.code !== 'PGRST116') throw error;
           setProfile(profileData);
         } else {
           setProfile(null);
         }
       } catch (error) {
-        console.error("Error in onAuthStateChange handler:", error);
+        console.error("Error setting auth data:", error);
         setProfile(null);
       } finally {
         setLoading(false);
       }
+    };
+
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      await setData(session);
+    };
+
+    getInitialSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await setData(session);
     });
 
     return () => {
