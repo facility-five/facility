@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Link } from "react-router-dom";
+import { User, Mail, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,29 +17,35 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "O nome deve ter pelo menos 2 caracteres.",
-  }),
-  email: z.string().email({
-    message: "Por favor, insira um e-mail válido.",
-  }),
-  password: z.string().min(6, {
-    message: "A senha deve ter pelo menos 6 caracteres.",
-  }),
-  confirmPassword: z.string().min(6, {
-    message: "A confirmação de senha deve ter pelo menos 6 caracteres.",
-  }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas não coincidem.",
-  path: ["confirmPassword"],
-});
+const formSchema = z
+  .object({
+    firstName: z.string().min(2, {
+      message: "O nome deve ter pelo menos 2 caracteres.",
+    }),
+    lastName: z.string().min(2, {
+      message: "O sobrenome deve ter pelo menos 2 caracteres.",
+    }),
+    email: z.string().email({
+      message: "Por favor, insira um e-mail válido.",
+    }),
+    password: z.string().min(6, {
+      message: "A senha deve ter pelo menos 6 caracteres.",
+    }),
+    confirmPassword: z.string().min(6, {
+      message: "A confirmação de senha deve ter pelo menos 6 caracteres.",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem.",
+    path: ["confirmPassword"],
+  });
 
 export function SignUpForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -53,27 +60,60 @@ export function SignUpForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="sr-only">Nome</FormLabel>
-              <FormControl>
-                <Input placeholder="Seu nome completo" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input
+                      placeholder="Seu nome"
+                      {...field}
+                      className="pl-10 focus-visible:ring-purple-500"
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sobrenome</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Seu sobrenome"
+                    {...field}
+                    className="focus-visible:ring-purple-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="sr-only">Email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="seu@email.com" {...field} />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    placeholder="seu@email.com"
+                    {...field}
+                    className="pl-10 focus-visible:ring-purple-500"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -84,9 +124,17 @@ export function SignUpForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="sr-only">Senha</FormLabel>
+              <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Crie uma senha" {...field} />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    type="password"
+                    placeholder="Crie uma senha"
+                    {...field}
+                    className="pl-10 focus-visible:ring-purple-500"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -97,15 +145,26 @@ export function SignUpForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="sr-only">Confirmar Senha</FormLabel>
+              <FormLabel>Confirmar Senha</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Confirme sua senha" {...field} />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    type="password"
+                    placeholder="Confirme sua senha"
+                    {...field}
+                    className="pl-10 focus-visible:ring-purple-500"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+        <Button
+          type="submit"
+          className="w-full bg-purple-600 hover:bg-purple-700"
+        >
           Criar conta
         </Button>
         <div className="relative">

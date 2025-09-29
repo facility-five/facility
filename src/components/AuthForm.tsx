@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Link } from "react-router-dom";
+import { Mail, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -47,9 +48,16 @@ export function AuthForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="sr-only">Email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="seu@email.com" {...field} />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    placeholder="seu@email.com"
+                    {...field}
+                    className="pl-10 focus-visible:ring-purple-500"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -60,9 +68,17 @@ export function AuthForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="sr-only">Senha</FormLabel>
+              <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Sua senha" {...field} />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    type="password"
+                    placeholder="Sua senha"
+                    {...field}
+                    className="pl-10 focus-visible:ring-purple-500"
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -76,7 +92,10 @@ export function AuthForm() {
             Esqueceu a senha?
           </Link>
         </div>
-        <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+        <Button
+          type="submit"
+          className="w-full bg-purple-600 hover:bg-purple-700"
+        >
           Entrar
         </Button>
         <div className="relative">

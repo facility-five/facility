@@ -11,7 +11,7 @@ const SignUp = () => {
             Crie sua conta
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            É rápido e fácil. Vamos começar.
+            Crie sua conta para acessar nossa plataforma.
           </p>
         </div>
         <SignUpForm />
