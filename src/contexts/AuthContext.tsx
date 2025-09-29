@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .select('*')
           .eq('id', currentUser.id)
           .single();
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error && error.code !== 'PGRST116') throw error; // PGRST116 means 'exact one row was not found', which is fine if profile doesn't exist yet
         setProfile(profileData || null);
       } else {
         setProfile(null);
@@ -60,8 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (err) {
         console.error('supabase.auth.getSession failed:', err);
         if (!isMounted) return;
-        // Garante que a UI não fique travada
-        await setData(null);
+        await setData(null); // Ensure setData is called even on error to release loading state
       }
     };
 
@@ -74,15 +73,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (err) {
         console.error('onAuthStateChange handler failed:', err);
         if (!isMounted) return;
-        await setData(null);
+        await setData(null); // Ensure setData is called even on error to release loading state
       }
     });
 
     // Timeout de segurança: evita ficar preso em loading em ambientes problemáticos
+    // Este timeout é configurado para disparar uma única vez após 8 segundos se o loading ainda for true.
     const safetyTimeout = setTimeout(() => {
-      if (isMounted && loading) {
-        console.warn('Auth initialization timeout — releasing loading state.');
-        setLoading(false);
+      if (isMounted) {
+        setLoading(prevLoading => {
+          if (prevLoading) {
+            console.warn('Auth initialization timeout — releasing loading state.');
+            return false;
+          }
+          return prevLoading;
+        });
       }
     }, 8000);
 
@@ -91,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       authListener?.subscription.unsubscribe();
       clearTimeout(safetyTimeout);
     };
-  }, [loading]);
+  }, []); // Dependência vazia: executa apenas uma vez na montagem
 
   const signOut = async () => {
     await supabase.auth.signOut();
