@@ -41,7 +41,9 @@ export function VerifyEmailForm() {
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     if (!email) {
-      showError("E-mail não encontrado. Por favor, tente se cadastrar novamente.");
+      showError(
+        "E-mail não encontrado. Por favor, tente se cadastrar novamente."
+      );
       navigate("/criar-conta");
       return;
     }
@@ -56,25 +58,27 @@ export function VerifyEmailForm() {
       showError(error.message);
     } else {
       showSuccess("E-mail verificado com sucesso! Você será redirecionado.");
-      navigate("/");
+      navigate("/planos");
     }
   }
 
   async function handleResendCode() {
     if (!email) {
-        showError("E-mail não encontrado. Por favor, tente se cadastrar novamente.");
-        navigate("/criar-conta");
-        return;
+      showError(
+        "E-mail não encontrado. Por favor, tente se cadastrar novamente."
+      );
+      navigate("/criar-conta");
+      return;
     }
     const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
+      type: "signup",
+      email: email,
     });
 
     if (error) {
-        showError(error.message);
+      showError(error.message);
     } else {
-        showSuccess("Código de verificação reenviado para o seu e-mail.");
+      showSuccess("Código de verificação reenviado para o seu e-mail.");
     }
   }
 
@@ -103,14 +107,22 @@ export function VerifyEmailForm() {
           )}
         />
 
-        <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+        <Button
+          type="submit"
+          className="w-full bg-purple-600 hover:bg-purple-700"
+        >
           Verificar
         </Button>
         <div className="text-center text-sm">
-            Não recebeu o código?{" "}
-            <Button variant="link" type="button" onClick={handleResendCode} className="p-0 text-purple-600">
-                Reenviar código
-            </Button>
+          Não recebeu o código?{" "}
+          <Button
+            variant="link"
+            type="button"
+            onClick={handleResendCode}
+            className="p-0 text-purple-600"
+          >
+            Reenviar código
+          </Button>
         </div>
       </form>
     </Form>
