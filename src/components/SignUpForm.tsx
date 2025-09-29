@@ -4,8 +4,10 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { showError } from "@/utils/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +46,7 @@ const formSchema = z
 export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,9 +59,23 @@ export function SignUpForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // A lógica de criação de conta será implementada aqui
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { error } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+      options: {
+        data: {
+          first_name: values.firstName,
+          last_name: values.lastName,
+        },
+      },
+    });
+
+    if (error) {
+      showError(error.message);
+    } else {
+      navigate("/verificar-email", { state: { email: values.email } });
+    }
   }
 
   return (
