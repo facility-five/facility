@@ -102,12 +102,12 @@ const Plans = () => {
       <div className="rounded-lg border border-admin-border bg-admin-card">
         <Table>
           <TableHeader>
-            <TableRow className="border-b-admin-border">
-              <TableHead>Nome</TableHead>
-              <TableHead>Preço</TableHead>
-              <TableHead>Período</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+            <TableRow className="border-b-purple-700 bg-purple-600 hover:bg-purple-600">
+              <TableHead className="text-white">Nome</TableHead>
+              <TableHead className="text-white">Preço</TableHead>
+              <TableHead className="text-white">Período</TableHead>
+              <TableHead className="text-white">Status</TableHead>
+              <TableHead className="text-white text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
