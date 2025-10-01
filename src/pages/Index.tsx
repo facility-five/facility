@@ -16,10 +16,10 @@ const Index = () => {
         case 'Administrador':
           navigate('/admin');
           break;
-        case 'Gestor':
+        case 'Síndico':
           navigate('/gestor-dashboard');
           break;
-        case 'Usuário':
+        case 'Morador':
           navigate('/morador-dashboard');
           break;
         default:

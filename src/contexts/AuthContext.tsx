@@ -10,7 +10,7 @@ export interface Profile {
   first_name: string;
   last_name: string;
   avatar_url: string;
-  role: 'Administrador' | 'Gestor' | 'Usuário';
+  role: 'Administrador' | 'Administradora' | 'Síndico' | 'Funcionário' | 'Morador';
   status: 'Ativo' | 'Inativo';
   whatsapp: string;
 }
@@ -88,10 +88,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 case 'Administrador':
                   navigate('/admin');
                   break;
-                case 'Gestor':
+                case 'Síndico':
                   navigate('/gestor-dashboard');
                   break;
-                case 'Usuário':
+                case 'Morador':
                   navigate('/morador-dashboard');
                   break;
                 default:

@@ -53,8 +53,8 @@ const App = () => (
             <Route path="/planos" element={<Plans />} />
             <Route path="/acesso-morador" element={<ResidentAccess />} />
             
-            <Route path="/gestor-dashboard" element={<ProtectedRoute allowedRoles={['Gestor']}><ManagerDashboard /></ProtectedRoute>} />
-            <Route path="/morador-dashboard" element={<ProtectedRoute allowedRoles={['Usuário']}><ResidentDashboard /></ProtectedRoute>} />
+            <Route path="/gestor-dashboard" element={<ProtectedRoute allowedRoles={['Síndico']}><ManagerDashboard /></ProtectedRoute>} />
+            <Route path="/morador-dashboard" element={<ProtectedRoute allowedRoles={['Morador']}><ResidentDashboard /></ProtectedRoute>} />
 
             <Route element={<ProtectedRoute allowedRoles={['Administrador']} />}>
               <Route path="/admin" element={<Dashboard />} />
