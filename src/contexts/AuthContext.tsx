@@ -1,113 +1,121 @@
-import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+"use client";
+
+import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { LoadingSpinner } from '@/components/LoadingSpinner'; // Importa o novo spinner
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-type Profile = {
+export interface Profile {
   id: string;
-  role: string;
-  [key: string]: any;
-};
+  first_name: string;
+  last_name: string;
+  avatar_url: string;
+  role: 'Administrador' | 'Gestor' | 'Usuário';
+  status: 'Ativo' | 'Inativo';
+  whatsapp: string;
+}
 
-type AuthContextType = {
+interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
   loading: boolean;
   signOut: () => Promise<void>;
-};
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { ReactNode }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const setData = async (sess: Session | null) => {
-    try {
-      setSession(sess);
-      const currentUser = sess?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .single();
-        if (error && error.code !== 'PGRST116') throw error; // PGRST116 means 'exact one row was not found', which is fine if profile doesn't exist yet
-        setProfile(profileData || null);
-      } else {
-        setProfile(null);
-      }
-    } catch (error) {
-      console.error('Error setting auth data:', error);
-      setProfile(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const getInitialSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!isMounted) return;
-        await setData(session);
-      } catch (err) {
-        console.error('supabase.auth.getSession failed:', err);
-        if (!isMounted) return;
-        await setData(null); // Ensure setData is called even on error to release loading state
-      }
-    };
-
-    getInitialSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, sess) => {
-      try {
-        if (!isMounted) return;
-        await setData(sess);
-      } catch (err) {
-        console.error('onAuthStateChange handler failed:', err);
-        if (!isMounted) return;
-        await setData(null); // Ensure setData is called even on error to release loading state
-      }
-    });
-
-    // Timeout de segurança: evita ficar preso em loading em ambientes problemáticos
-    // Este timeout é configurado para disparar uma única vez após 8 segundos se o loading ainda for true.
-    const safetyTimeout = setTimeout(() => {
-      if (isMounted) {
-        setLoading(prevLoading => {
-          if (prevLoading) {
-            console.warn('Auth initialization timeout — releasing loading state.');
-            return false;
-          }
-          return prevLoading;
-        });
-      }
-    }, 8000);
-
-    return () => {
-      isMounted = false;
-      authListener?.subscription.unsubscribe();
-      clearTimeout(safetyTimeout);
-    };
-  }, []); // Dependência vazia: executa apenas uma vez na montagem
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    // Limpeza imediata do estado local para refletir o logout instantaneamente
     setSession(null);
     setUser(null);
     setProfile(null);
+    navigate('/');
   };
 
-  const value: AuthContextType = {
+  useEffect(() => {
+    const setData = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error getting session:", error);
+        setLoading(false);
+        return;
+      }
+
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (session?.user) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+        } else {
+          setProfile(userProfile);
+        }
+      }
+      setLoading(false);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (event === 'SIGNED_IN' && session?.user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: userProfile, error }) => {
+            if (error) {
+              console.error("Error fetching profile on SIGNED_IN:", error);
+            } else if (userProfile) {
+              setProfile(userProfile);
+              switch (userProfile.role) {
+                case 'Administrador':
+                  navigate('/admin');
+                  break;
+                case 'Gestor':
+                  navigate('/gestor-dashboard');
+                  break;
+                case 'Usuário':
+                  navigate('/morador-dashboard');
+                  break;
+                default:
+                  navigate('/');
+              }
+            }
+          });
+      } else if (event === 'SIGNED_OUT') {
+        setProfile(null);
+        const publicPaths = ['/', '/criar-conta', '/recuperar-senha', '/nova-senha', '/verificar-email', '/planos', '/acesso-morador'];
+        if (!publicPaths.includes(location.pathname)) {
+          navigate('/');
+        }
+      }
+    });
+
+    setData();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, location.pathname]);
+
+  const value = {
     session,
     user,
     profile,

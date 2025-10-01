@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Lock, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,19 +19,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 const formSchema = z.object({
   email: z.string().email({
     message: "Por favor, insira um e-mail válido.",
   }),
-  password: z.string().min(6, {
-    message: "A senha deve ter pelo menos 6 caracteres.",
+  password: z.string().min(1, {
+    message: "A senha é obrigatória.",
   }),
 });
 
 export function AuthForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,39 +42,23 @@ export function AuthForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
 
     if (error) {
-      showError(error.message);
-    } else if (data.user) {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profileError) {
-        showError("Não foi possível obter a função do usuário. Tente novamente.");
-        supabase.auth.signOut();
+      if (error.message === "Invalid login credentials") {
+        showError("Email ou senha inválidos.");
+      } else if (error.message.includes("Email not confirmed")) {
+        showError("Por favor, confirme seu e-mail antes de fazer login.");
       } else {
-        switch (profile.role) {
-          case 'Administrador':
-            navigate('/admin');
-            break;
-          case 'Gestor':
-            navigate('/gestor-dashboard');
-            break;
-          case 'Usuário':
-            navigate('/morador-dashboard');
-            break;
-          default:
-            navigate('/');
-        }
+        showError(error.message);
       }
     }
+    // A navegação agora é tratada pelo AuthContext
+    setIsLoading(false);
   }
 
   return (
@@ -109,29 +94,21 @@ export function AuthForm() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Sua senha"
+                    type="password"
+                    placeholder="••••••••"
                     {...field}
-                    className="pl-10 pr-10 focus-visible:ring-purple-500"
+                    className="pl-10 focus-visible:ring-purple-500"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 cursor-pointer"
-                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                  >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                  </button>
                 </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end text-sm">
           <Link
             to="/recuperar-senha"
-            className="text-sm font-medium text-purple-600 hover:text-purple-500"
+            className="font-medium text-purple-600 hover:text-purple-500"
           >
             Esqueceu a senha?
           </Link>
@@ -139,21 +116,10 @@ export function AuthForm() {
         <Button
           type="submit"
           className="w-full bg-purple-600 hover:bg-purple-700"
+          disabled={isLoading}
         >
-          Entrar
+          {isLoading ? <LoadingSpinner size="sm" /> : "Entrar"}
         </Button>
-        <div className="text-center text-sm pt-4">
-          <p className="text-muted-foreground">Não tem uma conta?</p>
-          <div className="flex justify-center items-center gap-2 mt-1">
-            <Link to="/criar-conta" className="font-medium text-purple-600 hover:text-purple-500">
-              Cadastre sua administradora
-            </Link>
-            <span className="text-muted-foreground">|</span>
-            <Link to="/acesso-morador" className="font-medium text-purple-600 hover:text-purple-500">
-              Acessar como morador
-            </Link>
-          </div>
-        </div>
       </form>
     </Form>
   );

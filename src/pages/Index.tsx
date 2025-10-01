@@ -1,61 +1,76 @@
 import { useEffect } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { AuthForm } from "@/components/AuthForm";
 import { Logo } from "@/components/Logo";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { LoadingSpinner } from "@/components/LoadingSpinner"; // Importa o novo spinner
+import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const Index = () => {
-  const { profile, loading, session } = useAuth();
+  const { session, loading, profile } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !session) {
-      const checkFirstUser = async () => {
-        const { data: isSetup } = await supabase.rpc('is_system_setup');
-        if (!isSetup) {
-          navigate("/setup-master");
-        }
-      };
-      checkFirstUser();
+    if (!loading && session && profile) {
+      switch (profile.role) {
+        case 'Administrador':
+          navigate('/admin');
+          break;
+        case 'Gestor':
+          navigate('/gestor-dashboard');
+          break;
+        case 'Usuário':
+          navigate('/morador-dashboard');
+          break;
+        default:
+          // Fica na página de login se o perfil for inválido
+          break;
+      }
     }
-  }, [loading, session, navigate]);
+  }, [session, loading, profile, navigate]);
 
-  if (loading) {
+  if (loading || (session && profile)) {
     return (
-      <div className="flex h-screen items-center justify-center bg-black">
-        <LoadingSpinner size="lg" className="border-primary shadow-lg shadow-primary/50" />
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
+        <LoadingSpinner size="lg" className="text-white" />
       </div>
     );
   }
 
-  if (session && profile) {
-    switch (profile.role) {
-      case 'Administrador':
-        return <Navigate to="/admin" replace />;
-      case 'Gestor':
-        return <Navigate to="/gestor-dashboard" replace />;
-      case 'Usuário':
-        return <Navigate to="/morador-dashboard" replace />;
-      default:
-        return <Navigate to="/" replace />;
-    }
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-10 space-y-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-10 space-y-6">
         <Logo />
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800">
-            Acesse sua conta
+            Bem-vindo de volta!
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Bem-vindo de volta! Por favor, insira seus dados.
+            Faça login para acessar sua conta.
           </p>
         </div>
+
         <AuthForm />
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-gray-500">Ou continue com</span>
+          </div>
+        </div>
+
+        <div className="text-center text-sm">
+          Não tem uma conta?{" "}
+          <Button
+            variant="link"
+            className="p-0 h-auto font-medium text-purple-600 hover:text-purple-500"
+            onClick={() => navigate("/criar-conta")}
+          >
+            Crie uma agora
+          </Button>
+        </div>
       </div>
     </div>
   );
