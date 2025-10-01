@@ -11,7 +11,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders })
+    return new Response("ok", { status: 200, headers: corsHeaders })
   }
 
   try {
@@ -36,7 +36,7 @@ serve(async (req) => {
     })
   } catch (err: any) {
     return new Response(JSON.stringify({ system_name: null, error: err.message }), {
-      status: 200,
+      status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
   }
