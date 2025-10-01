@@ -10,14 +10,13 @@ interface AuthLayoutProps {
 export const AuthLayout = ({ children, title, description }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
-      <div className="relative hidden flex-col items-center justify-between bg-indigo-900 p-12 text-white lg:flex overflow-hidden">
-        <div
-          className="absolute inset-0 h-full w-full opacity-20"
-          style={{
-            backgroundImage:
-              "url('https://www.transparenttextures.com/patterns/cubes.png')",
-          }}
+      <div className="relative hidden flex-col items-center justify-between p-12 text-white lg:flex">
+        <img
+          src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop"
+          alt="Interior de um apartamento moderno"
+          className="absolute inset-0 h-full w-full object-cover"
         />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-700/80 to-indigo-900/80" />
         <div className="relative z-10 flex flex-col items-center justify-between h-full w-full">
           <div>
             <Logo theme="dark" />
