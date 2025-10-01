@@ -46,7 +46,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
               href="https://fiveagenciadigital.com.br/"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline transition-colors hover:text-white"
+              className="transition-colors hover:text-white"
             >
               Five Agência Digital
             </a>
