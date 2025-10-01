@@ -40,8 +40,8 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AuthProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
           <SystemTitle />
           <Routes future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Route path="/" element={<Index />} />
@@ -74,10 +74,9 @@ const App = () => (
             
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-
-        <InactiveOverlay />
-      </AuthProvider>
+          <InactiveOverlay />
+        </AuthProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
