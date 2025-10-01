@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export interface Profile {
   id: string;
@@ -31,89 +31,67 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setSession(null);
-    setUser(null);
-    setProfile(null);
-    navigate('/');
   };
 
   useEffect(() => {
-    const setData = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Error getting session:", error);
-        setLoading(false);
-        return;
-      }
-
+    const fetchInitialData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        const { data: userProfile, error: profileError } = await supabase
+        const { data: userProfile } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
-        
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-        } else {
-          setProfile(userProfile);
-        }
+        setProfile(userProfile ?? null);
       }
       setLoading(false);
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(true); // Inicia o carregamento ao detectar mudança
+    fetchInitialData();
 
-      if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: userProfile, error }) => {
-            if (error) {
-              console.error("Error fetching profile on auth change:", error);
-              setProfile(null);
-            } else if (userProfile) {
-              setProfile(userProfile);
-              // Lógica de redirecionamento centralizada
-              switch (userProfile.role) {
-                case 'Administrador':
-                  navigate('/admin', { replace: true });
-                  break;
-                case 'Administradora':
-                case 'Síndico':
-                  navigate('/gestor-dashboard', { replace: true });
-                  break;
-                case 'Morador':
-                  navigate('/morador-dashboard', { replace: true });
-                  break;
-                default:
-                  // Se o papel for desconhecido, desloga por segurança
-                  signOut();
-                  break;
-              }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (event === 'SIGNED_IN' && session?.user) {
+          setLoading(true);
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          setProfile(userProfile ?? null);
+          if (userProfile) {
+            switch (userProfile.role) {
+              case 'Administrador':
+                navigate('/admin', { replace: true });
+                break;
+              case 'Administradora':
+              case 'Síndico':
+                navigate('/gestor-dashboard', { replace: true });
+                break;
+              case 'Morador':
+                navigate('/morador-dashboard', { replace: true });
+                break;
+              default:
+                navigate('/', { replace: true });
             }
-            setLoading(false); // Finaliza o carregamento após buscar perfil e redirecionar
-          });
-      } else {
-        // Se não há sessão, o usuário é deslogado
-        setProfile(null);
-        setLoading(false);
+          }
+          setLoading(false);
+        } else if (event === 'SIGNED_OUT') {
+          setProfile(null);
+          navigate('/', { replace: true });
+        }
       }
-    });
-
-    setData();
+    );
 
     return () => {
       subscription.unsubscribe();
