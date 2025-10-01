@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ReactNode } from 'react';
-import { LoadingSpinner } from '@/components/LoadingSpinner'; // Importa o LoadingSpinner
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 interface ProtectedRouteProps {
   allowedRoles: string[];
@@ -24,6 +24,9 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
   }
 
   if (!profile || !allowedRoles.includes(profile.role)) {
+    // Se o usuário está logado mas não tem a permissão,
+    // redireciona para a página inicial, que por sua vez
+    // o enviará para o dashboard correto.
     return <Navigate to="/" replace />;
   }
 

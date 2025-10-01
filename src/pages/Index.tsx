@@ -7,11 +7,29 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { AuthLayout } from "@/components/AuthLayout";
 
 const Index = () => {
-  const { session, loading } = useAuth();
+  const { session, profile, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Se o contexto ainda está carregando ou se já existe uma sessão,
-  // mostramos o spinner. O AuthContext cuidará do redirecionamento.
+  useEffect(() => {
+    if (!loading && session && profile) {
+      switch (profile.role) {
+        case 'Administrador':
+          navigate('/admin', { replace: true });
+          break;
+        case 'Administradora':
+        case 'Síndico':
+          navigate('/gestor-dashboard', { replace: true });
+          break;
+        case 'Morador':
+          navigate('/morador-dashboard', { replace: true });
+          break;
+        default:
+          // Se o papel for desconhecido, não redireciona e permite o logout manual
+          break;
+      }
+    }
+  }, [loading, session, profile, navigate]);
+
   if (loading || session) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
@@ -20,7 +38,6 @@ const Index = () => {
     );
   }
 
-  // Se não está carregando e não há sessão, mostramos o formulário de login.
   return (
     <AuthLayout
       title="Bem-vindo de volta!"

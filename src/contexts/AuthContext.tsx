@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 
 export interface Profile {
   id: string;
@@ -30,73 +29,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        setProfile(userProfile ?? null);
-      }
-      setLoading(false);
-    };
-
-    fetchInitialData();
-
+    setLoading(true);
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
-        if (event === 'SIGNED_IN' && session?.user) {
-          setLoading(true);
+        if (session?.user) {
           const { data: userProfile } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
-          
           setProfile(userProfile ?? null);
-          if (userProfile) {
-            switch (userProfile.role) {
-              case 'Administrador':
-                navigate('/admin', { replace: true });
-                break;
-              case 'Administradora':
-              case 'Síndico':
-                navigate('/gestor-dashboard', { replace: true });
-                break;
-              case 'Morador':
-                navigate('/morador-dashboard', { replace: true });
-                break;
-              default:
-                navigate('/', { replace: true });
-            }
-          }
-          setLoading(false);
-        } else if (event === 'SIGNED_OUT') {
+        } else {
           setProfile(null);
-          navigate('/', { replace: true });
         }
+        setLoading(false);
       }
     );
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   const value = {
     session,
