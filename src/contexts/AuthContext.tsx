@@ -69,11 +69,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(true); // Inicia o carregamento ao detectar mudança
 
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (session?.user) {
         supabase
           .from('profiles')
           .select('*')
@@ -81,42 +82,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .single()
           .then(({ data: userProfile, error }) => {
             if (error) {
-              console.error("Error fetching profile on SIGNED_IN:", error);
-            } else if (userProfile && session.user.email_confirmed_at) {
+              console.error("Error fetching profile on auth change:", error);
+              setProfile(null);
+            } else if (userProfile) {
               setProfile(userProfile);
-
-              const currentPath = location.pathname;
-              const role = userProfile.role;
-
-              const isCorrectPath = 
-                (role === 'Administrador' && currentPath.startsWith('/admin')) ||
-                ((role === 'Administradora' || role === 'Síndico') && currentPath.startsWith('/gestor')) ||
-                (role === 'Morador' && currentPath.startsWith('/morador'));
-
-              if (!isCorrectPath) {
-                switch (role) {
-                  case 'Administrador':
-                    navigate('/admin');
-                    break;
-                  case 'Administradora':
-                  case 'Síndico':
-                    navigate('/gestor-dashboard');
-                    break;
-                  case 'Morador':
-                    navigate('/morador-dashboard');
-                    break;
-                  default:
-                    navigate('/');
-                }
+              // Lógica de redirecionamento centralizada
+              switch (userProfile.role) {
+                case 'Administrador':
+                  navigate('/admin', { replace: true });
+                  break;
+                case 'Administradora':
+                case 'Síndico':
+                  navigate('/gestor-dashboard', { replace: true });
+                  break;
+                case 'Morador':
+                  navigate('/morador-dashboard', { replace: true });
+                  break;
+                default:
+                  // Se o papel for desconhecido, desloga por segurança
+                  signOut();
+                  break;
               }
             }
+            setLoading(false); // Finaliza o carregamento após buscar perfil e redirecionar
           });
-      } else if (event === 'SIGNED_OUT') {
+      } else {
+        // Se não há sessão, o usuário é deslogado
         setProfile(null);
-        const publicPaths = ['/', '/criar-conta', '/recuperar-senha', '/nova-senha', '/verificar-email', '/planos', '/acesso-morador'];
-        if (!publicPaths.includes(location.pathname)) {
-          navigate('/');
-        }
+        setLoading(false);
       }
     });
 
@@ -125,7 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   const value = {
     session,
