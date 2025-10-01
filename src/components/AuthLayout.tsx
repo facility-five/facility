@@ -26,7 +26,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
         <img
           src="/placeholder.svg"
           alt="Condomínio"
-          className="absolute inset-0 h-full w-full object-cover opacity-20"
+          className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-purple-700/80 to-indigo-900/80" />
         <div className="relative z-10 flex flex-col items-center justify-between h-full w-full">
