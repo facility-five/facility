@@ -61,7 +61,7 @@ export const ImageUpload = ({ name, label, currentImageUrl }: ImageUploadProps) 
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-2">
-              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+              <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
                 <Upload className="mr-2" />
                 Carregar
               </Button>
