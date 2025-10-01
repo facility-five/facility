@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SignUpForm } from "@/components/SignUpForm";
-import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
-import { LoadingSpinner } from "@/components/LoadingSpinner"; // Importa o LoadingSpinner
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { AuthLayout } from "@/components/AuthLayout";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -22,27 +22,19 @@ const SignUp = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-black">
-        <LoadingSpinner size="lg" className="border-primary shadow-lg shadow-primary/50" />
+      <div className="flex h-screen items-center justify-center bg-background">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-10 space-y-4">
-        <Logo />
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800">
-            Crie sua conta de Gestor
-          </h1>
-          <p className="text-gray-500 mt-2 text-sm">
-            Cadastre sua administradora ou condomínio para começar a usar a plataforma.
-          </p>
-        </div>
-        <SignUpForm />
-      </div>
-    </div>
+    <AuthLayout
+      title="Crie sua conta"
+      description="Cadastre-se para começar a usar a plataforma."
+    >
+      <SignUpForm />
+    </AuthLayout>
   );
 };
 
