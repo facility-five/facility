@@ -7,7 +7,7 @@ interface ManagerLayoutProps {
 
 export const ManagerLayout = ({ children }: ManagerLayoutProps) => {
   return (
-    <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
+    <div className="grid min-h-screen w-full lg:grid-cols-[260px_1fr]">
       <ManagerSidebar />
       <div className="flex flex-col">
         <ManagerHeader />

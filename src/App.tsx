@@ -42,6 +42,10 @@ import ResidentDocuments from "./pages/resident/Documents";
 import ResidentProfile from "./pages/resident/Profile";
 import ResidentSettings from "./pages/resident/Settings";
 
+import ManagerCondominios from "./pages/manager/Condominios";
+import ManagerConfiguracoes from "./pages/manager/Configuracoes";
+import ManagerPlan from "./pages/manager/Plan";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -70,6 +74,9 @@ const App = () => (
             
             <Route element={<ProtectedRoute allowedRoles={['Administradora', 'Síndico']} />}>
               <Route path="/gestor-dashboard" element={<ManagerDashboard />} />
+              <Route path="/gestor/condominios" element={<ManagerCondominios />} />
+              <Route path="/gestor/configuracoes" element={<ManagerConfiguracoes />} />
+              <Route path="/gestor/plan" element={<ManagerPlan />} />
             </Route>
             
             <Route element={<ProtectedRoute allowedRoles={['Morador']} />}>
