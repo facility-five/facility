@@ -82,7 +82,7 @@ export const NewUserModal = ({
         last_name: user.last_name || "",
         email: user.email || "",
         whatsapp: user.whatsapp ? formatWhatsapp(user.whatsapp) : "",
-        role: user.role || "Usuário",
+        role: user.role || "Morador",
         status: user.status || "Ativo",
         password: "",
       });
@@ -92,7 +92,7 @@ export const NewUserModal = ({
         last_name: "",
         email: "",
         whatsapp: "",
-        role: "Usuário",
+        role: "Morador",
         status: "Ativo",
         password: "",
       });
@@ -199,7 +199,7 @@ export const NewUserModal = ({
             )}
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="role" render={({ field }) => (
-                <FormItem><FormLabel>Tipo de usuário</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Administrador">Administrador</SelectItem><SelectItem value="Gestor">Gestor</SelectItem><SelectItem value="Usuário">Usuário</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormItem><FormLabel>Tipo de usuário</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Administrador">Admin do SaaS</SelectItem><SelectItem value="Administradora">Administradora</SelectItem><SelectItem value="Síndico">Síndico</SelectItem><SelectItem value="Funcionário">Funcionário</SelectItem><SelectItem value="Morador">Morador</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="status" render={({ field }) => (
                 <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Ativo">Ativo</SelectItem><SelectItem value="Inativo">Inativo</SelectItem><SelectItem value="Suspenso">Suspenso</SelectItem></SelectContent></Select><FormMessage /></FormItem>
