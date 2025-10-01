@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PlanCard } from "@/components/PlanCard";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,7 @@ const Plans = () => {
   const [plans, setPlans] = useState<DbPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const { session } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -45,12 +47,13 @@ const Plans = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("success")) {
-      showSuccess("Pagamento processado com sucesso!");
+      showSuccess("Pagamento processado com sucesso! Agora, cadastre sua administradora.");
+      navigate('/registrar-administradora', { replace: true });
     }
     if (params.get("canceled")) {
       showError("Pagamento cancelado.");
     }
-  }, []);
+  }, [navigate]);
 
   const filteredPlans = useMemo(
     () => plans.filter((p) => p.period === billingCycle),

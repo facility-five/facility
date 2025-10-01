@@ -32,6 +32,7 @@ import ResidentDashboard from "./pages/ResidentDashboard";
 import ResidentAccess from "./pages/ResidentAccess";
 import SetupMaster from "./pages/SetupMaster";
 import ResetPassword from "./pages/ResetPassword";
+import RegisterAdministrator from "./pages/RegisterAdministrator";
 
 import ResidentReservations from "./pages/resident/Reservations";
 import ResidentCommunications from "./pages/resident/Communications";
@@ -80,7 +81,8 @@ const App = () => (
               <Route path="/morador/configuracoes" element={<ResidentSettings />} />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['Administrador']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Administradora']} />}>
+              <Route path="/registrar-administradora" element={<RegisterAdministrator />} />
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/minha-conta" element={<MyAccount />} />
               <Route path="/admin/administradoras" element={<Administrators />} />

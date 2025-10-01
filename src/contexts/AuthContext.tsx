@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .then(({ data: userProfile, error }) => {
             if (error) {
               console.error("Error fetching profile on SIGNED_IN:", error);
-            } else if (userProfile) {
+            } else if (userProfile && session.user.email_confirmed_at) { // <-- Adicionada verificação
               setProfile(userProfile);
 
               const currentPath = location.pathname;
@@ -90,12 +90,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
               const isCorrectPath = 
                 (role === 'Administrador' && currentPath.startsWith('/admin')) ||
+                (role === 'Administradora' && currentPath.startsWith('/admin')) ||
                 (role === 'Síndico' && currentPath.startsWith('/gestor')) ||
                 (role === 'Morador' && currentPath.startsWith('/morador'));
 
               if (!isCorrectPath) {
                 switch (role) {
                   case 'Administrador':
+                  case 'Administradora':
                     navigate('/admin');
                     break;
                   case 'Síndico':
