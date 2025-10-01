@@ -68,7 +68,9 @@ const App = () => (
             <Route path="/planos" element={<Plans />} />
             <Route path="/acesso-morador" element={<ResidentAccess />} />
             
-            <Route path="/gestor-dashboard" element={<ProtectedRoute allowedRoles={['Síndico']}><ManagerDashboard /></ProtectedRoute>} />
+            <Route element={<ProtectedRoute allowedRoles={['Administradora', 'Síndico']} />}>
+              <Route path="/gestor-dashboard" element={<ManagerDashboard />} />
+            </Route>
             
             <Route element={<ProtectedRoute allowedRoles={['Morador']} />}>
               <Route path="/morador-dashboard" element={<ResidentDashboard />} />
@@ -81,7 +83,7 @@ const App = () => (
               <Route path="/morador/configuracoes" element={<ResidentSettings />} />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['Administrador', 'Administradora']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['Administrador']} />}>
               <Route path="/registrar-administradora" element={<RegisterAdministrator />} />
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/minha-conta" element={<MyAccount />} />
