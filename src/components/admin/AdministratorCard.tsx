@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 export type Administrator = {
   id: string;
@@ -17,9 +17,10 @@ export type Administrator = {
 interface AdministratorCardProps {
   admin: Administrator;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
-export const AdministratorCard = ({ admin, onDelete }: AdministratorCardProps) => {
+export const AdministratorCard = ({ admin, onDelete, onEdit }: AdministratorCardProps) => {
   const responsibleName = admin.profiles ? `${admin.profiles.first_name || ''} ${admin.profiles.last_name || ''}`.trim() : 'N/A';
 
   return (
@@ -30,9 +31,14 @@ export const AdministratorCard = ({ admin, onDelete }: AdministratorCardProps) =
             <p className="text-xs text-admin-foreground-muted">{admin.code}</p>
             <h3 className="font-bold text-lg">{admin.name}</h3>
           </div>
-          <Button variant="ghost" size="icon" onClick={onDelete} className="text-admin-foreground-muted hover:text-red-500">
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center">
+            <Button variant="ghost" size="icon" onClick={onEdit} className="text-admin-foreground-muted hover:text-blue-500">
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={onDelete} className="text-admin-foreground-muted hover:text-red-500">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <div className="mt-4 space-y-2 text-sm">
           <div className="flex justify-between">

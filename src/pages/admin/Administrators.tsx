@@ -8,6 +8,7 @@ import { DeleteAdministratorModal } from "@/components/admin/DeleteAdministrator
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EditAdministratorModal } from "@/components/admin/EditAdministratorModal";
 
 const Administrators = () => {
   const [admins, setAdmins] = useState<Administrator[]>([]);
@@ -15,6 +16,8 @@ const Administrators = () => {
   const [search, setSearch] = useState("");
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedAdmin, setSelectedAdmin] = useState<Administrator | null>(null);
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
 
   const fetchAdmins = async () => {
@@ -64,6 +67,11 @@ const Administrators = () => {
     setIsDeleteModalOpen(true);
   };
 
+  const openEditModal = (admin: Administrator) => {
+    setSelectedAdmin(admin);
+    setIsEditModalOpen(true);
+  };
+
   const filteredAdmins = admins.filter((admin) =>
     admin.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -101,6 +109,7 @@ const Administrators = () => {
               key={admin.id}
               admin={admin}
               onDelete={() => openDeleteModal(admin.id)}
+              onEdit={() => openEditModal(admin)}
             />
           ))}
         </div>
@@ -110,6 +119,12 @@ const Administrators = () => {
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
         onSuccess={fetchAdmins}
+      />
+      <EditAdministratorModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={fetchAdmins}
+        admin={selectedAdmin}
       />
       <DeleteAdministratorModal
         isOpen={isDeleteModalOpen}
