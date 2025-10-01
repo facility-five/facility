@@ -19,20 +19,22 @@ export const AuthLayout = ({ children, title, description }: AuthLayoutProps) =>
               "url('https://www.transparenttextures.com/patterns/cubes.png')",
           }}
         />
-        <div className="z-10">
-          <Logo theme="dark" />
-        </div>
-        <div className="z-10 max-w-md text-center">
-          <h2 className="text-3xl font-bold tracking-tight">
-            Gerencie seu condomínio com facilidade
-          </h2>
-          <p className="mt-4 text-purple-200">
-            Uma plataforma completa para administradores, gestores e moradores.
-            Tudo em um só lugar.
-          </p>
-        </div>
-        <div className="z-10 text-sm text-purple-300">
-          &copy; {new Date().getFullYear()} Seu App. Todos os direitos reservados.
+        <div className="relative z-10 flex flex-col items-center justify-between h-full w-full">
+          <div>
+            <Logo theme="dark" />
+          </div>
+          <div className="max-w-md text-center">
+            <h2 className="text-3xl font-bold tracking-tight">
+              Gerencie seu condomínio com facilidade
+            </h2>
+            <p className="mt-4 text-purple-200">
+              Uma plataforma completa para administradores, gestores e moradores.
+              Tudo em um só lugar.
+            </p>
+          </div>
+          <div className="text-sm text-purple-300">
+            &copy; {new Date().getFullYear()} Seu App. Todos os direitos reservados.
+          </div>
         </div>
       </div>
       <div className="flex items-center justify-center p-6 py-12 sm:p-12">
