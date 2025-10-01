@@ -62,7 +62,7 @@ export function ForgotPasswordForm() {
                   <Input
                     placeholder="seu@email.com"
                     {...field}
-                    className="pl-10 focus-visible:ring-purple-500"
+                    className="pl-10"
                   />
                 </div>
               </FormControl>

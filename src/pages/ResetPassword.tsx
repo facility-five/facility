@@ -65,7 +65,7 @@ const ResetPassword = () => {
               <FormLabel>Nova senha</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} className="pr-10 focus-visible:ring-purple-500" />
+                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} className="pr-10" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -83,7 +83,7 @@ const ResetPassword = () => {
               <FormLabel>Confirmar nova senha</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" {...field} className="pr-10 focus-visible:ring-purple-500" />
+                  <Input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" {...field} className="pr-10" />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}

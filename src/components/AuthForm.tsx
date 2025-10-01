@@ -77,7 +77,7 @@ export function AuthForm() {
                   <Input
                     placeholder="seu@email.com"
                     {...field}
-                    className="pl-10 focus-visible:ring-purple-500"
+                    className="pl-10"
                   />
                 </div>
               </FormControl>
@@ -98,7 +98,7 @@ export function AuthForm() {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     {...field}
-                    className="pl-10 pr-10 focus-visible:ring-purple-500"
+                    className="pl-10 pr-10"
                   />
                   <button
                     type="button"

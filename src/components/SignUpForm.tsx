@@ -94,7 +94,7 @@ export function SignUpForm() {
                     <Input
                       placeholder="Seu nome"
                       {...field}
-                      className="pl-10 focus-visible:ring-purple-500"
+                      className="pl-10"
                     />
                   </div>
                 </FormControl>
@@ -112,7 +112,7 @@ export function SignUpForm() {
                   <Input
                     placeholder="Seu sobrenome"
                     {...field}
-                    className="focus-visible:ring-purple-500"
+                    className=""
                   />
                 </FormControl>
                 <FormMessage />
@@ -132,7 +132,7 @@ export function SignUpForm() {
                   <Input
                     placeholder="seu@email.com"
                     {...field}
-                    className="pl-10 focus-visible:ring-purple-500"
+                    className="pl-10"
                   />
                 </div>
               </FormControl>
@@ -153,7 +153,7 @@ export function SignUpForm() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Crie uma senha"
                     {...field}
-                    className="pl-10 pr-10 focus-visible:ring-purple-500"
+                    className="pl-10 pr-10"
                   />
                   <button
                     type="button"
@@ -182,7 +182,7 @@ export function SignUpForm() {
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirme sua senha"
                     {...field}
-                    className="pl-10 pr-10 focus-visible:ring-purple-500"
+                    className="pl-10 pr-10"
                   />
                   <button
                     type="button"
