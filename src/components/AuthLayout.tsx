@@ -26,12 +26,10 @@ export const AuthLayout = ({ children, title, description }: AuthLayoutProps) =>
 
   return (
     <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-2">
-      <div className="relative hidden flex-col items-center justify-center bg-gray-900 p-10 text-white lg:flex">
-        <img
-          src="/placeholder.svg"
-          alt="Condomínio"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+      <div
+        className="relative hidden flex-col items-center justify-center bg-gray-900 p-10 text-white lg:flex bg-cover bg-center"
+        style={{ backgroundImage: "url(/placeholder.svg)" }}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-purple-700/80 to-indigo-900/80" />
         <div className="relative z-10 flex flex-col items-center justify-between h-full w-full">
           <div />
