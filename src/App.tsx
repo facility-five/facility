@@ -33,7 +33,13 @@ import ResidentAccess from "./pages/ResidentAccess";
 import SetupMaster from "./pages/SetupMaster";
 import ResetPassword from "./pages/ResetPassword";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
