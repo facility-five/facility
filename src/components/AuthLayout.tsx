@@ -1,5 +1,6 @@
 import { Logo } from "@/components/Logo";
 import React from "react";
+import { DynamicLogo } from "./DynamicLogo";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -37,9 +38,7 @@ export const AuthLayout = ({ children, title, description }: AuthLayoutProps) =>
       </div>
       <div className="flex items-center justify-center p-6 py-12 sm:p-12">
         <div className="mx-auto w-full max-w-md space-y-6">
-          <div className="lg:hidden">
-            <Logo />
-          </div>
+          <DynamicLogo />
           <div className="text-center">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">{title}</h1>
             <p className="mt-2 text-muted-foreground">{description}</p>
