@@ -84,18 +84,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               console.error("Error fetching profile on SIGNED_IN:", error);
             } else if (userProfile) {
               setProfile(userProfile);
-              switch (userProfile.role) {
-                case 'Administrador':
-                  navigate('/admin');
-                  break;
-                case 'Síndico':
-                  navigate('/gestor-dashboard');
-                  break;
-                case 'Morador':
-                  navigate('/morador-dashboard');
-                  break;
-                default:
-                  navigate('/');
+
+              const currentPath = location.pathname;
+              const role = userProfile.role;
+
+              const isCorrectPath = 
+                (role === 'Administrador' && currentPath.startsWith('/admin')) ||
+                (role === 'Síndico' && currentPath.startsWith('/gestor')) ||
+                (role === 'Morador' && currentPath.startsWith('/morador'));
+
+              if (!isCorrectPath) {
+                switch (role) {
+                  case 'Administrador':
+                    navigate('/admin');
+                    break;
+                  case 'Síndico':
+                    navigate('/gestor-dashboard');
+                    break;
+                  case 'Morador':
+                    navigate('/morador-dashboard');
+                    break;
+                  default:
+                    navigate('/');
+                }
               }
             }
           });
