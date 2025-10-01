@@ -1,17 +1,21 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
+import { DynamicLogo } from "./DynamicLogo";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
+  title: string;
+  description: string;
 }
 
-export const AuthLayout = ({ children }: AuthLayoutProps) => {
+export const AuthLayout = ({ children, title, description }: AuthLayoutProps) => {
   const { session, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
+      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600">
+        <LoadingSpinner size="lg" className="text-white" />
       </div>
     );
   }
@@ -53,8 +57,15 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-center p-6 py-12 sm:p-12">
-        <div className="mx-auto w-full max-w-md space-y-6">{children}</div>
+      <div className="flex items-center justify-center bg-white p-6 py-12 sm:p-12">
+        <div className="mx-auto w-full max-w-md space-y-6">
+          <div className="flex flex-col items-center text-center">
+            <DynamicLogo />
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
+            <p className="mt-2 text-sm text-gray-600">{description}</p>
+          </div>
+          {children}
+        </div>
       </div>
     </div>
   );
