@@ -18,10 +18,7 @@ export const AuthLayout = ({ children, title, description }: AuthLayoutProps) =>
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-purple-700/80 to-indigo-900/80" />
-        <div className="relative z-10 flex flex-col items-center justify-between h-full w-full">
-          <div>
-            <Logo theme="dark" />
-          </div>
+        <div className="relative z-10 flex flex-col items-center justify-center h-full w-full">
           <div className="max-w-md text-center">
             <h2 className="text-3xl font-bold tracking-tight">
               Gerencie seu condomínio com facilidade
@@ -31,7 +28,7 @@ export const AuthLayout = ({ children, title, description }: AuthLayoutProps) =>
               Tudo em um só lugar.
             </p>
           </div>
-          <div className="text-sm text-purple-300">
+          <div className="mt-auto text-sm text-purple-300">
             &copy; {new Date().getFullYear()} Seu App. Todos os direitos reservados.
           </div>
         </div>
