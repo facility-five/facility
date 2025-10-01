@@ -11,14 +11,14 @@ export const AuthLayout = ({ children, title, description }: AuthLayoutProps) =>
   return (
     <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
       <div className="relative hidden flex-col items-center justify-between bg-gradient-to-br from-purple-700 to-indigo-900 p-12 text-white lg:flex overflow-hidden">
+        <div className="absolute inset-0 bg-black/20" />
         <div
-          className="absolute inset-0 h-full w-full bg-cover bg-center opacity-[0.07]"
+          className="absolute inset-0 h-full w-full opacity-[0.1]"
           style={{
             backgroundImage:
               "url('https://www.transparenttextures.com/patterns/cubes.png')",
           }}
         />
-        <div className="absolute inset-0 bg-black/20" />
         <div className="z-10">
           <Logo theme="dark" />
         </div>
