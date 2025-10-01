@@ -1,4 +1,4 @@
-import { Logo } from "@/components/Logo";
+import { DynamicSidebarLogo } from "@/components/DynamicSidebarLogo";
 import { NavLink } from "react-router-dom";
 import {
   LayoutGrid,
@@ -44,7 +44,7 @@ export const ResidentSidebar = () => {
     <div className="hidden border-r bg-gray-900 text-white lg:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-16 items-center border-b border-gray-800 px-6">
-          <Logo theme="dark" />
+          <DynamicSidebarLogo />
         </div>
         <div className="flex-1 overflow-auto py-2">
           <nav className="grid items-start px-4 text-sm font-medium">

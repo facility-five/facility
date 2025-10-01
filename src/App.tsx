@@ -33,6 +33,14 @@ import ResidentAccess from "./pages/ResidentAccess";
 import SetupMaster from "./pages/SetupMaster";
 import ResetPassword from "./pages/ResetPassword";
 
+import ResidentReservations from "./pages/resident/Reservations";
+import ResidentCommunications from "./pages/resident/Communications";
+import ResidentRequests from "./pages/resident/Requests";
+import ResidentUnit from "./pages/resident/Unit";
+import ResidentDocuments from "./pages/resident/Documents";
+import ResidentProfile from "./pages/resident/Profile";
+import ResidentSettings from "./pages/resident/Settings";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -60,7 +68,17 @@ const App = () => (
             <Route path="/acesso-morador" element={<ResidentAccess />} />
             
             <Route path="/gestor-dashboard" element={<ProtectedRoute allowedRoles={['Síndico']}><ManagerDashboard /></ProtectedRoute>} />
-            <Route path="/morador-dashboard" element={<ProtectedRoute allowedRoles={['Morador']}><ResidentDashboard /></ProtectedRoute>} />
+            
+            <Route element={<ProtectedRoute allowedRoles={['Morador']} />}>
+              <Route path="/morador-dashboard" element={<ResidentDashboard />} />
+              <Route path="/morador/reservas" element={<ResidentReservations />} />
+              <Route path="/morador/comunicados" element={<ResidentCommunications />} />
+              <Route path="/morador/solicitudes" element={<ResidentRequests />} />
+              <Route path="/morador/unidade" element={<ResidentUnit />} />
+              <Route path="/morador/documentos" element={<ResidentDocuments />} />
+              <Route path="/morador/perfil" element={<ResidentProfile />} />
+              <Route path="/morador/configuracoes" element={<ResidentSettings />} />
+            </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['Administrador']} />}>
               <Route path="/admin" element={<Dashboard />} />
