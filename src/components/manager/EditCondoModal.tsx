@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
+import { Condo } from "@/components/admin/CondoCard"; // Reusing the type from admin
 
 import { Button } from "@/components/ui/button";
 import {
@@ -47,13 +48,15 @@ const formSchema = z.object({
   phone: z.string().optional(),
   observations: z.string().optional(),
   responsible_name: z.string().optional(),
+  status: z.string().min(1, "O status é obrigatório."),
 });
 
-interface NewCondoModalProps {
+interface EditCondoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  initialAdministratorId?: string; // New prop for pre-filling
+  condo: Condo | null;
+  managerAdministratorId: string | null; // Pass the manager's administrator ID
 }
 
 type Administrator = {
@@ -61,30 +64,17 @@ type Administrator = {
   name: string;
 };
 
-export const NewCondoModal = ({
+export const EditCondoModal = ({
   isOpen,
   onClose,
   onSuccess,
-  initialAdministratorId,
-}: NewCondoModalProps) => {
+  condo,
+  managerAdministratorId,
+}: EditCondoModalProps) => {
   const [administrators, setAdministrators] = useState<Administrator[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      administrator_id: initialAdministratorId || "", // Use initialAdministratorId
-      name: "",
-      nif: "",
-      website: "",
-      area: "",
-      condo_type: "",
-      total_blocks: 0,
-      total_units: 0,
-      email: "",
-      phone: "",
-      observations: "",
-      responsible_name: "",
-    },
   });
 
   useEffect(() => {
@@ -94,8 +84,30 @@ export const NewCondoModal = ({
     };
     if (isOpen) {
       fetchAdministrators();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (condo && isOpen) {
       form.reset({
-        administrator_id: initialAdministratorId || "", // Reset with initialAdministratorId
+        administrator_id: condo.administrator_id || managerAdministratorId || "",
+        name: condo.name || "",
+        nif: condo.nif || "",
+        website: condo.website || "",
+        area: condo.area || "",
+        condo_type: condo.condo_type || "",
+        total_blocks: condo.total_blocks || 0,
+        total_units: condo.total_units || 0,
+        email: condo.email || "",
+        phone: condo.phone || "",
+        observations: condo.observations || "",
+        responsible_name: condo.responsible_name || "",
+        status: condo.status || "active",
+      });
+    } else if (isOpen) {
+      // Reset for new condo if no condo prop is passed, or if it's closed
+      form.reset({
+        administrator_id: managerAdministratorId || "", // Pre-fill with manager's admin ID
         name: "",
         nif: "",
         website: "",
@@ -107,27 +119,25 @@ export const NewCondoModal = ({
         phone: "",
         observations: "",
         responsible_name: "",
+        status: "active",
       });
     }
-  }, [isOpen, initialAdministratorId, form]);
-
-  const generateCode = () => `CO-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+  }, [condo, isOpen, form, managerAdministratorId]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { error } = await supabase.from("condos").insert([
-      {
-        ...values,
-        code: generateCode(),
-      },
-    ]);
+    if (!condo) return; // Should only be called for editing existing condos
+
+    const { error } = await supabase
+      .from("condos")
+      .update(values)
+      .eq("id", condo.id);
 
     if (error) {
       showError(error.message);
     } else {
-      showSuccess("Condomínio registrado com sucesso!");
+      showSuccess("Condomínio atualizado com sucesso!");
       onSuccess();
       onClose();
-      form.reset();
     }
   }
 
@@ -135,9 +145,9 @@ export const NewCondoModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl bg-admin-card border-admin-border text-admin-foreground">
         <DialogHeader>
-          <DialogTitle>Registrar Nuevo Condominio</DialogTitle>
+          <DialogTitle>Editar Condomínio</DialogTitle>
           <DialogDescription className="text-admin-foreground-muted">
-            Complete los datos del nuevo condominio.
+            Atualize os dados do condomínio.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -148,7 +158,7 @@ export const NewCondoModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Administradora</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!initialAdministratorId}> {/* Disable if pre-filled */}
+                  <Select onValueChange={field.onChange} value={field.value} disabled={true}> {/* Disable for manager, should be fixed */}
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione la administradora" />
@@ -171,7 +181,7 @@ export const NewCondoModal = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre</FormLabel>
+                  <FormLabel>Nome</FormLabel>
                   <FormControl>
                     <Input placeholder="Escriba el nombre del condominio" {...field} className="bg-admin-background border-admin-border" />
                   </FormControl>
@@ -317,12 +327,33 @@ export const NewCondoModal = ({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-admin-background border-admin-border">
+                        <SelectValue placeholder="Seleccione el estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
+                      <SelectItem value="active">Activo</SelectItem>
+                      <SelectItem value="inactive">Inactivo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose}>
                 Cancelar
               </Button>
               <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
-                Registrar
+                Salvar Alterações
               </Button>
             </DialogFooter>
           </form>
