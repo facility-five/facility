@@ -11,9 +11,13 @@ const Index = () => {
   const { session, profile, loading, profileLoaded } = useAuth();
   const navigate = useNavigate();
 
+  console.log("Index: Render. loading:", loading, "profileLoaded:", profileLoaded, "session:", session, "profile:", profile);
+
   useEffect(() => {
+    console.log("Index: useEffect for redirection triggered. !loading:", !loading, "profileLoaded:", profileLoaded);
     if (!loading && profileLoaded) { // Only act once initial loading is done and profile fetch attempt is complete
       if (session && profile) {
+        console.log("Index: Redirecting based on profile role:", profile.role);
         // User is authenticated and has a profile, redirect based on role
         switch (profile.role) {
           case 'Administrador':
@@ -27,12 +31,13 @@ const Index = () => {
             navigate('/morador-dashboard', { replace: true });
             break;
           default:
-            console.warn("User logged in with unhandled role:", profile.role);
+            console.warn("Index: User logged in with unhandled role:", profile.role);
             // For unhandled roles, maybe redirect to a generic dashboard or force logout
             // For now, let's keep them on the login page or a generic message
             break;
         }
       } else if (session && !profile) {
+        console.log("Index: Authenticated but no profile. Checking system setup...");
         // User is authenticated but has no profile.
         // This typically happens right after signup if the profile creation is asynchronous
         // or if the profile was deleted.
@@ -47,20 +52,24 @@ const Index = () => {
         
         // Let's check if the system is set up.
         const checkSystemSetupAndRedirect = async () => {
-          const { data: isSystemSetup } = await supabase.rpc('is_system_setup');
-          if (!isSystemSetup) {
+          const { data: isSystemSetup, error: rpcError } = await supabase.rpc('is_system_setup');
+          if (rpcError) {
+            console.error("Index: Error checking system setup:", rpcError);
+            // Potentially show an error message or redirect to a generic error page
+            // For now, let's assume the spinner is the issue, and if it's not, this will lead to a blank screen.
+            // If the spinner is still showing, it's not this path.
+          } else if (!isSystemSetup) {
+            console.log("Index: System not set up, redirecting to /setup-master");
             navigate("/setup-master", { replace: true });
           } else {
-            // If system is set up, and user is logged in but has no profile,
-            // they likely need to register their administrator company.
-            // This assumes only 'Administrador' users would be in this state.
-            // If other roles can exist without a profile, this needs more logic.
+            console.log("Index: System set up, but no profile. Redirecting to /registrar-administradora");
             navigate("/registrar-administradora", { replace: true });
           }
         };
         checkSystemSetupAndRedirect();
 
       } else {
+        console.log("Index: Not authenticated, displaying login form.");
         // Not authenticated, do nothing (AuthLayout will show login form)
       }
     }
@@ -68,6 +77,7 @@ const Index = () => {
 
   // Show spinner while initial auth state is being determined
   if (loading || !profileLoaded) { // Show spinner until profile fetch attempt is complete
+    console.log("Index: Displaying spinner.");
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
         <LoadingSpinner size="lg" className="text-white" />
@@ -77,6 +87,7 @@ const Index = () => {
 
   // If not loading and no session, display the login form
   if (!session) {
+    console.log("Index: Displaying AuthLayout (login form).");
     return (
       <AuthLayout
         title="Bem-vindo de volta!"
@@ -100,6 +111,7 @@ const Index = () => {
     );
   }
 
+  console.log("Index: Reached end of render, returning null. (Should have redirected by now if applicable)");
   // If we reach here, it means:
   // 1. loading is false
   // 2. profileLoaded is true

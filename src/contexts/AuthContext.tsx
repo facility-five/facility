@@ -37,15 +37,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log("AuthContext: useEffect triggered, setting loading=true, profileLoaded=false");
     setLoading(true);
     setProfileLoaded(false); // Reset profileLoaded on new auth state change cycle
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        console.log("AuthContext: onAuthStateChange event:", _event, "session:", session);
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          console.log("AuthContext: Session user found, fetching profile...");
           const { data: userProfile, error } = await supabase
             .from('profiles')
             .select('*')
@@ -53,20 +56,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .single();
           
           if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-            console.error("Error fetching user profile:", error);
+            console.error("AuthContext: Error fetching user profile:", error);
             setProfile(null); // Ensure profile is null on error
           } else {
+            console.log("AuthContext: Profile fetched:", userProfile);
             setProfile(userProfile ?? null);
           }
         } else {
+          console.log("AuthContext: No session user, setting profile=null");
           setProfile(null);
         }
+        console.log("AuthContext: onAuthStateChange completed. Setting loading=false, profileLoaded=true");
         setLoading(false);
         setProfileLoaded(true); // Profile fetch attempt is complete
       }
     );
 
     return () => {
+      console.log("AuthContext: Unsubscribing from auth state changes.");
       subscription.unsubscribe();
     };
   }, []);
