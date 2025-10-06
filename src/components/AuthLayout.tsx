@@ -1,6 +1,4 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
-import { DynamicLogo } from "./DynamicLogo";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 interface AuthLayoutProps {
@@ -10,7 +8,7 @@ interface AuthLayoutProps {
 }
 
 export const AuthLayout = ({ children, title, description }: AuthLayoutProps) => {
-  const { session, loading } = useAuth();
+  const { loading } = useAuth(); // Removed session from here
 
   if (loading) {
     return (
@@ -20,9 +18,8 @@ export const AuthLayout = ({ children, title, description }: AuthLayoutProps) =>
     );
   }
 
-  if (session) {
-    return <Navigate to="/admin" replace />;
-  }
+  // AuthLayout should only render its children (auth forms) if not loading and no session is handled by parent.
+  // The parent (Index.tsx) will handle redirection if a session exists.
 
   return (
     <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-2">
