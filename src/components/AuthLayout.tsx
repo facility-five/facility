@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { DynamicLogo } from "@/components/DynamicLogo"; // Adicionado esta linha
 
 interface AuthLayoutProps {
   children: React.ReactNode;
