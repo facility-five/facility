@@ -9,9 +9,10 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
-  const { profile, loading, session } = useAuth();
+  const { profile, loading, session, profileLoaded } = useAuth();
 
-  if (loading) {
+  // Show spinner if authentication state is still loading OR if profile hasn't finished loading yet
+  if (loading || !profileLoaded) {
     return (
       <div className="flex h-screen items-center justify-center bg-black">
         <LoadingSpinner size="lg" className="border-primary shadow-lg shadow-primary/50" />
@@ -19,17 +20,24 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
     );
   }
 
+  // If not authenticated, redirect to login
   if (!session) {
     return <Navigate to="/" replace />;
   }
 
-  if (!profile || !allowedRoles.includes(profile.role)) {
-    // Se o usuário está logado mas não tem a permissão,
-    // redireciona para a página inicial, que por sua vez
-    // o enviará para o dashboard correto.
+  // If authenticated but no profile (and profileLoaded is true),
+  // it means the profile is missing. Redirect to home, which will then
+  // handle the "authenticated but no profile" case (e.g., to /registrar-administradora).
+  if (!profile) {
     return <Navigate to="/" replace />;
   }
 
+  // If profile exists but role is not allowed, redirect to home.
+  if (!allowedRoles.includes(profile.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  // All checks passed, render the protected content
   return children ? <>{children}</> : <Outlet />;
 };
 
