@@ -14,6 +14,7 @@ import {
   Settings,
   User,
   LogOut,
+  Palette, // Import the new icon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -39,6 +40,7 @@ const navItems = [
   { href: "/admin/planes", icon: FileText, label: "Planes" },
   { href: "/admin/pagos", icon: DollarSign, label: "Pagos" },
   { href: "/admin/configuracoes", icon: Settings, label: "Configurações" },
+  { href: "/design-system", icon: Palette, label: "Design System" }, // New item for Design System
 ];
 
 export const Sidebar = () => {

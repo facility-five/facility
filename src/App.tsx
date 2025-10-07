@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext"; // Alterado de "./contexts/AuthContext" para "@/contexts/AuthContext"
+import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import InactiveOverlay from "./components/InactiveOverlay";
 import SystemTitle from "./components/SystemTitle";
@@ -33,6 +33,7 @@ import ResidentAccess from "./pages/ResidentAccess";
 import SetupMaster from "./pages/SetupMaster";
 import ResetPassword from "./pages/ResetPassword";
 import RegisterAdministrator from "./pages/RegisterAdministrator";
+import DesignSystem from "./pages/DesignSystem"; // Import the new DesignSystem page
 
 import ResidentReservations from "./pages/resident/Reservations";
 import ResidentCommunications from "./pages/resident/Communications";
@@ -105,6 +106,7 @@ const App = () => (
               <Route path="/admin/pagos" element={<Payments />} />
               <Route path="/admin/configuracoes" element={<Settings />} />
               <Route path="/admin/notificacoes" element={<Notifications />} />
+              <Route path="/design-system" element={<DesignSystem />} /> {/* New Design System route */}
             </Route>
             
             <Route path="*" element={<NotFound />} />
