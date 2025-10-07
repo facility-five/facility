@@ -4,8 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import InactiveOverlay from "./components/InactiveOverlay";
+// import ProtectedRoute from "./components/ProtectedRoute"; // Removido
+// import InactiveOverlay from "./components/InactiveOverlay"; // Removido
 import SystemTitle from "./components/SystemTitle";
 
 import Index from "./pages/Index";
@@ -33,7 +33,7 @@ import ResidentAccess from "./pages/ResidentAccess";
 import SetupMaster from "./pages/SetupMaster";
 import ResetPassword from "./pages/ResetPassword";
 import RegisterAdministrator from "./pages/RegisterAdministrator";
-import DesignSystem from "./pages/DesignSystem"; // Import the new DesignSystem page
+import DesignSystem from "./pages/DesignSystem";
 
 import ResidentReservations from "./pages/resident/Reservations";
 import ResidentCommunications from "./pages/resident/Communications";
@@ -72,46 +72,43 @@ const App = () => (
             <Route path="/nova-senha" element={<ResetPassword />} />
             <Route path="/planos" element={<Plans />} />
             <Route path="/acesso-morador" element={<ResidentAccess />} />
-            <Route path="/design-system" element={<DesignSystem />} /> {/* Moved to be public */}
+            <Route path="/design-system" element={<DesignSystem />} />
             
-            <Route element={<ProtectedRoute allowedRoles={['Administradora', 'Síndico']} />}>
-              <Route path="/gestor-dashboard" element={<ManagerDashboard />} />
-              <Route path="/gestor/condominios" element={<ManagerCondominios />} />
-              <Route path="/gestor/configuracoes" element={<ManagerConfiguracoes />} />
-              <Route path="/gestor/plan" element={<ManagerPlan />} />
-            </Route>
+            {/* Rotas do Gestor (anteriormente protegidas) */}
+            <Route path="/gestor-dashboard" element={<ManagerDashboard />} />
+            <Route path="/gestor/condominios" element={<ManagerCondominios />} />
+            <Route path="/gestor/configuracoes" element={<ManagerConfiguracoes />} />
+            <Route path="/gestor/plan" element={<ManagerPlan />} />
             
-            <Route element={<ProtectedRoute allowedRoles={['Morador']} />}>
-              <Route path="/morador-dashboard" element={<ResidentDashboard />} />
-              <Route path="/morador/reservas" element={<ResidentReservations />} />
-              <Route path="/morador/comunicados" element={<ResidentCommunications />} />
-              <Route path="/morador/solicitudes" element={<ResidentRequests />} />
-              <Route path="/morador/unidade" element={<ResidentUnit />} />
-              <Route path="/morador/documentos" element={<ResidentDocuments />} />
-              <Route path="/morador/perfil" element={<ResidentProfile />} />
-              <Route path="/morador/configuracoes" element={<ResidentSettings />} />
-            </Route>
+            {/* Rotas do Morador (anteriormente protegidas) */}
+            <Route path="/morador-dashboard" element={<ResidentDashboard />} />
+            <Route path="/morador/reservas" element={<ResidentReservations />} />
+            <Route path="/morador/comunicados" element={<ResidentCommunications />} />
+            <Route path="/morador/solicitudes" element={<ResidentRequests />} />
+            <Route path="/morador/unidade" element={<ResidentUnit />} />
+            <Route path="/morador/documentos" element={<ResidentDocuments />} />
+            <Route path="/morador/perfil" element={<ResidentProfile />} />
+            <Route path="/morador/configuracoes" element={<ResidentSettings />} />
 
-            <Route element={<ProtectedRoute allowedRoles={['Administrador']} />}>
-              <Route path="/registrar-administradora" element={<RegisterAdministrator />} />
-              <Route path="/admin" element={<Dashboard />} />
-              <Route path="/admin/minha-conta" element={<MyAccount />} />
-              <Route path="/admin/administradoras" element={<Administrators />} />
-              <Route path="/admin/condominios" element={<Condominios />} />
-              <Route path="/admin/bloques" element={<Blocks />} />
-              <Route path="/admin/unidades" element={<Units />} />
-              <Route path="/admin/areas-comunes" element={<CommonAreas />} />
-              <Route path="/admin/comunicados" element={<Communications />} />
-              <Route path="/admin/usuarios" element={<Users />} />
-              <Route path="/admin/planes" element={<AdminPlans />} />
-              <Route path="/admin/pagos" element={<Payments />} />
-              <Route path="/admin/configuracoes" element={<Settings />} />
-              <Route path="/admin/notificacoes" element={<Notifications />} />
-            </Route>
+            {/* Rotas do Administrador (anteriormente protegidas) */}
+            <Route path="/registrar-administradora" element={<RegisterAdministrator />} />
+            <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/minha-conta" element={<MyAccount />} />
+            <Route path="/admin/administradoras" element={<Administrators />} />
+            <Route path="/admin/condominios" element={<Condominios />} />
+            <Route path="/admin/bloques" element={<Blocks />} />
+            <Route path="/admin/unidades" element={<Units />} />
+            <Route path="/admin/areas-comunes" element={<CommonAreas />} />
+            <Route path="/admin/comunicados" element={<Communications />} />
+            <Route path="/admin/usuarios" element={<Users />} />
+            <Route path="/admin/planes" element={<AdminPlans />} />
+            <Route path="/admin/pagos" element={<Payments />} />
+            <Route path="/admin/configuracoes" element={<Settings />} />
+            <Route path="/admin/notificacoes" element={<Notifications />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <InactiveOverlay />
+          {/* <InactiveOverlay /> Removido */}
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
