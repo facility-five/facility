@@ -72,6 +72,7 @@ const App = () => (
             <Route path="/nova-senha" element={<ResetPassword />} />
             <Route path="/planos" element={<Plans />} />
             <Route path="/acesso-morador" element={<ResidentAccess />} />
+            <Route path="/design-system" element={<DesignSystem />} /> {/* Moved to be public */}
             
             <Route element={<ProtectedRoute allowedRoles={['Administradora', 'Síndico']} />}>
               <Route path="/gestor-dashboard" element={<ManagerDashboard />} />
@@ -106,7 +107,6 @@ const App = () => (
               <Route path="/admin/pagos" element={<Payments />} />
               <Route path="/admin/configuracoes" element={<Settings />} />
               <Route path="/admin/notificacoes" element={<Notifications />} />
-              <Route path="/design-system" element={<DesignSystem />} /> {/* New Design System route */}
             </Route>
             
             <Route path="*" element={<NotFound />} />
