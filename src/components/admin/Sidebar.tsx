@@ -85,6 +85,9 @@ export const Sidebar = () => {
                 <p className="text-sm font-medium leading-none text-purple-400">
                   {profile?.first_name} {profile?.last_name}
                 </p>
+                <p className="text-xs leading-none text-admin-foreground-muted">
+                  {profile?.email}
+                </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-admin-border" />
