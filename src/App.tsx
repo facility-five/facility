@@ -60,10 +60,10 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthProvider>
             <SystemTitle />
-            <Routes future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/setup-master" element={<SetupMaster />} />
               <Route path="/criar-conta" element={<SignUp />} />
