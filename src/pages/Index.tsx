@@ -10,33 +10,56 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Only act once initial loading is done and profile fetch attempt is complete
+    // Só age quando o carregamento inicial e a tentativa de buscar o perfil estiverem completos
     if (!loading && profileLoaded) {
-      // If a session exists but no profile is found (e.g., new user after signup, before admin registration)
-      if (session && !profile) {
-        const checkSystemSetupAndRedirect = async () => {
-          const { data: systemSettings, error: settingsError } = await supabase
-            .from('system_settings')
-            .select('id', { count: 'exact', head: true });
-
-          if (settingsError && settingsError.code !== 'PGRST116') {
-            console.error("Index: Error checking system settings:", settingsError);
-          } else if ((systemSettings?.count || 0) === 0) {
-            // If no system settings exist, it's the very first user, go to master setup
-            navigate("/setup-master", { replace: true });
-          } else {
-            // System is set up, but user has no profile (needs to register administrator)
-            navigate("/registrar-administradora", { replace: true });
+      if (session) {
+        if (profile) {
+          // Usuário está logado e tem um perfil, redireciona com base na função
+          switch (profile.role) {
+            case 'Administrador':
+              navigate('/admin', { replace: true });
+              break;
+            case 'Administradora':
+            case 'Síndico':
+              navigate('/gestor-dashboard', { replace: true });
+              break;
+            case 'Morador':
+              navigate('/morador-dashboard', { replace: true });
+              break;
+            default:
+              // Fallback para funções desconhecidas ou se profile.role não estiver definido
+              navigate('/', { replace: true });
+              break;
           }
-        };
-        checkSystemSetupAndRedirect();
+        } else {
+          // Usuário está logado, mas não tem perfil (ex: novo usuário após o cadastro, antes do registro do administrador)
+          const checkSystemSetupAndRedirect = async () => {
+            const { data: systemSettings, error: settingsError } = await supabase
+              .from('system_settings')
+              .select('id', { count: 'exact', head: true });
+
+            if (settingsError && settingsError.code !== 'PGRST116') {
+              console.error("Index: Erro ao verificar configurações do sistema:", settingsError);
+              // Potencialmente redirecionar para uma página de erro genérica ou login
+              navigate("/", { replace: true });
+            } else if ((systemSettings?.count || 0) === 0) {
+              // Se não houver configurações do sistema, é o primeiro usuário, vai para a configuração mestre
+              navigate("/setup-master", { replace: true });
+            } else {
+              // O sistema está configurado, mas o usuário não tem perfil (precisa registrar a administradora)
+              navigate("/registrar-administradora", { replace: true });
+            }
+          };
+          checkSystemSetupAndRedirect();
+        }
+      } else {
+        // Nenhuma sessão, renderiza LandingPageContent (que é o padrão para '/')
+        // Nenhuma navegação explícita é necessária aqui, pois já está em '/'
       }
-      // If no session, it will render LandingPageContent, which now has a correct link to /login.
-      // If session and profile exist, the LandingPageContent will show the user menu and "Go to App" button.
     }
   }, [loading, profileLoaded, session, profile, navigate]);
 
-  // Show spinner while initial auth state is being determined
+  // Mostra o spinner enquanto o estado inicial de autenticação está sendo determinado
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
@@ -45,8 +68,8 @@ const Index = () => {
     );
   }
 
-  // If not loading, render the LandingPageContent.
-  // The LandingPageContent itself will adapt based on whether a session exists.
+  // Se não estiver carregando e não houver sessão, ou se a sessão existir, mas a lógica de redirecionamento ainda não foi acionada,
+  // renderiza o LandingPageContent. O useEffect acima lidará com o redirecionamento, se aplicável.
   return <LandingPageContent />;
 };
 
