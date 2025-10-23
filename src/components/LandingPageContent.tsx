@@ -1,16 +1,26 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Github, MessageSquare, Zap, Code, Repeat, Users, DollarSign, Star, Home, CalendarCheck, Wrench, Megaphone, BarChart3, ShieldCheck } from "lucide-react";
+import { Check, Github, MessageSquare, Zap, Code, Repeat, Users, DollarSign, Star, Home, CalendarCheck, Wrench, Megaphone, BarChart3, ShieldCheck, LogOut, User as UserIcon } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { DynamicLogo } from "./DynamicLogo";
 import { supabase } from "@/integrations/supabase/client";
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast";
 import { PlanCard } from "./PlanCard";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import Avatar components
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // Import DropdownMenu components
 
 type DbPlan = {
   id: string;
@@ -24,6 +34,8 @@ type DbPlan = {
 };
 
 const LandingPageContent = () => {
+  const { session, profile, signOut } = useAuth(); // Get session, profile, and signOut from AuthContext
+  const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [plans, setPlans] = useState<DbPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
@@ -57,6 +69,56 @@ const LandingPageContent = () => {
     plansSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const first = firstName?.[0] || "";
+    const last = lastName?.[0] || "";
+    return `${first}${last}`.toUpperCase();
+  };
+
+  const handleGoToApp = () => {
+    if (!profile) return;
+    switch (profile.role) {
+      case 'Administrador':
+        navigate('/admin');
+        break;
+      case 'Administradora':
+      case 'Síndico':
+        navigate('/gestor-dashboard');
+        break;
+      case 'Morador':
+        navigate('/morador-dashboard');
+        break;
+      default:
+        navigate('/'); // Fallback
+        break;
+    }
+  };
+
+  const handleGoToProfile = () => {
+    if (!profile) return;
+    switch (profile.role) {
+      case 'Administrador':
+        navigate('/admin/minha-conta');
+        break;
+      case 'Administradora':
+      case 'Síndico':
+        navigate('/gestor/configuracoes'); // Assuming this is the manager's profile/settings page
+        break;
+      case 'Morador':
+        navigate('/morador/perfil');
+        break;
+      default:
+        navigate('/'); // Fallback
+        break;
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    showSuccess("Você saiu com sucesso!");
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-landing-background text-landing-text">
       {/* Navbar */}
@@ -74,10 +136,57 @@ const LandingPageContent = () => {
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <Link to="/" className="text-sm font-medium text-landing-text-muted hover:text-landing-text">Entrar</Link>
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={scrollToPlans}> {/* Alterado para onClick */}
-            Começar
-          </Button>
+          {session && profile ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer hover:bg-landing-border p-2 rounded-lg transition-colors -m-2">
+                  <Avatar>
+                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.first_name} />
+                    <AvatarFallback>
+                      {getInitials(profile.first_name, profile.last_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-left">
+                    <p className="font-semibold text-sm text-landing-text">{profile.first_name} {profile.last_name}</p>
+                    <p className="text-xs text-landing-text-muted">{profile.email}</p>
+                  </div>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-landing-card border-landing-border text-landing-text" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-xs leading-none text-landing-text-muted">
+                      Entrou como
+                    </p>
+                    <p className="text-sm font-medium leading-none text-purple-400">
+                      {profile.first_name} {profile.last_name}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-landing-border" />
+                <DropdownMenuItem className="focus:bg-landing-border focus:text-landing-text" onClick={handleGoToApp}>
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Voltar para a aplicação</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="focus:bg-landing-border focus:text-landing-text" onClick={handleGoToProfile}>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span>Acessar página de perfil</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-landing-border" />
+                <DropdownMenuItem className="focus:bg-landing-border focus:text-landing-text" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link to="/" className="text-sm font-medium text-landing-text-muted hover:text-landing-text">Entrar</Link>
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={scrollToPlans}>
+                Começar
+              </Button>
+            </>
+          )}
           <ThemeToggle />
         </div>
       </nav>
