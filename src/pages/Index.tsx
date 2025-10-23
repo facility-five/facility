@@ -31,9 +31,8 @@ const Index = () => {
         };
         checkSystemSetupAndRedirect();
       }
-      // If session and profile exist, do NOT redirect automatically.
-      // The LandingPageContent component will handle displaying user info and a "Go to App" button.
-      // If no session, it will also render LandingPageContent.
+      // If no session, it will render LandingPageContent, which now has a correct link to /login.
+      // If session and profile exist, the LandingPageContent will show the user menu and "Go to App" button.
     }
   }, [loading, profileLoaded, session, profile, navigate]);
 
