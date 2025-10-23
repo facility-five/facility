@@ -75,8 +75,8 @@ const LandingPageContent = () => {
         </div>
         <div className="flex items-center space-x-4">
           <Link to="/" className="text-sm font-medium text-landing-text-muted hover:text-landing-text">Entrar</Link>
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white" asChild>
-            <Link to="/criar-conta">Começar</Link>
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={scrollToPlans}> {/* Alterado para onClick */}
+            Começar
           </Button>
           <ThemeToggle />
         </div>
