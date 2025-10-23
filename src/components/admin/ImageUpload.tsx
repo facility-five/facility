@@ -54,9 +54,9 @@ export const ImageUpload = ({ name, label, currentImageUrl }: ImageUploadProps) 
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20 rounded-md">
-              <AvatarImage src={preview || undefined} className="object-contain" />
-              <AvatarFallback className="rounded-md bg-admin-background">
+            <Avatar className="h-20 w-20 rounded-full"> {/* Alterado para rounded-full */}
+              <AvatarImage src={preview || undefined} className="object-cover rounded-full" /> {/* Adicionado rounded-full e object-cover */}
+              <AvatarFallback className="rounded-full bg-admin-background"> {/* Alterado para rounded-full */}
                 <ImageIcon className="h-8 w-8 text-admin-foreground-muted" />
               </AvatarFallback>
             </Avatar>
