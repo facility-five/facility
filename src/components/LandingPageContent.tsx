@@ -285,7 +285,7 @@ const LandingPageContent = () => {
           ))}
         </div>
         <Button className="mt-12 bg-purple-600 hover:bg-purple-700 text-white">
-          Ver todas as integrações
+          Saiba Mais
         </Button>
       </section>
 
