@@ -12,6 +12,7 @@ export interface Profile {
   role: 'Administrador' | 'Administradora' | 'Síndico' | 'Funcionário' | 'Morador';
   status: 'Ativo' | 'Inativo';
   whatsapp: string;
+  email: string; // Adicionado o campo email aqui
 }
 
 interface AuthContextType {
@@ -58,7 +59,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.error("AuthContext: Error fetching user profile:", error);
             setProfile(null);
           } else {
-            setProfile(userProfile ?? null);
+            // Combine profile data with user's email
+            setProfile({
+              ...(userProfile as Omit<Profile, 'email'>), // Cast to omit email, then add it
+              email: currentSession.user.email || '', // Ensure email is always a string
+            });
           }
         }
       } else {
