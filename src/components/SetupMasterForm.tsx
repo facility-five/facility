@@ -67,6 +67,7 @@ export function SetupMasterForm() {
         data: {
           first_name: values.firstName,
           last_name: values.lastName,
+          // The handle_new_user trigger will set the role and status for the first user
         },
       },
     });
@@ -81,6 +82,8 @@ export function SetupMasterForm() {
       return;
     }
 
+    // The handle_new_user trigger should have already confirmed the email for the first user
+    // and set the role. We can directly sign in.
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
