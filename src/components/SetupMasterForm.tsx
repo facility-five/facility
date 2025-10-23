@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast"; // Import showSuccess
 
 import { Button } from "@/components/ui/button";
 import {
@@ -60,6 +60,54 @@ export function SetupMasterForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    // 1. Verificar se já existe um usuário logado
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+    // 2. Verificar se a tabela system_settings está vazia
+    const { data: systemSettingsCheck, error: settingsCheckError } = await supabase
+      .from('system_settings')
+      .select('id', { count: 'exact', head: true });
+
+    if (settingsCheckError && settingsCheckError.code !== 'PGRST116') {
+      console.error("SetupMasterForm: Erro ao verificar configurações do sistema:", settingsCheckError);
+      showError("Erro ao verificar configurações do sistema.");
+      return;
+    }
+
+    const isSystemSettingsEmpty = (systemSettingsCheck?.count || 0) === 0;
+
+    if (currentUser && isSystemSettingsEmpty) {
+      // Cenário: Usuário já logado (provavelmente o admin criado anteriormente), mas system_settings está vazia.
+      // Apenas inicializa system_settings e redireciona.
+      const { error: insertError } = await supabase
+        .from("system_settings")
+        .insert([{ 
+          id: 1, 
+          system_name: "Facility Fincas", 
+          default_language: "pt-br", 
+          timezone: "utc-3", 
+          date_format: "DD/MM/YYYY", 
+          currency: "EUR", 
+          maintenance_mode: false, 
+          allow_registrations: true 
+        }]);
+      if (insertError) {
+        console.error("SetupMasterForm: Erro ao inicializar configurações do sistema para usuário existente:", insertError);
+        showError("Erro ao inicializar configurações do sistema.");
+      } else {
+        showSuccess("Configuração inicial concluída! Redirecionando para o painel.");
+        navigate('/admin', { replace: true });
+      }
+      return;
+    } else if (currentUser && !isSystemSettingsEmpty) {
+      // Cenário: Usuário já logado e system_settings já populada.
+      // Este formulário não deveria ser acessível. Redireciona para o painel.
+      navigate('/admin', { replace: true });
+      return;
+    }
+
+    // Cenário: Nenhum usuário logado ou system_settings já populada (o que significa que o setup já foi feito).
+    // Procede com o signUp normal.
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
@@ -67,7 +115,7 @@ export function SetupMasterForm() {
         data: {
           first_name: values.firstName,
           last_name: values.lastName,
-          // The handle_new_user trigger will set the role and status for the first user
+          // O trigger handle_new_user definirá o papel como 'Administrador' para o primeiro usuário.
         },
       },
     });
@@ -83,15 +131,8 @@ export function SetupMasterForm() {
     }
 
     // Após a criação do usuário, garantir que a tabela system_settings tenha uma entrada inicial
-    const { data: systemSettingsCheck, error: settingsCheckError } = await supabase
-      .from('system_settings')
-      .select('id', { count: 'exact', head: true });
-
-    if (settingsCheckError && settingsCheckError.code !== 'PGRST116') {
-      console.error("SetupMasterForm: Erro ao verificar configurações do sistema:", settingsCheckError);
-      showError("Erro ao verificar configurações do sistema.");
-    } else if ((systemSettingsCheck?.count || 0) === 0) {
-      // Se não houver configurações do sistema, inserir uma linha padrão
+    // Esta parte só será executada se o signUp foi bem-sucedido e a tabela ainda estava vazia.
+    if (isSystemSettingsEmpty) {
       const { error: insertError } = await supabase
         .from("system_settings")
         .insert([{ 
@@ -120,7 +161,8 @@ export function SetupMasterForm() {
     if (signInError) {
       showError(signInError.message);
     } else {
-      navigate('/admin');
+      showSuccess("Conta de administrador criada e sistema configurado! Redirecionando para o painel.");
+      navigate('/admin', { replace: true });
     }
   }
 
