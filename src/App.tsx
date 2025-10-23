@@ -4,9 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-// import ProtectedRoute from "./components/ProtectedRoute"; // Removido
-// import InactiveOverlay from "./components/InactiveOverlay"; // Removido
 import SystemTitle from "./components/SystemTitle";
+import { ThemeProvider } from "@/components/theme-provider"; // Importar ThemeProvider
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -57,61 +56,62 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <SystemTitle />
-          <Routes future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Route path="/" element={<Index />} />
-            <Route path="/setup-master" element={<SetupMaster />} />
-            <Route path="/criar-conta" element={<SignUp />} />
-            <Route path="/recuperar-senha" element={<ForgotPassword />} />
-            <Route path="/verificar-email" element={<VerifyEmail />} />
-            <Route path="/nova-senha" element={<ResetPassword />} />
-            <Route path="/planos" element={<Plans />} />
-            <Route path="/acesso-morador" element={<ResidentAccess />} />
-            <Route path="/design-system" element={<DesignSystem />} />
-            
-            {/* Rotas do Gestor (anteriormente protegidas) */}
-            <Route path="/gestor-dashboard" element={<ManagerDashboard />} />
-            <Route path="/gestor/condominios" element={<ManagerCondominios />} />
-            <Route path="/gestor/configuracoes" element={<ManagerConfiguracoes />} />
-            <Route path="/gestor/plan" element={<ManagerPlan />} />
-            
-            {/* Rotas do Morador (anteriormente protegidas) */}
-            <Route path="/morador-dashboard" element={<ResidentDashboard />} />
-            <Route path="/morador/reservas" element={<ResidentReservations />} />
-            <Route path="/morador/comunicados" element={<ResidentCommunications />} />
-            <Route path="/morador/solicitudes" element={<ResidentRequests />} />
-            <Route path="/morador/unidade" element={<ResidentUnit />} />
-            <Route path="/morador/documentos" element={<ResidentDocuments />} />
-            <Route path="/morador/perfil" element={<ResidentProfile />} />
-            <Route path="/morador/configuracoes" element={<ResidentSettings />} />
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme"> {/* Adicionado ThemeProvider */}
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <SystemTitle />
+            <Routes future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <Route path="/" element={<Index />} />
+              <Route path="/setup-master" element={<SetupMaster />} />
+              <Route path="/criar-conta" element={<SignUp />} />
+              <Route path="/recuperar-senha" element={<ForgotPassword />} />
+              <Route path="/verificar-email" element={<VerifyEmail />} />
+              <Route path="/nova-senha" element={<ResetPassword />} />
+              <Route path="/planos" element={<Plans />} />
+              <Route path="/acesso-morador" element={<ResidentAccess />} />
+              <Route path="/design-system" element={<DesignSystem />} />
+              
+              {/* Rotas do Gestor (anteriormente protegidas) */}
+              <Route path="/gestor-dashboard" element={<ManagerDashboard />} />
+              <Route path="/gestor/condominios" element={<ManagerCondominios />} />
+              <Route path="/gestor/configuracoes" element={<ManagerConfiguracoes />} />
+              <Route path="/gestor/plan" element={<ManagerPlan />} />
+              
+              {/* Rotas do Morador (anteriormente protegidas) */}
+              <Route path="/morador-dashboard" element={<ResidentDashboard />} />
+              <Route path="/morador/reservas" element={<ResidentReservations />} />
+              <Route path="/morador/comunicados" element={<ResidentCommunications />} />
+              <Route path="/morador/solicitudes" element={<ResidentRequests />} />
+              <Route path="/morador/unidade" element={<ResidentUnit />} />
+              <Route path="/morador/documentos" element={<ResidentDocuments />} />
+              <Route path="/morador/perfil" element={<ResidentProfile />} />
+              <Route path="/morador/configuracoes" element={<ResidentSettings />} />
 
-            {/* Rotas do Administrador (anteriormente protegidas) */}
-            <Route path="/registrar-administradora" element={<RegisterAdministrator />} />
-            <Route path="/admin" element={<Dashboard />} />
-            <Route path="/admin/minha-conta" element={<MyAccount />} />
-            <Route path="/admin/administradoras" element={<Administrators />} />
-            <Route path="/admin/condominios" element={<Condominios />} />
-            <Route path="/admin/bloques" element={<Blocks />} />
-            <Route path="/admin/unidades" element={<Units />} />
-            <Route path="/admin/areas-comunes" element={<CommonAreas />} />
-            <Route path="/admin/comunicados" element={<Communications />} />
-            <Route path="/admin/usuarios" element={<Users />} />
-            <Route path="/admin/planes" element={<AdminPlans />} />
-            <Route path="/admin/pagos" element={<Payments />} />
-            <Route path="/admin/configuracoes" element={<Settings />} />
-            <Route path="/admin/notificacoes" element={<Notifications />} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          {/* <InactiveOverlay /> Removido */}
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+              {/* Rotas do Administrador (anteriormente protegidas) */}
+              <Route path="/registrar-administradora" element={<RegisterAdministrator />} />
+              <Route path="/admin" element={<Dashboard />} />
+              <Route path="/admin/minha-conta" element={<MyAccount />} />
+              <Route path="/admin/administradoras" element={<Administrators />} />
+              <Route path="/admin/condominios" element={<Condominios />} />
+              <Route path="/admin/bloques" element={<Blocks />} />
+              <Route path="/admin/unidades" element={<Units />} />
+              <Route path="/admin/areas-comunes" element={<CommonAreas />} />
+              <Route path="/admin/comunicados" element={<Communications />} />
+              <Route path="/admin/usuarios" element={<Users />} />
+              <Route path="/admin/planes" element={<AdminPlans />} />
+              <Route path="/admin/pagos" element={<Payments />} />
+              <Route path="/admin/configuracoes" element={<Settings />} />
+              <Route path="/admin/notificacoes" element={<Notifications />} />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider> {/* Fechamento do ThemeProvider */}
   </QueryClientProvider>
 );
 

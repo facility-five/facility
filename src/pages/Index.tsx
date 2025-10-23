@@ -5,7 +5,8 @@ import { AuthForm } from "@/components/AuthForm";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { AuthLayout } from "@/components/AuthLayout";
-import { supabase } from "@/integrations/supabase/client"; // Importar supabase aqui
+import { supabase } from "@/integrations/supabase/client";
+import LandingPageContent from "@/components/LandingPageContent"; // Importar LandingPageContent
 
 const Index = () => {
   const { session, profile, loading, profileLoaded } = useAuth();
@@ -78,39 +79,13 @@ const Index = () => {
     );
   }
 
-  // If not loading and no session, display the login form
+  // If not loading and no session, display the landing page
   if (!session) {
-    console.log("Index: Displaying AuthLayout (login form).");
-    return (
-      <AuthLayout
-        title="Bem-vindo de volta!"
-        description="Faça login para acessar sua conta."
-      >
-        <AuthForm />
-        <div className="relative mt-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-muted-foreground">
-              Não tem uma conta?
-            </span>
-          </div>
-        </div>
-        <Button variant="outline" className="w-full mt-6" onClick={() => navigate("/criar-conta")}>
-          Crie uma agora
-        </Button>
-      </AuthLayout>
-    );
+    console.log("Index: Displaying LandingPageContent.");
+    return <LandingPageContent />;
   }
 
   console.log("Index: Reached end of render, returning null. (Should have redirected by now if applicable)");
-  // If we reach here, it means:
-  // 1. loading is false
-  // 2. profileLoaded is true
-  // 3. session exists
-  // 4. profile is null (this case is handled by the useEffect above, redirecting to /registrar-administradora or /setup-master)
-  // This return null should ideally not be reached if the redirects in useEffect work as expected.
   return null;
 };
 

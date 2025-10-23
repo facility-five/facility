@@ -73,6 +73,18 @@ export default {
           foreground: '#F9FAFB',
           'foreground-muted': '#9CA3AF',
         },
+        // Novas cores para a landing page, baseadas no tema escuro do print
+        landing: {
+          background: '#111827', // Dark background from admin theme
+          card: '#1F2937', // Dark card from admin theme
+          text: '#F9FAFB', // Light text from admin theme
+          'text-muted': '#9CA3AF', // Muted text from admin theme
+          border: '#374151', // Border from admin theme
+          purple: '#8b5cf6', // Existing purple
+          'purple-dark': '#6d28d9', // Darker purple for hover/active
+          indigo: '#4f46e5', // Existing indigo
+          'indigo-dark': '#4338ca', // Darker indigo
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
