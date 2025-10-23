@@ -73,10 +73,21 @@ const MyAccount = () => {
       if (user) {
         setUser(user);
         setEmail(user.email || "");
-        profileForm.reset({
-          firstName: user.user_metadata.first_name || "",
-          lastName: user.user_metadata.last_name || "",
-        });
+        // Fetch profile data from public.profiles table
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error("Error fetching profile for MyAccount:", error);
+        } else if (profileData) {
+          profileForm.reset({
+            firstName: profileData.first_name || "",
+            lastName: profileData.last_name || "",
+          });
+        }
       }
     };
     fetchUser();
@@ -85,15 +96,30 @@ const MyAccount = () => {
   async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
     const loadingId = showLoading("Salvando alterações do perfil...");
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Update auth.users metadata
+      const { error: authError } = await supabase.auth.updateUser({
         data: {
           first_name: values.firstName,
           last_name: values.lastName,
         },
       });
 
-      if (error) {
-        showError(error.message);
+      if (authError) {
+        showError(authError.message);
+        return;
+      }
+
+      // Update public.profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: values.firstName,
+          last_name: values.lastName,
+        })
+        .eq('id', user?.id);
+
+      if (profileError) {
+        showError(profileError.message);
       } else {
         showSuccess("Perfil atualizado com sucesso!");
       }

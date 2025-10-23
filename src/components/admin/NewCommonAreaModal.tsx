@@ -74,7 +74,7 @@ export const NewCommonAreaModal = ({
 
   useEffect(() => {
     const fetchCondos = async () => {
-      const { data } = await supabase.from("condos").select("id, name");
+      const { data } = await supabase.from("condominiums").select("id, name"); // Changed from "condos" to "condominiums"
       setCondos(data || []);
     };
     if (isOpen) {

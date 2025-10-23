@@ -38,6 +38,7 @@ export const RecentPaymentsTable = () => {
       setLoading(true);
       const { data, error } = await supabase.rpc("get_recent_payments_with_profile", { limit_count: 4 });
       if (error) {
+        console.error("Error fetching recent payments:", error);
         setPayments([]);
       } else {
         const mapped = (data || []).map((row: any) => ({
@@ -64,7 +65,7 @@ export const RecentPaymentsTable = () => {
     <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Pagamentos Recentes</CardTitle>
-        <Link to="#" className="text-sm font-medium text-purple-400 hover:underline">
+        <Link to="/admin/pagos" className="text-sm font-medium text-purple-400 hover:underline">
           Ver Todos
         </Link>
       </CardHeader>

@@ -92,23 +92,26 @@ const Payments = () => {
                   </TableCell>
                 </TableRow>
               ))
-            ) : payments.map((payment) => (
-              <TableRow key={payment.id} className="border-b-admin-border">
-                <TableCell>{formatDate(payment.created_at)}</TableCell>
-                <TableCell className="font-medium">{payment.id.substring(0, 15).toUpperCase()}</TableCell>
-                <TableCell>
-                  <p className="font-medium">{`${payment.profiles?.first_name || ''} ${payment.profiles?.last_name || ''}`.trim()}</p>
-                  <p className="text-sm text-admin-foreground-muted">{payment.profiles?.email}</p>
-                </TableCell>
-                <TableCell>{payment.plan}</TableCell>
-                <TableCell>{formatCurrency(payment.amount)}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </TableCell>
+            ) : payments.length > 0 ? (
+              payments.map((payment) => (
+                <TableRow key={payment.id} className="border-b-admin-border">
+                  <TableCell>{formatDate(payment.created_at)}</TableCell>
+                  <TableCell className="font-medium">{payment.id.substring(0, 15).toUpperCase()}</TableCell>
+                  <TableCell>
+                    <p className="font-medium">{`${payment.profiles?.first_name || ''} ${payment.profiles?.last_name || ''}`.trim()}</p>
+                    <p className="text-sm text-admin-foreground-muted">{payment.profiles?.email}</p>
+                  </TableCell>
+                  <TableCell>{payment.plan}</TableCell>
+                  <TableCell>{formatCurrency(payment.amount)}</TableCell>
+                  <TableCell className="text-right">
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow className="border-b-admin-border">
+                <TableCell colSpan={6} className="text-center text-admin-foreground-muted">Nenhum pagamento encontrado.</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>

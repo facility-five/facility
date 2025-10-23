@@ -46,12 +46,18 @@ const navItems = [
 export const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth(); // Get profile from AuthContext
 
   const handleLogout = async () => {
     await signOut();
     showSuccess("Você saiu com sucesso!");
     navigate("/");
+  };
+
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const first = firstName?.[0] || "";
+    const last = lastName?.[0] || "";
+    return `${first}${last}`.toUpperCase();
   };
 
   return (
@@ -61,12 +67,12 @@ export const Sidebar = () => {
           <DropdownMenuTrigger asChild>
             <div className="flex items-center gap-3 cursor-pointer hover:bg-admin-border p-2 rounded-lg transition-colors -m-2">
               <Avatar>
-                <AvatarImage src="https://github.com/shadcn.png" alt="Wagner" />
-                <AvatarFallback>W</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url} alt={profile?.first_name} />
+                <AvatarFallback>{getInitials(profile?.first_name, profile?.last_name)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-sm text-admin-foreground">Wagner</p>
-                <p className="text-xs text-admin-foreground-muted">wfss1982@gmail.com</p>
+                <p className="font-semibold text-sm text-admin-foreground">{profile?.first_name} {profile?.last_name}</p>
+                <p className="text-xs text-admin-foreground-muted">{profile?.role}</p>
               </div>
             </div>
           </DropdownMenuTrigger>
@@ -77,7 +83,7 @@ export const Sidebar = () => {
                   Entrou como
                 </p>
                 <p className="text-sm font-medium leading-none text-purple-400">
-                  Wagner Fernando
+                  {profile?.first_name} {profile?.last_name}
                 </p>
               </div>
             </DropdownMenuLabel>

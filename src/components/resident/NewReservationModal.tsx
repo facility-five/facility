@@ -89,7 +89,8 @@ export const NewReservationModal = ({
     const { error } = await supabase.from("reservations").insert([
       {
         ...values,
-        user_id: user.id,
+        resident_id: user.id, // Changed from user_id to resident_id
+        created_by: user.id, // Added created_by
         condo_id: selectedArea.condo_id,
         total_value: selectedArea.booking_fee,
         code: generateCode(),

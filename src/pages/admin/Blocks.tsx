@@ -23,7 +23,7 @@ export type Block = {
   condo_id: string;
   responsible_id: string;
   status: string;
-  condos: { name: string } | null;
+  condominiums: { name: string } | null; // Changed from condos to condominiums
   profiles: { first_name: string; last_name: string; email: string; } | null;
 };
 
@@ -49,7 +49,7 @@ const Blocks = () => {
         condo_id: row.condo_id,
         responsible_id: row.responsible_id,
         status: row.status,
-        condos: row.condo_name ? { name: row.condo_name } : null,
+        condominiums: row.condo_name ? { name: row.condo_name } : null, // Changed from condos to condominiums
         profiles: row.first_name || row.last_name || row.email ? { first_name: row.first_name, last_name: row.last_name, email: row.email } : null,
       })) as Block[];
       setBlocks(mapped);
@@ -127,7 +127,7 @@ const Blocks = () => {
                 <TableRow key={block.id} className="border-b-admin-border">
                   <TableCell className="font-medium text-purple-400">{block.code}</TableCell>
                   <TableCell className="font-medium">{block.name}</TableCell>
-                  <TableCell>{block.condos?.name || 'N/A'}</TableCell>
+                  <TableCell>{block.condominiums?.name || 'N/A'}</TableCell>
                   <TableCell>
                     <p className="font-medium">{`${block.profiles?.first_name || ''} ${block.profiles?.last_name || ''}`.trim()}</p>
                     <p className="text-sm text-admin-foreground-muted">{block.profiles?.email || ''}</p>

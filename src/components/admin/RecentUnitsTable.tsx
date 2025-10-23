@@ -19,13 +19,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type Unit = {
   code: string;
-  block: string;
+  number: string; // Changed from block to number
   created_at: string;
-  condos: {
+  condominiums: { // Changed from condos to condominiums
     name: string;
     administrators: {
       name: string;
     } | null;
+  } | null;
+  blocks: { // Added blocks
+    name: string;
   } | null;
 };
 
@@ -36,12 +39,18 @@ export const RecentUnitsTable = () => {
   useEffect(() => {
     const fetchUnits = async () => {
       setLoading(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("units")
-        .select("*, condos(*, administrators(*))")
+        .select("*, condominiums(name, administrators(name)), blocks(name)") // Updated select to condominiums and blocks
         .order("created_at", { ascending: false })
         .limit(4);
-      setUnits(data as Unit[] || []);
+
+      if (error) {
+        console.error("Error fetching units:", error);
+        setUnits([]);
+      } else {
+        setUnits(data as Unit[] || []);
+      }
       setLoading(false);
     };
     fetchUnits();
@@ -51,7 +60,7 @@ export const RecentUnitsTable = () => {
     <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Unidades Recentes</CardTitle>
-        <Link to="#" className="text-sm font-medium text-purple-400 hover:underline">
+        <Link to="/admin/unidades" className="text-sm font-medium text-purple-400 hover:underline">
           Ver Todos
         </Link>
       </CardHeader>
@@ -60,9 +69,10 @@ export const RecentUnitsTable = () => {
           <TableHeader className="bg-purple-600">
             <TableRow className="border-b-purple-700 hover:bg-purple-600">
               <TableHead className="text-white">Código</TableHead>
-              <TableHead className="text-white">Nombre del administrador</TableHead>
+              <TableHead className="text-white">Administradora</TableHead>
               <TableHead className="text-white">Condominio</TableHead>
               <TableHead className="text-white">Bloque</TableHead>
+              <TableHead className="text-white">Número</TableHead>
               <TableHead className="text-white text-right">Data</TableHead>
             </TableRow>
           </TableHeader>
@@ -70,22 +80,23 @@ export const RecentUnitsTable = () => {
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <TableRow key={i} className="border-b-admin-border">
-                  <TableCell colSpan={5}><Skeleton className="h-8 w-full bg-admin-border" /></TableCell>
+                  <TableCell colSpan={6}><Skeleton className="h-8 w-full bg-admin-border" /></TableCell>
                 </TableRow>
               ))
             ) : units.length > 0 ? (
               units.map((unit) => (
                 <TableRow key={unit.code} className="border-b-admin-border">
                   <TableCell className="font-medium">{unit.code}</TableCell>
-                  <TableCell>{unit.condos?.administrators?.name || 'N/A'}</TableCell>
-                  <TableCell>{unit.condos?.name || 'N/A'}</TableCell>
-                  <TableCell>{unit.block}</TableCell>
+                  <TableCell>{unit.condominiums?.administrators?.name || 'N/A'}</TableCell>
+                  <TableCell>{unit.condominiums?.name || 'N/A'}</TableCell>
+                  <TableCell>{unit.blocks?.name || 'N/A'}</TableCell>
+                  <TableCell>{unit.number}</TableCell>
                   <TableCell className="text-right">{new Date(unit.created_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow className="border-b-admin-border">
-                <TableCell colSpan={5} className="text-center text-admin-foreground-muted">Nenhuma unidade encontrada.</TableCell>
+                <TableCell colSpan={6} className="text-center text-admin-foreground-muted">Nenhuma unidade encontrada.</TableCell>
               </TableRow>
             )}
           </TableBody>

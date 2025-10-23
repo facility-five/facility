@@ -25,7 +25,7 @@ export type CommonArea = {
   opening_time: string;
   closing_time: string;
   booking_fee: number;
-  condos: { name: string } | null;
+  condominiums: { name: string } | null; // Changed from condos to condominiums
   [key: string]: any;
 };
 
@@ -40,7 +40,7 @@ const CommonAreas = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("common_areas")
-      .select("*, condos(name)")
+      .select("*, condominiums(name)") // Changed from condos to condominiums
       .order("created_at");
 
     if (error) {
@@ -129,7 +129,7 @@ const CommonAreas = () => {
                     <p className="font-medium">{area.name}</p>
                     <p className="text-sm text-admin-foreground-muted">{area.description}</p>
                   </TableCell>
-                  <TableCell>{area.condos?.name || 'N/A'}</TableCell>
+                  <TableCell>{area.condominiums?.name || 'N/A'}</TableCell>
                   <TableCell>{area.capacity || '-'}</TableCell>
                   <TableCell>{`${formatTime(area.opening_time)} - ${formatTime(area.closing_time)}`}</TableCell>
                   <TableCell>{formatCurrency(area.booking_fee)}</TableCell>

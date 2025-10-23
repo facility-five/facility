@@ -22,6 +22,8 @@ export const DynamicLogo = () => {
       if (data) {
         setLogoUrl(data.logo_url);
         setSystemName(data.system_name);
+      } else if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error("Error fetching system settings for DynamicLogo:", error);
       }
       setLoading(false);
     };

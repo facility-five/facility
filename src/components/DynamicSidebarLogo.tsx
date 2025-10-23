@@ -13,7 +13,7 @@ export const DynamicSidebarLogo = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       setLoading(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('system_settings')
         .select('logo_negative_url, system_name')
         .limit(1)
@@ -22,6 +22,9 @@ export const DynamicSidebarLogo = () => {
       if (data) {
         setLogoUrl(data.logo_negative_url);
         setSystemName(data.system_name || 'Facility Fincas');
+      } else if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error("Error fetching system settings for DynamicSidebarLogo:", error);
+        setSystemName('Facility Fincas'); // Fallback even on error
       } else {
         setSystemName('Facility Fincas');
       }

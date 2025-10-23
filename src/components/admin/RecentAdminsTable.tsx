@@ -33,12 +33,23 @@ export const RecentAdminsTable = () => {
   useEffect(() => {
     const fetchAdmins = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("administrators")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(4);
-      setAdmins(data || []);
+      // Using the RPC function to get administrators with details
+      const { data, error } = await supabase.rpc("get_administrators_with_details");
+
+      if (error) {
+        console.error("Error fetching administrators:", error);
+        setAdmins([]);
+      } else {
+        const mapped = (data || []).map((row: any) => ({
+          code: row.code,
+          name: row.name,
+          responsible_name: `${row.first_name || ''} ${row.last_name || ''}`.trim(),
+          responsible_email: row.email || 'N/A', // Assuming email is part of the profile join in RPC
+          phone: row.phone || 'N/A', // Assuming phone is part of the administrators table
+          created_at: row.created_at,
+        })) as Admin[];
+        setAdmins(mapped.slice(0, 4)); // Limit to 4 for recent
+      }
       setLoading(false);
     };
     fetchAdmins();
@@ -48,7 +59,7 @@ export const RecentAdminsTable = () => {
     <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Administradoras recientes</CardTitle>
-        <Link to="#" className="text-sm font-medium text-purple-400 hover:underline">
+        <Link to="/admin/administradoras" className="text-sm font-medium text-purple-400 hover:underline">
           Ver Todos
         </Link>
       </CardHeader>

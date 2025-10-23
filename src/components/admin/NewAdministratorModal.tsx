@@ -95,7 +95,7 @@ export const NewAdministratorModal = ({
       {
         ...values,
         code: generateCode(),
-        user_id: user.id,
+        user_id: user.id, // Ensure user_id is passed
       },
     ]);
 

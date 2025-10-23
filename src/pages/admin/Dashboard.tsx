@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
-    admins: 0,
+    administrators: 0, // Changed from admins to administrators
     users: 0,
     units: 0,
     revenue: 0,
@@ -21,7 +21,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
-      const { count: adminsCount } = await supabase
+      const { count: administratorsCount } = await supabase // Changed from adminsCount to administratorsCount
         .from("administrators")
         .select("*", { count: "exact", head: true });
 
@@ -33,14 +33,19 @@ const Dashboard = () => {
         .from("units")
         .select("*", { count: "exact", head: true });
 
-      const { data: payments } = await supabase.from("payments").select("amount");
-      const monthlyRevenue = payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
+      // Using RPC for monthly revenue
+      const { data: monthlyRevenueData, error: revenueError } = await supabase.rpc('get_monthly_revenue');
+      const totalRevenue = monthlyRevenueData?.reduce((sum, p) => sum + p.revenue, 0) || 0;
+
+      if (revenueError) {
+        console.error("Error fetching monthly revenue:", revenueError);
+      }
 
       setStats({
-        admins: adminsCount || 0,
+        administrators: administratorsCount || 0, // Changed from admins to administrators
         users: usersCount || 0,
         units: unitsCount || 0,
-        revenue: monthlyRevenue,
+        revenue: totalRevenue,
       });
       setLoading(false);
     };
@@ -59,10 +64,10 @@ const Dashboard = () => {
     <AdminLayout>
       <h1 className="text-3xl font-bold mb-6">Overview</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Administradores Totales" value={loading ? "..." : stats.admins.toString()} icon={Building} />
+        <StatCard title="Administradores Totales" value={loading ? "..." : stats.administrators.toString()} icon={Building} />
         <StatCard title="Total de Usuários" value={loading ? "..." : stats.users.toString()} icon={Users} />
         <StatCard title="Unidades Totales" value={loading ? "..." : stats.units.toString()} icon={Building2} />
-        <StatCard title="Ingresos mensuales" value={loading ? "..." : formatCurrency(stats.revenue)} icon={Euro} />
+        <StatCard title="Ingresos totales" value={loading ? "..." : formatCurrency(stats.revenue)} icon={Euro} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <RevenueChart />

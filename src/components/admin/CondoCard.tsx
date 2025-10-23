@@ -24,7 +24,7 @@ export type Condo = {
 interface CondoCardProps {
   condo: Condo;
   onDelete: () => void;
-  onEdit: () => void; // Added onEdit prop
+  onEdit: () => void;
 }
 
 export const CondoCard = ({ condo, onDelete, onEdit }: CondoCardProps) => {

@@ -74,7 +74,7 @@ export const SystemSettingsTab = () => {
           logo_negative_file: data.logo_negative_url,
         });
       }
-      if (error && error.code !== 'PGRST116') {
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
         showError("Erro ao carregar configurações.");
       }
     };

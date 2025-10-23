@@ -66,7 +66,7 @@ export const NewBlockModal = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: condosData } = await supabase.from("condos").select("id, name");
+      const { data: condosData } = await supabase.from("condominiums").select("id, name"); // Changed from "condos" to "condominiums"
       setCondos(condosData || []);
       const { data: profilesData } = await supabase.from("profiles").select("id, first_name, last_name");
       setProfiles(profilesData || []);

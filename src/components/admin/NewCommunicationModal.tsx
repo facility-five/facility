@@ -64,7 +64,7 @@ export const NewCommunicationModal = ({
 
   useEffect(() => {
     const fetchCondos = async () => {
-      const { data } = await supabase.from("condos").select("id, name");
+      const { data } = await supabase.from("condominiums").select("id, name"); // Changed from "condos" to "condominiums"
       setCondos(data || []);
     };
     if (isOpen) {
@@ -100,7 +100,7 @@ export const NewCommunicationModal = ({
     const submissionData = {
       ...values,
       expiration_date: values.expiration_date || null,
-      user_id: user.id,
+      created_by: user.id, // Changed from user_id to created_by
     };
 
     let error;

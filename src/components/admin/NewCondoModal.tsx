@@ -23,6 +23,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -114,7 +115,7 @@ export const NewCondoModal = ({
   const generateCode = () => `CO-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { error } = await supabase.from("condos").insert([
+    const { error } = await supabase.from("condominiums").insert([ // Changed from "condos" to "condominiums"
       {
         ...values,
         code: generateCode(),

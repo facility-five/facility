@@ -23,13 +23,14 @@ const routeTitles: Record<string, string> = {
   "/admin/condominios": "Condomínios",
   "/admin/bloques": "Blocos",
   "/admin/unidades": "Unidades",
-  "/admin/areas-comunes": "Áreas Comuns",
+  "/admin/areas-comunes": "Áreas Comunes",
   "/admin/comunicados": "Comunicados",
   "/admin/usuarios": "Usuários",
-  "/admin/planes": "Planos (Admin)",
+  "/admin/planes": "Planes (Admin)",
   "/admin/pagos": "Pagamentos",
   "/admin/configuracoes": "Configurações",
   "/admin/notificacoes": "Notificações",
+  "/design-system": "Design System",
 };
 
 const SystemTitle = () => {

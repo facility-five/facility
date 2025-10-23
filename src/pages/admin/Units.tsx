@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 export type Unit = {
   id: string;
   code: string;
-  number: string;
+  number: string; // Changed from block to number
   floor: number;
   size: string;
   rooms: number;

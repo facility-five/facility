@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true); // Initial loading of session and profile
-  const [profileLoaded, setProfileLoaded] = useState(false); // Indicates if profile fetch attempt is done
+  const [profileLoaded, setProfileLoaded] = useState(false); // True once profile fetch attempt is done
 
   const signOut = async () => {
     await supabase.auth.signOut();

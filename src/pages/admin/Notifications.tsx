@@ -22,9 +22,16 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("notifications")
       .select("*")
+      .eq('user_id', user.id) // Filter by current user's notifications
       .order("created_at", { ascending: false });
 
     if (error) {

@@ -53,7 +53,7 @@ const Reservations = () => {
     const { data, error } = await supabase
       .from("reservations")
       .select("*, common_areas(name)")
-      .eq("user_id", user.id)
+      .eq("resident_id", user.id) // Filter by resident_id
       .order("reservation_date", { ascending: false });
 
     if (error) {

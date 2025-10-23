@@ -41,24 +41,17 @@ const Index = () => {
         // User is authenticated but has no profile.
         // This typically happens right after signup if the profile creation is asynchronous
         // or if the profile was deleted.
-        // For 'Administrador' role, they need to register their company.
-        // For other roles, they might need to complete a generic profile.
-        // Assuming the first user is always 'Administrador' and needs to register company.
-        // If the user is an 'Administrador' and has no profile, they should go to RegisterAdministrator.
-        // This logic might need refinement based on how roles are assigned initially.
-        // For simplicity, if session exists but no profile, and it's not the initial setup,
-        // we can direct them to register an administrator.
-        // Or, if the system is not set up, they go to setup-master.
         
-        // Let's check if the system is set up.
+        // Let's check if the system is set up by looking at system_settings table.
         const checkSystemSetupAndRedirect = async () => {
-          const { data: isSystemSetup, error: rpcError } = await supabase.rpc('is_system_setup');
-          if (rpcError) {
-            console.error("Index: Error checking system setup:", rpcError);
-            // Potentially show an error message or redirect to a generic error page
-            // For now, let's assume the spinner is the issue, and if it's not, this will lead to a blank screen.
-            // If the spinner is still showing, it's not this path.
-          } else if (!isSystemSetup) {
+          const { data: systemSettings, error: settingsError } = await supabase
+            .from('system_settings')
+            .select('id', { count: 'exact', head: true });
+
+          if (settingsError && settingsError.code !== 'PGRST116') {
+            console.error("Index: Error checking system settings:", settingsError);
+            // Potentially show an error message
+          } else if ((systemSettings?.count || 0) === 0) {
             console.log("Index: System not set up, redirecting to /setup-master");
             navigate("/setup-master", { replace: true });
           } else {

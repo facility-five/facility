@@ -128,7 +128,7 @@ export const EditCondoModal = ({
     if (!condo) return; // Should only be called for editing existing condos
 
     const { error } = await supabase
-      .from("condos")
+      .from("condominiums") // Changed from "condos" to "condominiums"
       .update(values)
       .eq("id", condo.id);
 

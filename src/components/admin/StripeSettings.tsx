@@ -23,11 +23,12 @@ export const StripeSettings = () => {
         .eq("id", 1)
         .single();
 
-      if (error && error.code !== "PGRST116") {
+      if (error && error.code !== "PGRST116") { // PGRST116 means no rows found
         showError("Erro ao carregar configurações do Stripe.");
       }
 
       if (error && error.code === "PGRST116") {
+        // If no settings exist, insert a default row
         const { error: insertError } = await supabase
           .from("system_settings")
           .insert([{ id: 1 }]);

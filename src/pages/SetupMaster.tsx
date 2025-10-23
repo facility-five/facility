@@ -11,8 +11,18 @@ const SetupMaster = () => {
 
   useEffect(() => {
     const checkUsers = async () => {
-      const { data: isSetup } = await supabase.rpc('is_system_setup');
-      if (isSetup) {
+      // Check if system_settings table has any entry
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('id', { count: 'exact', head: true });
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error("Error checking system settings:", error);
+        // Handle error, maybe show a message or retry
+      }
+
+      if ((data?.count || 0) > 0) {
+        // If system settings exist, it means the system is set up
         navigate("/");
       }
       setLoading(false);

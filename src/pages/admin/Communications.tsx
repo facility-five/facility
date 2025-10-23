@@ -22,7 +22,7 @@ export type Communication = {
   title: string;
   content: string;
   expiration_date: string;
-  condos: { name: string } | null;
+  condominiums: { name: string } | null; // Changed from condos to condominiums
   [key: string]: any;
 };
 
@@ -37,7 +37,7 @@ const Communications = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("communications")
-      .select("*, condos(name)")
+      .select("*, condominiums(name)") // Changed from condos to condominiums
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -127,7 +127,7 @@ const Communications = () => {
                     <p className="font-medium">{comm.title}</p>
                     <p className="text-sm text-admin-foreground-muted">{comm.content}</p>
                   </TableCell>
-                  <TableCell>{comm.condos?.name || 'N/A'}</TableCell>
+                  <TableCell>{comm.condominiums?.name || 'N/A'}</TableCell>
                   <TableCell>{formatDate(comm.expiration_date)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleEdit(comm)}>

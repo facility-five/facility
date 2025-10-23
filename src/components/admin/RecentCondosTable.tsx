@@ -21,7 +21,7 @@ type Condo = {
   code: string;
   name: string;
   responsible_name: string;
-  responsible_email: string;
+  email: string; // Changed from responsible_email to email
   phone: string;
   created_at: string;
 };
@@ -33,12 +33,18 @@ export const RecentCondosTable = () => {
   useEffect(() => {
     const fetchCondos = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("condos")
-        .select("*")
+      const { data, error } = await supabase
+        .from("condominiums") // Changed from "condos" to "condominiums"
+        .select("code, name, responsible_name, email, phone, created_at") // Select specific columns
         .order("created_at", { ascending: false })
         .limit(4);
-      setCondos(data || []);
+
+      if (error) {
+        console.error("Error fetching condominiums:", error);
+        setCondos([]);
+      } else {
+        setCondos(data || []);
+      }
       setLoading(false);
     };
     fetchCondos();
@@ -48,7 +54,7 @@ export const RecentCondosTable = () => {
     <Card className="bg-admin-card border-admin-border text-admin-foreground">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Condominios Recientes</CardTitle>
-        <Link to="#" className="text-sm font-medium text-purple-400 hover:underline">
+        <Link to="/admin/condominios" className="text-sm font-medium text-purple-400 hover:underline">
           Ver Todos
         </Link>
       </CardHeader>
@@ -57,7 +63,7 @@ export const RecentCondosTable = () => {
           <TableHeader className="bg-purple-600">
             <TableRow className="border-b-purple-700 hover:bg-purple-600">
               <TableHead className="text-white">Código</TableHead>
-              <TableHead className="text-white">Nombre del administrador</TableHead>
+              <TableHead className="text-white">Nombre del condominio</TableHead>
               <TableHead className="text-white">Responsável</TableHead>
               <TableHead className="text-white">Telefone</TableHead>
               <TableHead className="text-white text-right">Data</TableHead>
@@ -77,7 +83,7 @@ export const RecentCondosTable = () => {
                   <TableCell>{condo.name}</TableCell>
                   <TableCell>
                       <p className="font-medium">{condo.responsible_name}</p>
-                      <p className="text-xs text-admin-foreground-muted">{condo.responsible_email}</p>
+                      <p className="text-xs text-admin-foreground-muted">{condo.email}</p>
                   </TableCell>
                   <TableCell>{condo.phone}</TableCell>
                   <TableCell className="text-right">{new Date(condo.created_at).toLocaleDateString()}</TableCell>

@@ -47,7 +47,7 @@ const ManagerCondominios = () => {
     }
     setLoading(true);
     const { data, error } = await supabase
-      .from("condos")
+      .from("condominiums") // Changed from "condos" to "condominiums"
       .select("*")
       .eq('administrator_id', managerAdministratorId);
 
@@ -83,7 +83,7 @@ const ManagerCondominios = () => {
   const handleDelete = async () => {
     if (!selectedCondo) return;
     const { error } = await supabase
-      .from("condos")
+      .from("condominiums") // Changed from "condos" to "condominiums"
       .delete()
       .eq("id", selectedCondo.id);
 
