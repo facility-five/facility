@@ -184,7 +184,7 @@ const LandingPageContent = () => {
             </DropdownMenu>
           ) : (
             <>
-              <Link to="/" className="text-sm font-medium text-landing-text-muted hover:text-landing-text">Entrar</Link>
+              <Link to="/login" className="text-sm font-medium text-landing-text-muted hover:text-landing-text">Entrar</Link> {/* Alterado para /login */}
               <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={scrollToPlans}>
                 Começar
               </Button>

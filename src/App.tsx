@@ -33,6 +33,7 @@ import SetupMaster from "./pages/SetupMaster";
 import ResetPassword from "./pages/ResetPassword";
 import RegisterAdministrator from "./pages/RegisterAdministrator";
 import DesignSystem from "./pages/DesignSystem";
+import Login from "./pages/Login"; // Importar o componente Login
 
 import ResidentReservations from "./pages/resident/Reservations";
 import ResidentCommunications from "./pages/resident/Communications";
@@ -56,7 +57,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme"> {/* Adicionado ThemeProvider */}
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -65,6 +66,7 @@ const App = () => (
             <SystemTitle />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} /> {/* Nova rota para a página de login */}
               <Route path="/setup-master" element={<SetupMaster />} />
               <Route path="/criar-conta" element={<SignUp />} />
               <Route path="/recuperar-senha" element={<ForgotPassword />} />
@@ -111,7 +113,7 @@ const App = () => (
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
-    </ThemeProvider> {/* Fechamento do ThemeProvider */}
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
