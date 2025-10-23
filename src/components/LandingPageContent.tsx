@@ -161,19 +161,22 @@ const LandingPageContent = () => {
                     <p className="text-sm font-medium leading-none text-purple-400">
                       {profile.first_name} {profile.last_name}
                     </p>
+                    <p className="text-xs leading-none text-landing-text-muted">
+                      {profile.email}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-landing-border" />
-                <DropdownMenuItem className="focus:bg-landing-border focus:text-landing-text" onClick={handleGoToApp}>
+                <DropdownMenuItem className="focus:bg-landing-border focus:text-landing-text py-3" onClick={handleGoToApp}>
                   <Home className="mr-2 h-4 w-4" />
-                  <span>Voltar para a aplicação</span>
+                  <span>Painel</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="focus:bg-landing-border focus:text-landing-text" onClick={handleGoToProfile}>
+                <DropdownMenuItem className="focus:bg-landing-border focus:text-landing-text py-3" onClick={handleGoToProfile}>
                   <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Acessar página de perfil</span>
+                  <span>Perfil</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-landing-border" />
-                <DropdownMenuItem className="focus:bg-landing-border focus:text-landing-text" onClick={handleLogout}>
+                <DropdownMenuItem className="focus:bg-destructive/10 focus:text-destructive py-3 text-destructive" onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sair</span>
                 </DropdownMenuItem>
