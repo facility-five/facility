@@ -6,9 +6,6 @@ export const Logo = () => {
         alt="Facility Fincas Logo"
         className="w-48"
       />
-      <p className="text-sm text-gray-500 -mt-2">
-        Gestão de edifícios e condomínios
-      </p>
     </div>
   );
 };
