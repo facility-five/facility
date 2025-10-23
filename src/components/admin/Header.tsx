@@ -2,6 +2,7 @@ import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { useAuth } from "@/contexts/AuthContext";
+import { DynamicSidebarLogo } from "@/components/DynamicSidebarLogo"; // Importar DynamicSidebarLogo
 
 export const Header = () => {
   const { user, profile, session, loading } = useAuth();
@@ -18,7 +19,8 @@ export const Header = () => {
   return (
     <header className="bg-admin-card border-b border-admin-border p-4 flex justify-between items-center">
         <div>
-            <img src="https://a4f4baa75172da68aa688051984fd151.cdn.bubble.io/f1744250402403x458193812617061060/facility_logo.svg" alt="Facility Fincas Logo" className="h-8" />
+            {/* Usar DynamicSidebarLogo para exibir o logo negativo configurado */}
+            <DynamicSidebarLogo className="h-8" imageClassName="h-8 w-auto max-h-8" />
         </div>
       <div className="flex items-center gap-4">
         <div className="text-xs text-right text-admin-foreground-muted">
