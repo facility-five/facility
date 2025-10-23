@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form"; // Import FormProvider
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -27,10 +27,12 @@ import { showError, showSuccess, showLoading, dismissToast } from "@/utils/toast
 import { useEffect, useState } from "react";
 import { User as UserIcon } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import { ImageUpload } from "@/components/admin/ImageUpload"; // Import ImageUpload
 
 const profileFormSchema = z.object({
   firstName: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
   lastName: z.string().min(2, "O sobrenome deve ter pelo menos 2 caracteres."),
+  avatar_file: z.any().optional(), // Adicionado para o upload da imagem
 });
 
 const passwordFormSchema = z
@@ -40,8 +42,8 @@ const passwordFormSchema = z
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "As senhas não coincidem.",
     path: ["confirmPassword"],
+    message: "As senhas não coincidem.",
   });
 
 const MyAccount = () => {
@@ -53,6 +55,7 @@ const MyAccount = () => {
     defaultValues: {
       firstName: "",
       lastName: "",
+      avatar_file: undefined,
     },
   });
 
@@ -76,7 +79,7 @@ const MyAccount = () => {
         // Fetch profile data from public.profiles table
         const { data: profileData, error } = await supabase
           .from('profiles')
-          .select('first_name, last_name')
+          .select('first_name, last_name, avatar_url') // Incluir avatar_url
           .eq('id', user.id)
           .single();
 
@@ -86,6 +89,7 @@ const MyAccount = () => {
           profileForm.reset({
             firstName: profileData.first_name || "",
             lastName: profileData.last_name || "",
+            avatar_file: profileData.avatar_url || undefined, // Definir avatar_file com a URL existente
           });
         }
       }
@@ -96,11 +100,39 @@ const MyAccount = () => {
   async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
     const loadingId = showLoading("Salvando alterações do perfil...");
     try {
-      // Update auth.users metadata
+      const { firstName, lastName, avatar_file } = values;
+      let newAvatarUrl = profileForm.getValues('avatar_file'); // Começa com o valor atual do formulário
+
+      // Lidar com o upload do arquivo de avatar se um novo arquivo for selecionado
+      if (avatar_file instanceof File) {
+        const fileExt = avatar_file.name.split('.').pop();
+        const fileName = `${user?.id}_${Date.now()}.${fileExt}`; // Nome de arquivo único
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('avatars') // Usar o bucket 'avatars'
+          .upload(fileName, avatar_file, { upsert: true });
+
+        if (uploadError) {
+          showError(`Erro ao carregar foto de perfil: ${uploadError.message}`);
+          return;
+        }
+        const { data: publicURL } = supabase.storage.from('avatars').getPublicUrl(uploadData.path);
+        newAvatarUrl = publicURL.publicUrl;
+      } else if (avatar_file === null && user?.user_metadata.avatar_url) {
+        // Se avatar_file for explicitamente definido como null (removido pelo usuário)
+        newAvatarUrl = null;
+        // Opcionalmente, excluir o avatar antigo do storage
+        const oldPath = user.user_metadata.avatar_url.split('/').pop();
+        if (oldPath) {
+          await supabase.storage.from('avatars').remove([oldPath]);
+        }
+      }
+
+      // Atualizar metadados auth.users
       const { error: authError } = await supabase.auth.updateUser({
         data: {
-          first_name: values.firstName,
-          last_name: values.lastName,
+          first_name: firstName,
+          last_name: lastName,
+          avatar_url: newAvatarUrl, // Atualizar avatar_url nos metadados auth.users
         },
       });
 
@@ -109,12 +141,13 @@ const MyAccount = () => {
         return;
       }
 
-      // Update public.profiles table
+      // Atualizar tabela public.profiles
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          first_name: values.firstName,
-          last_name: values.lastName,
+          first_name: firstName,
+          last_name: lastName,
+          avatar_url: newAvatarUrl, // Atualizar avatar_url em public.profiles
         })
         .eq('id', user?.id);
 
@@ -122,9 +155,20 @@ const MyAccount = () => {
         showError(profileError.message);
       } else {
         showSuccess("Perfil atualizado com sucesso!");
+        // Re-buscar usuário para atualizar o estado local com a nova avatar_url
+        const { data: { user: updatedUser } } = await supabase.auth.getUser();
+        if (updatedUser) {
+          setUser(updatedUser); // Atualizar o estado do usuário em MyAccount
+        }
+        // Resetar o formulário com os novos valores para limpar o estado 'dirty' e atualizar a pré-visualização
+        profileForm.reset({
+          firstName: firstName,
+          lastName: lastName,
+          avatar_file: newAvatarUrl, // Passar a URL de volta para o formulário para exibição
+        });
       }
     } catch (err: any) {
-      console.error("Unhandled error during profile update:", err);
+      console.error("Erro não tratado durante a atualização do perfil:", err);
       showError("Ocorreu um erro inesperado ao atualizar o perfil.");
     } finally {
       dismissToast(loadingId);
@@ -139,7 +183,7 @@ const MyAccount = () => {
         return;
       }
 
-      // Re-authenticate the user to verify current password
+      // Re-autenticar o usuário para verificar a senha atual
       const { error: reauthError } = await supabase.auth.signInWithPassword({
         email,
         password: values.currentPassword,
@@ -150,7 +194,7 @@ const MyAccount = () => {
         return;
       }
 
-      // Update the user's password
+      // Atualizar a senha do usuário
       const { error } = await supabase.auth.updateUser({
         password: values.password,
       });
@@ -166,7 +210,7 @@ const MyAccount = () => {
         });
       }
     } catch (err: any) {
-      console.error("Unhandled error during password change:", err);
+      console.error("Erro não tratado durante a alteração da senha:", err);
       showError("Ocorreu um erro inesperado ao alterar a senha.");
     } finally {
       dismissToast(loadingId);
@@ -208,26 +252,16 @@ const MyAccount = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...profileForm}>
+                <FormProvider {...profileForm}> {/* Envolver o formulário com FormProvider */}
                   <form
                     onSubmit={profileForm.handleSubmit(onProfileSubmit)}
                     className="space-y-6"
                   >
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-20 w-20">
-                        <AvatarImage src={user?.user_metadata.avatar_url} />
-                        <AvatarFallback>
-                          <UserIcon className="h-10 w-10" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="bg-transparent border-admin-border hover:bg-admin-border text-admin-foreground"
-                      >
-                        Alterar Foto
-                      </Button>
-                    </div>
+                    <ImageUpload
+                        name="avatar_file"
+                        label="Foto de Perfil"
+                        currentImageUrl={profileForm.getValues('avatar_file')}
+                    />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
@@ -280,7 +314,7 @@ const MyAccount = () => {
                       <Button type="submit">Salvar Alterações</Button>
                     </div>
                   </form>
-                </Form>
+                </FormProvider>
               </CardContent>
             </Card>
           </TabsContent>
