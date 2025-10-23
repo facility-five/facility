@@ -1,66 +1,110 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Github, MessageSquare, Zap, Code, Repeat, Users, DollarSign, Star } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle"; // Importar o ThemeToggle
-import { DynamicLogo } from "./DynamicLogo"; // Reutilizar DynamicLogo
+import { Check, Github, MessageSquare, Zap, Code, Repeat, Users, DollarSign, Star, Home, CalendarCheck, Wrench, Megaphone, BarChart3, ShieldCheck } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
+import { DynamicLogo } from "./DynamicLogo";
+import { supabase } from "@/integrations/supabase/client";
+import { showError } from "@/utils/toast";
+import { PlanCard } from "./PlanCard";
+import { LoadingSpinner } from "./LoadingSpinner";
+
+type DbPlan = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  period: string; // 'monthly' | 'annual'
+  status: string;
+  features: string[] | null;
+  stripe_price_id: string | null;
+};
 
 const LandingPageContent = () => {
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [plans, setPlans] = useState<DbPlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+  const plansSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      setLoadingPlans(true);
+      const { data, error } = await supabase
+        .from("plans")
+        .select("*")
+        .eq("status", "active")
+        .order("price", { ascending: true });
+
+      if (error) {
+        showError("Erro ao carregar planos.");
+      } else {
+        setPlans(data || []);
+      }
+      setLoadingPlans(false);
+    };
+    fetchPlans();
+  }, []);
+
+  const filteredPlans = React.useMemo(
+    () => plans.filter((p) => p.period === billingCycle),
+    [plans, billingCycle]
+  );
+
+  const scrollToPlans = () => {
+    plansSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-landing-background text-landing-text">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 w-full bg-landing-background/90 backdrop-blur-sm border-b border-landing-border p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link to="/" className="flex items-center gap-2">
-            <DynamicLogo /> {/* Usar DynamicLogo aqui */}
+            <DynamicLogo className="mb-0" imageClassName="h-8 w-auto max-h-8" />
           </Link>
           <div className="hidden md:flex space-x-4 text-sm font-medium text-landing-text-muted">
             <Link to="#" className="hover:text-landing-text">Produto</Link>
-            <Link to="#" className="hover:text-landing-text">Casos de Uso</Link>
-            <Link to="#" className="hover:text-landing-text">Docs</Link>
-            <Link to="#" className="hover:text-landing-text">Comunidade</Link>
-            <Link to="#" className="hover:text-landing-text">Empresa</Link>
-            <Link to="#" className="hover:text-landing-text">Preços</Link>
+            <Link to="#" className="hover:text-landing-text">Funcionalidades</Link>
+            <Link to="#" className="hover:text-landing-text">Casos de Sucesso</Link>
+            <button onClick={scrollToPlans} className="hover:text-landing-text">Preços</button>
+            <Link to="#" className="hover:text-landing-text">Contato</Link>
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <Link to="#" className="flex items-center gap-1 text-sm font-medium text-landing-text-muted hover:text-landing-text">
-            <Github className="h-4 w-4" />
-            <span className="hidden sm:inline">GitHub</span> <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> 148,939
-          </Link>
           <Link to="/" className="text-sm font-medium text-landing-text-muted hover:text-landing-text">Entrar</Link>
           <Button className="bg-purple-600 hover:bg-purple-700 text-white" asChild>
             <Link to="/criar-conta">Começar</Link>
           </Button>
-          <ThemeToggle /> {/* Adicionar o ThemeToggle */}
+          <ThemeToggle />
         </div>
       </nav>
 
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 text-center overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: "url(https://images.unsplash.com/photo-1557682224-5b8590b9ec98?q=80&w=2070&auto=format&fit=crop)", backgroundSize: "cover", backgroundPosition: "center" }}></div>
+        <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: "url(https://images.unsplash.com/photo-1557682224-5b8590b9ec98?q=80&w=2070&auto=format&fit-fit=crop)", backgroundSize: "cover", backgroundPosition: "center" }}></div>
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-purple-900/70 to-indigo-900/70"></div>
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-white">
-            Automação de fluxo de trabalho <br className="hidden md:inline" />
-            <span className="text-purple-400">flexível com IA</span> para equipes técnicas
+            A Gestão de Condomínios <br className="hidden md:inline" />
+            <span className="text-purple-400">Simplificada e Eficiente</span>
           </h1>
           <p className="mt-6 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-            Construa com a precisão do código ou a simplicidade do arrastar e soltar. Hospede no local ou na nuvem.
+            Uma plataforma completa para administradores, síndicos e moradores.
+            Gerencie tudo em um só lugar, com transparência e agilidade.
           </p>
           <div className="mt-10 flex justify-center space-x-4">
             <Button className="bg-purple-600 hover:bg-purple-700 text-white text-lg px-8 py-6 rounded-lg" asChild>
-              <Link to="/criar-conta">Começar gratuitamente</Link>
+              <Link to="/criar-conta">Experimente Grátis</Link>
             </Button>
             <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-purple-600 text-lg px-8 py-6 rounded-lg">
-              Falar com vendas
+              Solicitar Demonstração
             </Button>
           </div>
         </div>
-        <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 text-purple-500 opacity-10 animate-pulse" />
+        <Home className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 text-purple-500 opacity-10 animate-pulse" />
       </section>
 
       {/* Features Section */}
@@ -68,45 +112,45 @@ const LandingPageContent = () => {
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="bg-landing-card border-landing-border text-landing-text">
             <CardHeader>
-              <CardTitle className="text-purple-400">IT Ops</CardTitle>
+              <CardTitle className="text-purple-400">Gestão de Residentes</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-landing-text-muted">
-                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Onboard novos funcionários</li>
-                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Gerenciar tickets de incidentes</li>
+                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Cadastro e perfis detalhados</li>
+                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Controle de acesso e permissões</li>
               </ul>
             </CardContent>
           </Card>
           <Card className="bg-landing-card border-landing-border text-landing-text">
             <CardHeader>
-              <CardTitle className="text-purple-400">Sec Ops</CardTitle>
+              <CardTitle className="text-purple-400">Reservas de Áreas Comuns</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-landing-text-muted">
-                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Enriquecer tickets de segurança</li>
-                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Automatizar resposta a incidentes</li>
+                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Agendamento online fácil</li>
+                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Calendário de disponibilidade</li>
               </ul>
             </CardContent>
           </Card>
           <Card className="bg-landing-card border-landing-border text-landing-text">
             <CardHeader>
-              <CardTitle className="text-purple-400">Dev Ops</CardTitle>
+              <CardTitle className="text-purple-400">Manutenção e Solicitações</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-landing-text-muted">
-                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Converter linguagem natural em chamadas de API</li>
-                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Automatizar testes</li>
+                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Abertura e acompanhamento de chamados</li>
+                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Histórico de manutenções</li>
               </ul>
             </CardContent>
           </Card>
           <Card className="bg-landing-card border-landing-border text-landing-text">
             <CardHeader>
-              <CardTitle className="text-purple-400">Vendas</CardTitle>
+              <CardTitle className="text-purple-400">Comunicação Eficaz</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-landing-text-muted">
-                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Gerar insights de clientes a partir de avaliações</li>
-                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Automatizar follow-ups</li>
+                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Comunicados e avisos instantâneos</li>
+                <li className="flex items-center"><Check className="h-4 w-4 mr-2 text-green-400" /> Fóruns de discussão</li>
               </ul>
             </CardContent>
           </Card>
@@ -116,82 +160,81 @@ const LandingPageContent = () => {
       {/* Integrations Section */}
       <section className="py-16 px-4 bg-landing-background text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-landing-text">
-          Conecte a IA aos seus dados e <br />
-          mais de 500 integrações
+          Integre com as ferramentas que você já usa
         </h2>
+        <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
+          Conecte o Facility Fincas a sistemas de pagamento, comunicação e muito mais para uma gestão sem interrupções.
+        </p>
         <div className="mt-12 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-6 max-w-6xl mx-auto">
-          {Array.from({ length: 30 }).map((_, i) => (
+          {Array.from({ length: 10 }).map((_, i) => ( // Reduced number of placeholders
             <div key={i} className="h-12 w-12 bg-landing-card border border-landing-border rounded-lg flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity">
               <Zap className="h-6 w-6 text-purple-400" /> {/* Placeholder icon */}
             </div>
           ))}
         </div>
         <Button className="mt-12 bg-purple-600 hover:bg-purple-700 text-white text-lg px-8 py-4 rounded-lg">
-          Explorar todas as integrações
+          Ver todas as integrações
         </Button>
       </section>
 
-      {/* Build Multi-step Agents / Chat with your own data Section */}
+      {/* Automation & Communication Section */}
       <section className="py-16 px-4 bg-landing-background">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card className="bg-landing-card border-landing-border text-landing-text p-6">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">Construa agentes multi-etapas</CardTitle>
+              <CardTitle className="text-2xl font-bold">Automatize Tarefas Repetitivas</CardTitle>
               <CardDescription className="text-landing-text-muted">
-                Crie sistemas agenticos em uma única tela. Integre qualquer LLM em seus fluxos de trabalho.
+                Configure fluxos de trabalho para aprovação de reservas, envio de comunicados e gestão de manutenções.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-48 bg-landing-background rounded-lg flex items-center justify-center text-landing-text-muted">
-                {/* Placeholder for diagram */}
-                Diagrama de fluxo de trabalho
+                <BarChart3 className="h-16 w-16 text-purple-400 opacity-50" />
               </div>
               <Button className="mt-6 bg-purple-600 hover:bg-purple-700 text-white">
-                Explorar IA
+                Descobrir Automação
               </Button>
             </CardContent>
           </Card>
           <Card className="bg-landing-card border-landing-border text-landing-text p-6">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">Converse com seus próprios dados</CardTitle>
+              <CardTitle className="text-2xl font-bold">Comunicação Centralizada</CardTitle>
               <CardDescription className="text-landing-text-muted">
-                Use Slack, Teams, SMS, voz ou nossa interface de chat incorporada para obter respostas precisas.
+                Mantenha todos informados através de um único canal, com avisos, documentos e mensagens diretas.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-48 bg-landing-background rounded-lg flex items-center justify-center text-landing-text-muted">
-                {/* Placeholder for chat interface */}
-                Interface de chat
+                <MessageSquare className="h-16 w-16 text-purple-400 opacity-50" />
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* Code when you need it, UI when you don't Section */}
+      {/* Flexibility Section */}
       <section className="py-16 px-4 bg-landing-background">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-bold text-landing-text">
-              Código quando precisar, <br />
-              UI quando não precisar
+              Flexibilidade para <br />
+              sua Gestão
             </h2>
             <p className="text-lg text-landing-text-muted">
-              Outras ferramentas limitam você a uma experiência de construção visual ou a código. Com a nossa plataforma, você obtém o melhor dos dois mundos.
+              Nossa plataforma se adapta às necessidades do seu condomínio, oferecendo ferramentas personalizáveis e intuitivas.
             </p>
             <ul className="space-y-3 text-landing-text-muted">
-              <li className="flex items-center"><Code className="h-5 w-5 mr-3 text-purple-400" /> Escreva JavaScript ou Python - você sempre pode voltar ao código</li>
-              <li className="flex items-center"><Code className="h-5 w-5 mr-3 text-purple-400" /> Adicione bibliotecas npm ou Python para ainda mais poder</li>
+              <li className="flex items-center"><Code className="h-5 w-5 mr-3 text-purple-400" /> Relatórios personalizáveis para uma visão clara</li>
+              <li className="flex items-center"><Code className="h-5 w-5 mr-3 text-purple-400" /> Configurações adaptáveis para diferentes tipos de condomínios</li>
             </ul>
           </div>
           <div className="h-96 bg-landing-card border border-landing-border rounded-lg flex items-center justify-center text-landing-text-muted">
-            {/* Placeholder for code editor */}
-            Editor de código
+            <ShieldCheck className="h-24 w-24 text-purple-500 opacity-50" />
           </div>
         </div>
       </section>
 
-      {/* Run. Tweak. Repeat. Section */}
+      {/* Optimize Processes Section */}
       <section className="py-16 px-4 bg-landing-background">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="h-96 bg-landing-card border border-landing-border rounded-full flex items-center justify-center text-landing-text-muted relative">
@@ -202,42 +245,104 @@ const LandingPageContent = () => {
           </div>
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-bold text-landing-text">
-              Execute. Ajuste. Repita.
+              Otimize seus Processos <br />
+              e Ganhe Tempo
             </h2>
             <p className="text-lg text-landing-text-muted">
-              Os mesmos loops de feedback curtos que fazem você sorrir em seus scripts.
+              Reduza a burocracia e foque no que realmente importa: a satisfação dos moradores.
             </p>
             <ul className="space-y-3 text-landing-text-muted">
-              <li className="flex items-center"><Check className="h-5 w-5 mr-3 text-green-400" /> Re-execute etapas únicas sem re-executar todo o fluxo de trabalho</li>
-              <li className="flex items-center"><Check className="h-5 w-5 mr-3 text-green-400" /> Replay ou dados simulados para evitar esperar por sistemas externos</li>
-              <li className="flex items-center"><Check className="h-5 w-5 mr-3 text-green-400" /> Depure rápido, com logs em linha com seu código</li>
-              <li className="flex items-center"><Check className="h-5 w-5 mr-3 text-green-400" /> Use mais de 1700 modelos para iniciar seu projeto</li>
+              <li className="flex items-center"><Check className="h-5 w-5 mr-3 text-green-400" /> Gestão financeira integrada</li>
+              <li className="flex items-center"><Check className="h-5 w-5 mr-3 text-green-400" /> Notificações automáticas para eventos importantes</li>
+              <li className="flex items-center"><Check className="h-5 w-5 mr-3 text-green-400" /> Acesso rápido a informações e documentos</li>
             </ul>
             <Button className="mt-6 bg-purple-600 hover:bg-purple-700 text-white text-lg px-8 py-4 rounded-lg">
-              Ver produto completo
+              Ver Funcionalidades Completas
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Plans Section */}
+      <section ref={plansSectionRef} id="planos" className="py-16 px-4 bg-landing-background text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-landing-text">
+          Escolha o plano ideal para o seu condomínio
+        </h2>
+        <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
+          Oferecemos diferentes planos para satisfazer as necessidades
+          específicas da sua gestão.
+        </p>
+
+        <div className="my-8">
+          <div className="inline-flex bg-gray-800/50 rounded-full p-1">
+            <Button
+              onClick={() => setBillingCycle("monthly")}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                billingCycle === "monthly"
+                  ? "bg-purple-600 text-white hover:bg-purple-700"
+                  : "bg-transparent text-gray-300 hover:bg-gray-700/50"
+              }`}
+            >
+              Mensal
+            </Button>
+            <Button
+              onClick={() => setBillingCycle("annual")}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                billingCycle === "annual"
+                  ? "bg-purple-600 text-white hover:bg-purple-700"
+                  : "bg-transparent text-gray-300 hover:bg-gray-700/50"
+              }`}
+            >
+              Anual
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-6 justify-center">
+          {loadingPlans ? (
+            <div className="flex justify-center items-center w-full h-48">
+              <LoadingSpinner size="lg" className="border-primary shadow-lg shadow-primary/50" />
+            </div>
+          ) : filteredPlans.length === 0 ? (
+            <div className="text-gray-300">Nenhum plano disponível.</div>
+          ) : (
+            filteredPlans.map((plan) => (
+              <PlanCard
+                key={plan.id}
+                name={plan.name}
+                description={plan.description || ""}
+                price={new Intl.NumberFormat("pt-PT", { style: "currency", currency: "EUR" }).format(plan.price)}
+                period={`/${plan.period === "monthly" ? "mês" : "ano"}`}
+                features={plan.features || []}
+                buttonText="Ver Detalhes"
+                onClick={() => window.location.href = `/planos`} // Link to the dedicated plans page
+              />
+            ))
+          )}
         </div>
       </section>
 
       {/* Case Studies Section */}
       <section className="py-16 px-4 bg-landing-background text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-landing-text">
-          Estudos de Caso
+          Casos de Sucesso
         </h2>
+        <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
+          Veja como o Facility Fincas transformou a gestão de condomínios para nossos clientes.
+        </p>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <Card className="bg-landing-card border-landing-border text-landing-text p-6">
             <CardHeader>
-              <CardTitle className="text-xl font-bold">Como a Delivery Hero economizou 200 horas por mês</CardTitle>
+              <CardTitle className="text-xl font-bold">Condomínio Residencial Alpha</CardTitle>
             </CardHeader>
             <CardContent className="text-landing-text-muted">
-              "Tivemos melhorias drásticas na eficiência desde que começamos a usar a plataforma para gerenciamento de usuários. É incrivelmente poderosa, mas também simples de usar."
+              "A implementação do Facility Fincas reduziu em 30% o tempo gasto com burocracia e melhorou a comunicação com os moradores."
             </CardContent>
             <div className="flex items-center justify-center mt-4">
               <img src="https://github.com/shadcn.png" alt="User" className="h-10 w-10 rounded-full mr-3" />
               <div>
-                <p className="font-semibold text-landing-text">Dennis Zahrt</p>
-                <p className="text-sm text-landing-text-muted">Diretor de Global IT Service Delivery</p>
+                <p className="font-semibold text-landing-text">Ana Paula Silva</p>
+                <p className="text-sm text-landing-text-muted">Síndica Profissional</p>
               </div>
             </div>
             <Button variant="outline" className="mt-6 bg-transparent border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white">
@@ -246,16 +351,16 @@ const LandingPageContent = () => {
           </Card>
           <Card className="bg-landing-card border-landing-border text-landing-text p-6">
             <CardHeader>
-              <CardTitle className="text-xl font-bold">Como a StepStone finaliza 2 semanas de trabalho em apenas 2 horas</CardTitle>
+              <CardTitle className="text-xl font-bold">Administradora Soluções Imobiliárias</CardTitle>
             </CardHeader>
             <CardContent className="text-landing-text-muted">
-              "Aceleramos nossa integração de fontes de dados do marketplace em 25X. Levamos 2 horas no máximo para conectar APIs e transformar os dados de que precisamos."
+              "Com o Facility Fincas, conseguimos gerenciar múltiplos condomínios de forma centralizada, otimizando recursos e aumentando a satisfação dos clientes."
             </CardContent>
             <div className="flex items-center justify-center mt-4">
               <img src="https://github.com/shadcn.png" alt="User" className="h-10 w-10 rounded-full mr-3" />
               <div>
-                <p className="font-semibold text-landing-text">Luka Pilic</p>
-                <p className="text-sm text-landing-text-muted">Líder Técnico de Marketplace</p>
+                <p className="font-semibold text-landing-text">Carlos Eduardo</p>
+                <p className="text-sm text-landing-text-muted">Diretor de Operações</p>
               </div>
             </div>
             <Button variant="outline" className="mt-6 bg-transparent border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white">
@@ -268,13 +373,13 @@ const LandingPageContent = () => {
       {/* Call to Action Section */}
       <section className="py-16 px-4 bg-gradient-to-br from-purple-800 to-indigo-800 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-white">
-          Não há nada que você não possa automatizar
+          Transforme a gestão do seu condomínio hoje!
         </h2>
         <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
-          As palavras dos nossos clientes, não as nossas. Cético? Experimente e veja por si mesmo.
+          Experimente o Facility Fincas e descubra um novo nível de eficiência e transparência.
         </p>
-        <Button className="mt-8 bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-4 rounded-lg">
-          Começar a construir
+        <Button className="mt-8 bg-white text-purple-600 hover:bg-gray-100 text-lg px-8 py-4 rounded-lg" asChild>
+          <Link to="/criar-conta">Começar Agora</Link>
         </Button>
       </section>
 
@@ -283,9 +388,9 @@ const LandingPageContent = () => {
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2 text-landing-text text-lg font-bold">
-              <DynamicLogo />
+              <DynamicLogo className="mb-0" imageClassName="h-8 w-auto max-h-8" />
             </Link>
-            <p>Automatize sem limites</p>
+            <p>Gestão de condomínios sem limites</p>
             <div className="flex space-x-4">
               <Link to="#" className="hover:text-landing-text"><Github className="h-5 w-5" /></Link>
               <Link to="#" className="hover:text-landing-text"><MessageSquare className="h-5 w-5" /></Link>
@@ -296,35 +401,34 @@ const LandingPageContent = () => {
           <div className="space-y-2">
             <h4 className="font-semibold text-landing-text">Empresa</h4>
             <ul className="space-y-1">
-              <li><Link to="#" className="hover:text-landing-text">Carreiras</Link></li>
+              <li><Link to="#" className="hover:text-landing-text">Sobre Nós</Link></li>
               <li><Link to="#" className="hover:text-landing-text">Contato</Link></li>
+              <li><Link to="#" className="hover:text-landing-text">Carreiras</Link></li>
               <li><Link to="#" className="hover:text-landing-text">Imprensa</Link></li>
-              <li><Link to="#" className="hover:text-landing-text">Legal</Link></li>
             </ul>
           </div>
           <div className="space-y-2">
             <h4 className="font-semibold text-landing-text">Recursos</h4>
             <ul className="space-y-1">
-              <li><Link to="#" className="hover:text-landing-text">Estudos de Caso</Link></li>
-              <li><Link to="#" className="hover:text-landing-text">Modelos</Link></li>
-              <li><Link to="#" className="hover:text-landing-text">Relatório de Agente de IA</Link></li>
+              <li><Link to="#" className="hover:text-landing-text">Blog</Link></li>
+              <li><Link to="#" className="hover:text-landing-text">Central de Ajuda</Link></li>
+              <li><Link to="#" className="hover:text-landing-text">Webinars</Link></li>
             </ul>
           </div>
           <div className="space-y-2">
-            <h4 className="font-semibold text-landing-text">Guias Populares</h4>
+            <h4 className="font-semibold text-landing-text">Soluções</h4>
             <ul className="space-y-1">
-              <li><Link to="#" className="hover:text-landing-text">Bots do Telegram</Link></li>
-              <li><Link to="#" className="hover:text-landing-text">Chatbot de código aberto</Link></li>
-              <li><Link to="#" className="hover:text-landing-text">Plataforma de baixo código de código aberto</Link></li>
+              <li><Link to="#" className="hover:text-landing-text">Para Administradoras</Link></li>
+              <li><Link to="#" className="hover:text-landing-text">Para Síndicos</Link></li>
+              <li><Link to="#" className="hover:text-landing-text">Para Moradores</Link></li>
             </ul>
           </div>
         </div>
         <div className="mt-12 border-t border-landing-border pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex space-x-4 mb-4 md:mb-0">
-            <Link to="#" className="hover:text-landing-text">Imprint</Link>
-            <Link to="#" className="hover:text-landing-text">Segurança</Link>
-            <Link to="#" className="hover:text-landing-text">Privacidade</Link>
-            <Link to="#" className="hover:text-landing-text">Reportar uma vulnerabilidade</Link>
+            <Link to="#" className="hover:text-landing-text">Termos de Uso</Link>
+            <Link to="#" className="hover:text-landing-text">Política de Privacidade</Link>
+            <Link to="#" className="hover:text-landing-text">Cookies</Link>
           </div>
           <p>&copy; {new Date().getFullYear()} Facility Fincas. Todos os direitos reservados.</p>
         </div>

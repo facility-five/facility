@@ -4,8 +4,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/Logo';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils'; // Import cn utility
 
-export const DynamicLogo = () => {
+interface DynamicLogoProps {
+  className?: string; // Add className prop for external styling
+  imageClassName?: string; // Add imageClassName for image-specific styling
+}
+
+export const DynamicLogo = ({ className, imageClassName }: DynamicLogoProps) => {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [systemName, setSystemName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +39,7 @@ export const DynamicLogo = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center mb-8 h-20">
+      <div className={cn("flex flex-col items-center justify-center mb-8 h-20", className)}>
         <Skeleton className="h-full w-48" />
       </div>
     );
@@ -41,11 +47,11 @@ export const DynamicLogo = () => {
 
   if (logoUrl) {
     return (
-      <div className="flex flex-col items-center justify-center mb-8">
+      <div className={cn("flex flex-col items-center justify-center mb-8", className)}>
         <img
           src={logoUrl}
           alt={systemName ? `${systemName} Logo` : 'Logo do Sistema'}
-          className="w-auto max-w-xs max-h-20 object-contain"
+          className={cn("w-auto max-w-xs max-h-20 object-contain", imageClassName)}
         />
       </div>
     );
