@@ -20,7 +20,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Outfit", ...defaultTheme.fontFamily.sans],
+        sans: ["Lexend", ...defaultTheme.fontFamily.sans],
       },
       colors: {
         border: "hsl(var(--border))",
