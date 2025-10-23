@@ -82,6 +82,8 @@ export const SystemSettingsTab = () => {
   }, [form]);
 
   async function onSubmit(values: SettingsFormValues) {
+    console.log("Valores do formulário antes do processamento:", values);
+
     const { logo_file, logo_negative_file, ...dbValues } = values;
     let newLogoUrl = form.getValues('logo_url');
     let newLogoNegativeUrl = form.getValues('logo_negative_url');
@@ -89,6 +91,7 @@ export const SystemSettingsTab = () => {
 
     const uploadFile = async (file: any, path: string): Promise<string | null> => {
       if (file instanceof File) {
+        console.log(`Iniciando upload para ${path}:`, file.name);
         const fileExt = file.name.split('.').pop();
         const fileName = `${path}_${Date.now()}.${fileExt}`;
         const { error, data } = await supabase.storage
@@ -96,14 +99,21 @@ export const SystemSettingsTab = () => {
           .upload(fileName, file, { upsert: true });
 
         if (error) {
-          showError(`Erro ao carregar imagem: ${error.message}`);
+          showError(`Erro ao carregar imagem para ${path}: ${error.message}`);
           hasError = true;
           return null;
         }
         
         const { data: publicURL } = supabase.storage.from('system-assets').getPublicUrl(data.path);
+        console.log(`Upload de ${path} concluído. URL pública:`, publicURL.publicUrl);
         return publicURL.publicUrl;
+      } else if (file === null) {
+        console.log(`Removendo imagem para ${path}.`);
+        // Lógica para remover o arquivo antigo do storage, se necessário
+        // Por simplicidade, vamos apenas retornar null para o URL no DB
+        return null;
       }
+      console.log(`Nenhum novo arquivo para ${path}. Usando URL existente:`, file);
       return file; // Retorna o valor existente (URL ou null) se não for um novo arquivo
     };
 
@@ -113,7 +123,16 @@ export const SystemSettingsTab = () => {
     const uploadedLogoNegativeUrl = await uploadFile(logo_negative_file, 'logo_negative');
     if (!hasError) newLogoNegativeUrl = uploadedLogoNegativeUrl;
 
-    if (hasError) return;
+    if (hasError) {
+      console.log("Erro durante o upload, abortando salvamento no DB.");
+      return;
+    }
+
+    console.log("Valores a serem atualizados no banco de dados:", { 
+        ...dbValues, 
+        logo_url: newLogoUrl, 
+        logo_negative_url: newLogoNegativeUrl 
+    });
 
     const { error } = await supabase
       .from("system_settings")
@@ -126,8 +145,10 @@ export const SystemSettingsTab = () => {
 
     if (error) {
       showError(error.message);
+      console.error("Erro ao salvar configurações no banco de dados:", error);
     } else {
       showSuccess("Configurações salvas com sucesso!");
+      console.log("Configurações salvas com sucesso no banco de dados.");
       form.reset({
           ...values,
           logo_url: newLogoUrl,
