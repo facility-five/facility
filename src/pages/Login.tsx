@@ -4,14 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout } from "@/components/AuthLayout";
 
 function Login() {
+  // Define a URL de redirecionamento para a raiz do aplicativo.
+  // O AuthContext se encarregará de redirecionar para o dashboard correto após o login.
+  const redirectToUrl = window.location.origin + '/';
+
   return (
     <AuthLayout
-      title="Faça login na sua conta"
-      description="Insira seu e-mail e senha para acessar a plataforma."
+      title="" // Título vazio para evitar conflito com o título interno do Auth UI
+      description="" // Descrição vazia para evitar conflito
     >
       <Auth
         supabaseClient={supabase}
-        providers={[]}
+        providers={[]} // Desabilita provedores sociais, mantendo apenas e-mail/senha
         appearance={{
           theme: ThemeSupa,
           variables: {
@@ -36,6 +40,8 @@ function Login() {
           },
         }}
         theme="light"
+        redirectTo={redirectToUrl} // Adiciona a URL de redirecionamento
+        view="sign_in" // Garante que a tela de login seja exibida por padrão
       />
     </AuthLayout>
   );
