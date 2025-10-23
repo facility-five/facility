@@ -272,10 +272,10 @@ const LandingPageContent = () => {
       {/* Integrations Section */}
       <section className="py-16 px-4 bg-landing-background text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-landing-text">
-          Integre com as ferramentas que você já usa
+          Pronto para o futuro
         </h2>
         <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
-          Conecte o Facility Fincas a sistemas de pagamento, comunicação e muito mais para uma gestão sem interrupções.
+          O Facility Fincas está preparado para futuras integrações com sistemas de pagamento, comunicação e muito mais, garantindo uma gestão sem interrupções.
         </p>
         <div className="mt-12 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-6 max-w-6xl mx-auto">
           {Array.from({ length: 10 }).map((_, i) => ( // Reduced number of placeholders
@@ -284,7 +284,7 @@ const LandingPageContent = () => {
             </div>
           ))}
         </div>
-        <Button className="mt-12 bg-purple-600 hover:bg-purple-700 text-white text-lg px-8 py-4 rounded-lg">
+        <Button className="mt-12 bg-purple-600 hover:bg-purple-700 text-white">
           Ver todas as integrações
         </Button>
       </section>
