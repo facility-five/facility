@@ -82,8 +82,36 @@ export function SetupMasterForm() {
       return;
     }
 
-    // The handle_new_user trigger should have already confirmed the email for the first user
-    // and set the role. We can directly sign in.
+    // Após a criação do usuário, garantir que a tabela system_settings tenha uma entrada inicial
+    const { data: systemSettingsCheck, error: settingsCheckError } = await supabase
+      .from('system_settings')
+      .select('id', { count: 'exact', head: true });
+
+    if (settingsCheckError && settingsCheckError.code !== 'PGRST116') {
+      console.error("SetupMasterForm: Erro ao verificar configurações do sistema:", settingsCheckError);
+      showError("Erro ao verificar configurações do sistema.");
+    } else if ((systemSettingsCheck?.count || 0) === 0) {
+      // Se não houver configurações do sistema, inserir uma linha padrão
+      const { error: insertError } = await supabase
+        .from("system_settings")
+        .insert([{ 
+          id: 1, 
+          system_name: "Facility Fincas", 
+          default_language: "pt-br", 
+          timezone: "utc-3", 
+          date_format: "DD/MM/YYYY", 
+          currency: "EUR", 
+          maintenance_mode: false, 
+          allow_registrations: true 
+        }]);
+      if (insertError) {
+        console.error("SetupMasterForm: Erro ao inicializar configurações do sistema:", insertError);
+        showError("Erro ao inicializar configurações do sistema.");
+      }
+    }
+
+    // O trigger handle_new_user já deve ter confirmado o e-mail para o primeiro usuário
+    // e definido o papel. Podemos fazer o login diretamente.
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
