@@ -121,7 +121,15 @@ export const EmailTemplatesTab = () => {
       });
 
       if (error) {
-        showRadixError(error.message || "Falha ao enviar e-mail de teste.");
+        const msg = error.message || "Falha ao enviar e-mail de teste.";
+        // Mensagem mais clara quando a função não está acessível/deployada
+        if (msg.includes('Failed to send a request')) {
+          showRadixError(
+            "Não foi possível alcançar a Edge Function. Verifique se a função está publicada e se as secrets (RESEND_API_KEY) estão configuradas."
+          );
+        } else {
+          showRadixError(msg);
+        }
         return;
       }
       showRadixSuccess("E-mail de teste enviado!");
