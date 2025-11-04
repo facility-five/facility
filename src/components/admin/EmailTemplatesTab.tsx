@@ -16,6 +16,7 @@ export const EmailTemplatesTab = () => {
   const [activeTab, setActiveTab] = useState<string>("welcome");
   const [subject, setSubject] = useState<string>("");
   const [body, setBody] = useState<string>("");
+  const [sendingTest, setSendingTest] = useState<boolean>(false);
 
   const categories = [
     { id: "welcome", label: "Boas-vindas", name: "resident-welcome" },
@@ -97,6 +98,40 @@ export const EmailTemplatesTab = () => {
     fetchTemplates();
   };
 
+  const sendTest = async () => {
+    try {
+      setSendingTest(true);
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        showRadixError(userError.message);
+        return;
+      }
+      const to = userData?.user?.email;
+      if (!to) {
+        showRadixError("Faça login para enviar um teste.");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-template-test', {
+        body: {
+          to,
+          subject,
+          html: body,
+        },
+      });
+
+      if (error) {
+        showRadixError(error.message || "Falha ao enviar e-mail de teste.");
+        return;
+      }
+      showRadixSuccess("E-mail de teste enviado!");
+    } catch (err: any) {
+      showRadixError(err?.message || "Erro ao enviar teste.");
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
   return (
     <>
       <Card className="bg-admin-card border-admin-border text-admin-foreground">
@@ -152,7 +187,15 @@ export const EmailTemplatesTab = () => {
                         Suporte a placeholders como {"{{first_name}}"}, {"{{condo_name}}"} e {"{{date}}"}.
                       </p>
                     </div>
-                    <div className="flex justify-end">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        className="bg-purple-600 text-white hover:bg-purple-700 focus:bg-purple-600 focus:text-white data-[state=active]:bg-purple-600"
+                        onClick={sendTest}
+                        disabled={sendingTest || !subject || !body}
+                      >
+                        Enviar Teste
+                      </Button>
                       <Button className="bg-purple-600 hover:bg-purple-700" onClick={saveCurrent}>Salvar Template</Button>
                     </div>
                   </div>
