@@ -727,33 +727,33 @@ const LandingPageV2 = () => {
             {[
               {
                 icon: <Settings className="w-8 h-8" />,
-                title: "Smart Automation",
-                description: "Automate repetitive tasks and workflows with intelligent AI-powered systems"
+                title: "Automatización Inteligente",
+                description: "Automatiza tareas repetitivas y flujos de trabajo con sistemas inteligentes impulsados por IA"
               },
               {
                 icon: <Users className="w-8 h-8" />,
-                title: "Team Collaboration",
-                description: "Seamless collaboration tools for distributed teams and stakeholders"
+                title: "Colaboración de Equipos",
+                description: "Herramientas de colaboración fluidas para equipos distribuidos y partes interesadas"
               },
               {
                 icon: <Shield className="w-8 h-8" />,
-                title: "Enterprise Security",
-                description: "Bank-level security with advanced encryption and compliance features"
+                title: "Seguridad Empresarial",
+                description: "Seguridad de nivel bancario con cifrado avanzado y funciones de cumplimiento"
               },
               {
                 icon: <BarChart3 className="w-8 h-8" />,
-                title: "Advanced Analytics",
-                description: "Deep insights and reporting to make data-driven decisions"
+                title: "Analítica Avanzada",
+                description: "Información profunda y reportes para tomar decisiones basadas en datos"
               },
               {
                 icon: <Clock className="w-8 h-8" />,
-                title: "Real-time Updates",
-                description: "Live synchronization and instant updates across all platforms"
+                title: "Actualizaciones en Tiempo Real",
+                description: "Sincronización en vivo y actualizaciones instantáneas en todas las plataformas"
               },
               {
                 icon: <MessageSquare className="w-8 h-8" />,
-                title: "Multi-language Support",
-                description: "Built-in translation and localization for global audiences"
+                title: "Soporte Multilingüe",
+                description: "Traducción y localización integradas para audiencias globales"
               }
             ].map((feature, index) => (
               <Card key={index} className="border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-500 ease-out bg-white hover:scale-105 hover:-translate-y-2" style={{ borderRadius: '20px' }}>
@@ -779,11 +779,11 @@ const LandingPageV2 = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="title-40px font-bold text-gray-900 mb-4">
-              All the UI tools you need, all
-              <span className="block">in one place</span>
+              Todas las herramientas de UI que necesitas,
+              <span className="block">en un solo lugar</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Comprehensive design system with components, templates, and tools for modern applications
+              Sistema de diseño integral con componentes, plantillas y herramientas para aplicaciones modernas
             </p>
           </div>
           <div className="max-w-6xl mx-auto">
@@ -793,15 +793,15 @@ const LandingPageV2 = () => {
                   <div className="w-3 h-3 bg-red-400 rounded-[20px]"></div>
                   <div className="w-3 h-3 bg-yellow-400 rounded-[20px]"></div>
                   <div className="w-3 h-3 bg-green-400 rounded-[20px]"></div>
-                  <span className="ml-4 text-gray-600 text-sm">Dashboard Interface</span>
+                  <span className="ml-4 text-gray-600 text-sm">Interfaz del Panel</span>
                 </div>
                 <div className="p-8 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-[400px]">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
                     <div className="lg:col-span-2 space-y-4">
                       <div className="bg-white rounded-[20px] p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-3">
-                          <h3 className="font-semibold text-gray-900">Analytics Overview</h3>
-                          <Badge variant="secondary">Live</Badge>
+                          <h3 className="font-semibold text-gray-900">Resumen de Analítica</h3>
+                          <Badge variant="secondary">En vivo</Badge>
                         </div>
                         <div className="h-32 bg-gradient-to-r from-purple-100 to-blue-100 rounded-[20px] flex items-center justify-center">
                           <BarChart3 className="w-12 h-12 text-purple-600" />
@@ -810,17 +810,17 @@ const LandingPageV2 = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-white rounded-[20px] p-4 shadow-sm">
                           <div className="text-2xl font-bold text-gray-900">2.4k</div>
-                          <div className="text-sm text-gray-600">Active Users</div>
+                          <div className="text-sm text-gray-600">Usuarios Activos</div>
                         </div>
                         <div className="bg-white rounded-[20px] p-4 shadow-sm">
                           <div className="text-2xl font-bold text-gray-900">98.5%</div>
-                          <div className="text-sm text-gray-600">Uptime</div>
+                          <div className="text-sm text-gray-600">Disponibilidad</div>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <div className="bg-white rounded-[20px] p-4 shadow-sm">
-                        <h3 className="font-semibold text-gray-900 mb-3">Recent Activity</h3>
+                        <h3 className="font-semibold text-gray-900 mb-3">Actividad Reciente</h3>
                         <div className="space-y-2">
                           {[1, 2, 3].map((item) => (
                             <div key={item} className="flex items-center gap-3">
@@ -828,8 +828,8 @@ const LandingPageV2 = () => {
                                 <Users className="w-4 h-4 text-purple-600" />
                               </div>
                               <div className="flex-1">
-                                <div className="text-sm font-medium text-gray-900">User Action {item}</div>
-                                <div className="text-xs text-gray-500">2 min ago</div>
+                                <div className="text-sm font-medium text-gray-900">Acción de Usuario {item}</div>
+                                <div className="text-xs text-gray-500">Hace 2 min</div>
                               </div>
                             </div>
                           ))}
@@ -849,11 +849,11 @@ const LandingPageV2 = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="title-40px font-bold mb-4">
-              Why Top Companies of
-              <span className="block">Every Size Choose Us</span>
+              Por qué las mejores empresas de
+              <span className="block">todos los tamaños nos eligen</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Join thousands of companies that trust our platform for their digital transformation
+              Únete a miles de empresas que confían en nuestra plataforma para su transformación digital
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg-grid-cols-3 gap-8">
@@ -861,20 +861,20 @@ const LandingPageV2 = () => {
               {
                 color: "from-purple-500 to-pink-500",
                 icon: <Star className="w-8 h-8" />,
-                title: "99.9% Uptime",
-                description: "Enterprise-grade reliability with guaranteed uptime and 24/7 monitoring"
+                title: "99,9% de Disponibilidad",
+                description: "Fiabilidad de nivel empresarial con disponibilidad garantizada y monitoreo 24/7"
               },
               {
                 color: "from-blue-500 to-cyan-500",
                 icon: <Shield className="w-8 h-8" />,
-                title: "Bank-Level Security",
-                description: "Advanced encryption, compliance certifications, and security audits"
+                title: "Seguridad de Nivel Bancario",
+                description: "Cifrado avanzado, certificaciones de cumplimiento y auditorías de seguridad"
               },
               {
                 color: "from-green-500 to-emerald-500",
                 icon: <Users className="w-8 h-8" />,
-                title: "Expert Support",
-                description: "Dedicated support team with average response time under 2 hours"
+                title: "Soporte Experto",
+                description: "Equipo de soporte dedicado con tiempo de respuesta promedio inferior a 2 horas"
               }
             ].map((benefit, index) => (
               <Card key={index} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all duration-500 ease-out hover:scale-105 hover:-translate-y-2 hover:shadow-2xl">
@@ -899,9 +899,9 @@ const LandingPageV2 = () => {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="title-40px font-bold text-gray-900 mb-4">What our users says</h2>
+            <h2 className="title-40px font-bold text-gray-900 mb-4">Lo que dicen nuestros usuarios</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Discover how companies are transforming their operations with our platform
+              Descubre cómo las empresas transforman sus operaciones con nuestra plataforma
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -910,42 +910,42 @@ const LandingPageV2 = () => {
                 name: "Sarah Johnson",
                 role: "Product Manager",
                 company: "TechCorp",
-                content: "This platform has revolutionized how we manage our digital products. The AI features save us hours every week.",
+                content: "Esta plataforma ha revolucionado cómo gestionamos nuestros productos digitales. Las funciones de IA nos ahorran horas cada semana.",
                 rating: 5
               },
               {
                 name: "Michael Chen",
                 role: "CTO",
                 company: "StartupXYZ",
-                content: "The translation features helped us expand globally in just 3 months. Incredible ROI and user experience.",
+                content: "Las funciones de traducción nos ayudaron a expandirnos globalmente en solo 3 meses. ROI y experiencia de usuario increíbles.",
                 rating: 5
               },
               {
                 name: "Emily Rodriguez",
                 role: "Design Lead",
                 company: "DesignStudio",
-                content: "The UI components and design system are top-notch. Our team productivity increased by 40%.",
+                content: "Los componentes de UI y el sistema de diseño son de primera. La productividad de nuestro equipo aumentó un 40%.",
                 rating: 5
               },
               {
                 name: "David Kim",
                 role: "Engineering Manager",
                 company: "ScaleUp Inc",
-                content: "Security and reliability are outstanding. We've had zero downtime since switching to this platform.",
+                content: "La seguridad y la fiabilidad son excelentes. No hemos tenido tiempo de inactividad desde que cambiamos a esta plataforma.",
                 rating: 5
               },
               {
                 name: "Lisa Wang",
                 role: "Marketing Director",
                 company: "GrowthCo",
-                content: "The analytics and insights help us make better decisions. Our conversion rates improved significantly.",
+                content: "La analítica y las perspectivas nos ayudan a tomar mejores decisiones. Nuestras tasas de conversión mejoraron significativamente.",
                 rating: 5
               },
               {
                 name: "James Wilson",
                 role: "Founder",
                 company: "InnovateLab",
-                content: "Best investment we've made. The platform scales with our business and the support team is amazing.",
+                content: "La mejor inversión que hemos hecho. La plataforma escala con nuestro negocio y el equipo de soporte es increíble.",
                 rating: 5
               }
             ].map((testimonial, index) => (
@@ -969,7 +969,7 @@ const LandingPageV2 = () => {
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                      <div className="text-sm text-gray-600">{testimonial.role} at {testimonial.company}</div>
+                      <div className="text-sm text-gray-600">{testimonial.role} en {testimonial.company}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -1088,32 +1088,32 @@ const LandingPageV2 = () => {
       <section id="faq" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="title-40px font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <h2 className="title-40px font-bold text-gray-900 mb-4">Preguntas Frecuentes</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Everything you need to know about our platform and services
+              Todo lo que necesitas saber sobre nuestra plataforma y servicios
             </p>
           </div>
           <div className="max-w-3xl mx-auto space-y-4 sr-stagger">
             {[
               {
-                question: "How does the AI translation feature work?",
-                answer: "Our AI translation system uses advanced machine learning models to provide accurate, context-aware translations in real-time. It learns from your content patterns and maintains consistency across your entire platform."
+                question: "¿Cómo funciona la función de traducción con IA?",
+                answer: "Nuestro sistema de traducción con IA utiliza modelos avanzados de aprendizaje automático para ofrecer traducciones precisas y con contexto en tiempo real. Aprende de los patrones de tu contenido y mantiene la coherencia en toda tu plataforma."
               },
               {
-                question: "Can I integrate with my existing tools?",
-                answer: "Yes! We offer comprehensive APIs and pre-built integrations with popular tools like Slack, GitHub, Figma, and more. Our platform is designed to work seamlessly with your existing workflow."
+                question: "¿Puedo integrar con mis herramientas existentes?",
+                answer: "¡Sí! Ofrecemos APIs completas e integraciones preconstruidas con herramientas populares como Slack, GitHub, Figma y más. Nuestra plataforma está diseñada para funcionar sin fricciones con tu flujo de trabajo existente."
               },
               {
-                question: "What kind of support do you provide?",
-                answer: "We provide 24/7 support for Enterprise customers, priority support for Professional plans, and email support for Starter plans. All customers have access to our comprehensive documentation and community forums."
+                question: "¿Qué tipo de soporte ofrecen?",
+                answer: "Brindamos soporte 24/7 para clientes Enterprise, soporte prioritario para planes Professional y soporte por correo electrónico para planes Starter. Todos los clientes tienen acceso a nuestra documentación completa y foros de la comunidad."
               },
               {
-                question: "Is my data secure?",
-                answer: "Absolutely. We use bank-level encryption, regular security audits, and comply with SOC 2, GDPR, and other industry standards. Your data is stored in secure, geographically distributed data centers."
+                question: "¿Mis datos están seguros?",
+                answer: "Por supuesto. Usamos cifrado de nivel bancario, auditorías de seguridad periódicas y cumplimos con SOC 2, GDPR y otros estándares de la industria. Tus datos se almacenan en centros de datos seguros y distribuidos geográficamente."
               },
               {
-                question: "Can I cancel my subscription anytime?",
-                answer: "Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees. You'll continue to have access to your account until the end of your current billing period."
+                question: "¿Puedo cancelar mi suscripción en cualquier momento?",
+                answer: "Sí, puedes cancelar tu suscripción en cualquier momento. No hay contratos a largo plazo ni tarifas de cancelación. Mantendrás acceso a tu cuenta hasta el final del período de facturación actual."
               }
             ].map((faq, index) => (
               <Card key={index} className="border border-gray-200 transition-all duration-300 ease-out hover:shadow-lg hover:border-purple-200">
@@ -1148,7 +1148,7 @@ const LandingPageV2 = () => {
             <div className="md:col-span-1">
               <DynamicLogo className="flex-row mb-4 h-16" imageClassName="h-16 w-auto max-h-16" />
               <p className="text-gray-400 mb-4">
-                Transform your digital presence with intelligent design systems and seamless multilingual experiences.
+                Transforma tu presencia digital con sistemas de diseño inteligentes y experiencias multilingües sin fricción.
               </p>
               <div className="flex gap-4">
                 <div className="w-8 h-8 bg-gray-800 rounded-[20px] flex items-center justify-center hover:bg-gray-700 cursor-pointer">
@@ -1163,41 +1163,41 @@ const LandingPageV2 = () => {
               </div>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 transition-colors duration-300 ease-out">Product</h3>
+              <h3 className="font-semibold mb-4 transition-colors duration-300 ease-out">Producto</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Pricing</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Características</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Precios</a></li>
                 <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">API</a></li>
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Documentation</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Documentación</a></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 transition-colors duration-300 ease-out">Company</h3>
+              <h3 className="font-semibold mb-4 transition-colors duration-300 ease-out">Empresa</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">About</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Acerca de</a></li>
                 <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Contact</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Carreras</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Contacto</a></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 transition-colors duration-300 ease-out">Support</h3>
+              <h3 className="font-semibold mb-4 transition-colors duration-300 ease-out">Soporte</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Community</a></li>
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Status</a></li>
-                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Security</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Centro de Ayuda</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Comunidad</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Estado</a></li>
+                <li><a href="#" className="hover:text-white transition-all duration-300 ease-out hover:translate-x-1">Seguridad</a></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm transition-colors duration-300 ease-out">
-              © 2024 Facility. All rights reserved.
+              © 2024 Facility. Todos los derechos reservados.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-all duration-300 ease-out hover:translate-x-1">Privacy Policy</a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-all duration-300 ease-out hover:translate-x-1">Terms of Service</a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-all duration-300 ease-out hover:translate-x-1">Cookie Policy</a>
+              <a href="#" className="text-gray-400 hover:text-white text-sm transition-all duration-300 ease-out hover:translate-x-1">Política de Privacidad</a>
+              <a href="#" className="text-gray-400 hover:text-white text-sm transition-all duration-300 ease-out hover:translate-x-1">Términos del Servicio</a>
+              <a href="#" className="text-gray-400 hover:text-white text-sm transition-all duration-300 ease-out hover:translate-x-1">Política de Cookies</a>
             </div>
           </div>
         </div>
