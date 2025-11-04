@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="#f8f9fa"/>
+  
+  <!-- Building structure -->
+  <g transform="translate(128, 64)">
+    <!-- Left building (light purple) -->
+    <rect x="0" y="80" width="80" height="320" fill="#c4b5fd" rx="4"/>
+    
+    <!-- Middle building (lighter purple) -->
+    <rect x="60" y="40" width="80" height="360" fill="#ddd6fe" rx="4"/>
+    
+    <!-- Right building (main purple) -->
+    <rect x="120" y="120" width="136" height="280" fill="#7c3aed" rx="4"/>
+    
+    <!-- Building details on right building -->
+    <rect x="140" y="180" width="96" height="16" fill="white" rx="2"/>
+    <rect x="140" y="220" width="96" height="16" fill="white" rx="2"/>
+    <rect x="140" y="260" width="96" height="16" fill="white" rx="2"/>
+    <rect x="140" y="300" width="96" height="16" fill="white" rx="2"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="256" y="460" text-anchor="middle" fill="#374151" font-family="Arial, sans-serif" font-size="32" font-weight="bold">FACILITY</text>
+  <text x="256" y="490" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="18">FINCAS</text>
+</svg>

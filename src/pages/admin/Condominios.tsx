@@ -1,14 +1,23 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CondoCard, Condo } from "@/components/admin/CondoCard";
+import { Condo } from "@/components/admin/CondoCard";
 import { NewCondoModal } from "@/components/admin/NewCondoModal";
 import { DeleteCondoModal } from "@/components/admin/DeleteCondoModal";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditCondoModal } from "@/components/manager/EditCondoModal"; // Reusing EditCondoModal
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Pencil, Trash2 } from "lucide-react";
 
 const Condominios = () => {
   const [condos, setCondos] = useState<Condo[]>([]);
@@ -26,7 +35,7 @@ const Condominios = () => {
       .select("*");
 
     if (error) {
-      showError("Erro ao buscar condomínios.");
+      showRadixError("Erro ao buscar condomínios.");
     } else {
       setCondos(data || []);
     }
@@ -45,9 +54,9 @@ const Condominios = () => {
       .eq("id", selectedCondo.id); // Use selectedCondo.id
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Condomínio excluído com sucesso!");
+      showRadixSuccess("Condomínio excluído com sucesso!");
       fetchCondos();
     }
     setIsDeleteModalOpen(false);
@@ -88,24 +97,53 @@ const Condominios = () => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full bg-admin-border" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCondos.map((condo) => (
-            <CondoCard
-              key={condo.id}
-              condo={condo}
-              onDelete={() => openDeleteModal(condo)} // Pass full condo object
-              onEdit={() => handleEditCondo(condo)} // Pass full condo object for editing
-            />
-          ))}
-        </div>
-      )}
+      <div className="rounded-lg border border-admin-border bg-admin-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b-purple-700 bg-purple-600 hover:bg-purple-600">
+              <TableHead className="text-white">Código</TableHead>
+              <TableHead className="text-white">Nome</TableHead>
+              <TableHead className="text-white">Endereço</TableHead>
+              <TableHead className="text-white">Administradora</TableHead>
+              <TableHead className="text-white text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i} className="border-b-admin-border">
+                  <TableCell colSpan={5}>
+                    <Skeleton className="h-8 w-full bg-admin-border" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : filteredCondos.length > 0 ? (
+              filteredCondos.map((condo) => (
+                <TableRow key={condo.id} className="border-b-admin-border hover:bg-muted/50">
+                  <TableCell className="font-medium text-purple-400">{condo.code}</TableCell>
+                  <TableCell className="font-medium">{condo.name}</TableCell>
+                  <TableCell>{condo.address || 'N/A'}</TableCell>
+                  <TableCell>{condo.administrator_name || 'N/A'}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => handleEditCondo(condo)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => openDeleteModal(condo)}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow className="border-b-admin-border">
+                <TableCell colSpan={5} className="text-center text-admin-foreground-muted">
+                  Nenhum condomínio encontrado.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <NewCondoModal
         isOpen={isNewModalOpen}

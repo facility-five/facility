@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Eye, EyeOff } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -38,10 +38,10 @@ const ResetPassword = () => {
   const onSubmit = async (values: z.infer<typeof schema>) => {
     const { error } = await supabase.auth.updateUser({ password: values.password });
     if (error) {
-      showError(error.message || "Não foi possível atualizar a senha. O link pode ter expirado.");
+      showRadixError(error.message || "Não foi possível atualizar a senha. O link pode ter expirado.");
       return;
     }
-    showSuccess("Senha atualizada com sucesso! Faça login com sua nova senha.");
+    showRadixSuccess("Senha atualizada com sucesso! Faça login com sua nova senha.");
     navigate("/");
   };
 

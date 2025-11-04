@@ -20,7 +20,22 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Lexend", ...defaultTheme.fontFamily.sans],
+        sans: ["Outfit", ...defaultTheme.fontFamily.sans],
+      },
+      fontSize: {
+        xs: ['14px', '18px'],
+        sm: ['14px', '18px'],
+        base: ['14px', '20px'],
+        lg: ['16px', '24px'],
+        xl: ['18px', '24px'],
+        '2xl': ['20px', '28px'],
+        '3xl': ['24px', '32px'],
+        '4xl': ['30px', '36px'],
+        '5xl': ['36px', '1'],
+        '6xl': ['48px', '1'],
+        '7xl': ['60px', '1'],
+        '8xl': ['72px', '1'],
+        '9xl': ['96px', '1'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -67,11 +82,15 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         admin: {
-          background: '#111827',
-          card: '#1F2937',
-          border: '#374151',
-          foreground: '#F9FAFB',
-          'foreground-muted': '#9CA3AF',
+          background: '#FFFFFF',
+          card: '#F9FAFB',
+          border: '#E5E7EB',
+          foreground: '#111827',
+          'foreground-muted': '#6B7280',
+        },
+        focus: {
+          DEFAULT: '#6A4CFF', // Purple color for focus states
+          ring: '#6A4CFF',
         },
         // Novas cores para a landing page, baseadas no tema escuro do print
         landing: {

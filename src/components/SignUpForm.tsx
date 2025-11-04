@@ -7,7 +7,8 @@ import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,33 +21,34 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-const formSchema = z
-  .object({
-    firstName: z.string().min(2, {
-      message: "O nome deve ter pelo menos 2 caracteres.",
-    }),
-    lastName: z.string().min(2, {
-      message: "O sobrenome deve ter pelo menos 2 caracteres.",
-    }),
-    email: z.string().email({
-      message: "Por favor, insira um e-mail válido.",
-    }),
-    password: z.string().min(6, {
-      message: "A senha deve ter pelo menos 6 caracteres.",
-    }),
-    confirmPassword: z.string().min(6, {
-      message: "A confirmação de senha deve ter pelo menos 6 caracteres.",
-    }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "As senhas não coincidem.",
-    path: ["confirmPassword"],
-  });
-
 export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const formSchema = z
+    .object({
+      firstName: z.string().min(2, {
+        message: t("auth.signup.errors.firstNameMin"),
+      }),
+      lastName: z.string().min(2, {
+        message: t("auth.signup.errors.lastNameMin"),
+      }),
+      email: z.string().email({
+        message: t("auth.signup.errors.emailInvalid"),
+      }),
+      password: z.string().min(6, {
+        message: t("auth.signup.errors.passwordMin"),
+      }),
+      confirmPassword: z.string().min(6, {
+        message: t("auth.signup.errors.confirmPasswordMin"),
+      }),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.signup.errors.passwordsMismatch"),
+      path: ["confirmPassword"],
+    });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -72,9 +74,15 @@ export function SignUpForm() {
     });
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      navigate("/verificar-email", { state: { email: values.email } });
+      showRadixSuccess(t("auth.signup.success"));
+      
+      // Limpar qualquer plano selecionado no sessionStorage
+      sessionStorage.removeItem('selected_plan');
+      
+      // Redirecionar diretamente para o ambiente da administradora
+      navigate("/gestor");
     }
   }
 
@@ -87,12 +95,12 @@ export function SignUpForm() {
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nome</FormLabel>
+                <FormLabel>{t("auth.signup.firstNameLabel")}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <Input
-                      placeholder="Seu nome"
+                      placeholder={t("auth.signup.firstNamePlaceholder")}
                       {...field}
                       className="pl-10"
                     />
@@ -107,10 +115,10 @@ export function SignUpForm() {
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sobrenome</FormLabel>
+                <FormLabel>{t("auth.signup.lastNameLabel")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Seu sobrenome"
+                    placeholder={t("auth.signup.lastNamePlaceholder")}
                     {...field}
                     className=""
                   />
@@ -125,12 +133,12 @@ export function SignUpForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t("auth.signup.emailLabel")}</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
-                    placeholder="seu@email.com"
+                    placeholder={t("auth.signup.emailPlaceholder")}
                     {...field}
                     className="pl-10"
                   />
@@ -145,13 +153,13 @@ export function SignUpForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Senha</FormLabel>
+              <FormLabel>{t("auth.signup.passwordLabel")}</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Crie uma senha"
+                    placeholder={t("auth.signup.passwordPlaceholder")}
                     {...field}
                     className="pl-10 pr-10"
                   />
@@ -159,7 +167,7 @@ export function SignUpForm() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 cursor-pointer"
-                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    aria-label={showPassword ? t("auth.hide_password") : t("auth.show_password")}
                   >
                     {showPassword ? <EyeOff /> : <Eye />}
                   </button>
@@ -174,13 +182,13 @@ export function SignUpForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirmar Senha</FormLabel>
+              <FormLabel>{t("auth.signup.confirmPasswordLabel")}</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirme sua senha"
+                    placeholder={t("auth.signup.confirmPasswordPlaceholder")}
                     {...field}
                     className="pl-10 pr-10"
                   />
@@ -188,7 +196,7 @@ export function SignUpForm() {
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 cursor-pointer"
-                    aria-label={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}
+                    aria-label={showConfirmPassword ? t("auth.hide_password") : t("auth.show_password")}
                   >
                     {showConfirmPassword ? <EyeOff /> : <Eye />}
                   </button>
@@ -202,7 +210,7 @@ export function SignUpForm() {
           type="submit"
           className="w-full bg-purple-600 hover:bg-purple-700"
         >
-          Criar conta
+          {t("auth.signup.createAccount")}
         </Button>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -210,12 +218,12 @@ export function SignUpForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-white px-2 text-muted-foreground">
-              Já tem uma conta?
+              {t("auth.signup.alreadyHaveAccount")}
             </span>
           </div>
         </div>
         <Button variant="outline" className="w-full" asChild>
-          <Link to="/">Fazer login</Link>
+          <Link to="/login">{t("auth.signup.loginNow")}</Link>
         </Button>
       </form>
     </Form>

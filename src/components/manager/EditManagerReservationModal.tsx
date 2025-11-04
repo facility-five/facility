@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -34,8 +34,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { useManagerAdministrators } from '@/contexts/ManagerAdministratorsContext';
-import { showError, showSuccess } from '@/utils/toast';
+import { showRadixError, showRadixSuccess } from '@/utils/toast';
 
 const formSchema = z.object({
   resident_id: z.string().min(1, "Selecione um residente"),
@@ -113,18 +112,17 @@ export const EditManagerReservationModal = ({
   const [commonAreas, setCommonAreas] = useState<CommonArea[]>([]);
   const [residents, setResidents] = useState<Resident[]>([]);
   const [selectedArea, setSelectedArea] = useState<CommonArea | null>(null);
-  const { selectedAdministratorId } = useManagerAdministrators();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
   useEffect(() => {
-    if (isOpen && selectedAdministratorId) {
+    if (isOpen) {
       fetchCommonAreas();
       fetchResidents();
     }
-  }, [isOpen, selectedAdministratorId]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (reservation && isOpen) {
@@ -148,18 +146,14 @@ export const EditManagerReservationModal = ({
   }, [reservation, isOpen, form]);
 
   const fetchCommonAreas = async () => {
-    if (!selectedAdministratorId) return;
-
     const { data, error } = await supabase
       .from("common_areas")
       .select(`
         *,
         condominiums!inner(
-          name,
-          administrator_id
+          name
         )
       `)
-      .eq("condominiums.administrator_id", selectedAdministratorId)
       .eq("is_deleted", false)
       .order("name");
 
@@ -171,18 +165,14 @@ export const EditManagerReservationModal = ({
   };
 
   const fetchResidents = async () => {
-    if (!selectedAdministratorId) return;
-
     const { data, error } = await supabase
       .from("residents")
       .select(`
         *,
         condominiums!inner(
-          name,
-          administrator_id
+          name
         )
       `)
-      .eq("condominiums.administrator_id", selectedAdministratorId)
       .eq("is_deleted", false)
       .order("name");
 
@@ -196,13 +186,8 @@ export const EditManagerReservationModal = ({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!reservation) return;
 
-    if (!selectedAdministratorId) {
-      showError("Selecione uma administradora primeiro.");
-      return;
-    }
-
     if (!selectedArea) {
-      showError("Selecione uma área comum.");
+      showRadixError("Selecione uma área comum.");
       return;
     }
 
@@ -219,14 +204,14 @@ export const EditManagerReservationModal = ({
         .eq("id", reservation.id);
 
       if (error) {
-        showError(error.message);
+        showRadixError(error.message);
       } else {
-        showSuccess("Reserva atualizada com sucesso!");
+        showRadixSuccess("Reserva atualizada com sucesso!");
         onSuccess();
         onClose();
       }
     } catch (error) {
-      showError("Erro inesperado. Tente novamente.");
+      showRadixError("Erro inesperado. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -258,7 +243,7 @@ export const EditManagerReservationModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Residente *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecionar residente..." />
@@ -293,7 +278,7 @@ export const EditManagerReservationModal = ({
                         field.onChange(value);
                         handleAreaChange(value);
                       }} 
-                      value={field.value}
+                      value={field.value || ""}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -404,7 +389,7 @@ export const EditManagerReservationModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />

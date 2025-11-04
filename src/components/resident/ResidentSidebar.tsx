@@ -14,38 +14,44 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const mainNav = [
-  { href: "/morador-dashboard", icon: LayoutGrid, label: "Início" },
-  { href: "/morador/reservas", icon: Calendar, label: "Reservas" },
-  { href: "/morador/comunicados", icon: MessageSquare, label: "Comunicados" },
-  { href: "/morador/solicitudes", icon: Wrench, label: "Solicitudes" },
-  { href: "/morador/unidade", icon: Building2, label: "Unidad" },
-  { href: "/morador/documentos", icon: FileText, label: "Documentos" },
+  { href: "/morador-dashboard", icon: LayoutGrid, labelKey: "navigation.dashboard" },
+  { href: "/morador/reservas", icon: Calendar, labelKey: "navigation.reservations" },
+  { href: "/morador/comunicados", icon: MessageSquare, labelKey: "navigation.communications" },
+  { href: "/morador/solicitudes", icon: Wrench, labelKey: "navigation.requests" },
+  { href: "/morador/unidade", icon: Building2, labelKey: "navigation.unit" },
+  { href: "/morador/documentos", icon: FileText, labelKey: "navigation.documents" },
 ];
 
 const accountNav = [
-  { href: "/morador/perfil", icon: User, label: "Perfil" },
-  { href: "/morador/configuracoes", icon: Settings, label: "Configurações" },
+  { href: "/morador/perfil", icon: User, labelKey: "navigation.profile" },
+  { href: "/morador/configuracoes", icon: Settings, labelKey: "navigation.settings" },
 ];
 
-const NavItem = ({ href, icon: Icon, label }: { href: string, icon: React.ElementType, label: string }) => (
-  <NavLink
-    to={href}
-    className={({ isActive }) =>
-      `flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-purple-700 ${
-        isActive ? "bg-purple-600 text-white" : "text-gray-300"
-      }`
-    }
-  >
-    <Icon className="h-4 w-4" />
-    {label}
-  </NavLink>
-);
+const NavItem = ({ href, icon: Icon, labelKey }: { href: string, icon: React.ElementType, labelKey: string }) => {
+  const { t } = useTranslation();
+  
+  return (
+    <NavLink
+      to={href}
+      className={({ isActive }) =>
+        `flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-purple-700 ${
+          isActive ? "bg-purple-600 text-white" : "text-gray-300"
+        }`
+      }
+    >
+      <Icon className="h-4 w-4" />
+      {t(labelKey)}
+    </NavLink>
+  );
+};
 
 export const ResidentSidebar = () => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await signOut();
@@ -78,7 +84,7 @@ export const ResidentSidebar = () => {
               className="flex items-center justify-start gap-3 rounded-lg px-3 py-2 text-gray-300 transition-all hover:bg-purple-700 hover:text-white"
             >
               <LogOut className="h-4 w-4" />
-              Sair
+              {t('auth.logout')}
             </Button>
           </nav>
         </div>

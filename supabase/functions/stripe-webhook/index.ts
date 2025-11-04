@@ -51,16 +51,52 @@ serve(async (req) => {
 
         const userId = (session.metadata?.user_id as string) || ""
         const planName = (session.metadata?.plan_name as string) || "Plano"
+        const planId = (session.metadata?.plan_id as string) || ""
         const amount = (session.amount_total ?? 0) / 100
 
+        console.log("Webhook: Processando checkout.session.completed", {
+          userId,
+          planName,
+          planId,
+          amount,
+          sessionId: session.id
+        })
+
         if (userId && amount > 0) {
-          await supabaseAdmin.from("payments").insert([
-            {
-              user_id: userId,
-              plan: planName,
-              amount: amount,
-            },
-          ])
+          // Inserir o pagamento com status "active"
+          const { data: payment, error: paymentError } = await supabaseAdmin
+            .from("payments")
+            .insert([
+              {
+                user_id: userId,
+                plan_id: planId || null,
+                plan: planName,
+                amount: amount,
+                currency: session.currency || "eur",
+                status: "active", // Definir como ativo
+                stripe_payment_intent_id: session.payment_intent as string,
+              },
+            ])
+            .select()
+            .single()
+
+          if (paymentError) {
+            console.error("Erro ao inserir pagamento:", paymentError)
+          } else {
+            console.log("Pagamento inserido com sucesso:", payment)
+          }
+
+          // Atualizar o subscription_status no profile do usuário
+          const { error: profileError } = await supabaseAdmin
+            .from("profiles")
+            .update({ subscription_status: "active" })
+            .eq("id", userId)
+
+          if (profileError) {
+            console.error("Erro ao atualizar profile:", profileError)
+          } else {
+            console.log("Profile atualizado com subscription_status: active")
+          }
         }
         break
       }
@@ -70,14 +106,45 @@ serve(async (req) => {
         const subAmount = (invoice.amount_paid ?? 0) / 100
         const userId = (invoice.metadata?.user_id as string) || ""
 
+        console.log("Webhook: Processando invoice.payment_succeeded", {
+          userId,
+          subAmount,
+          invoiceId: invoice.id
+        })
+
         if (userId && subAmount > 0) {
-          await supabaseAdmin.from("payments").insert([
-            {
-              user_id: userId,
-              plan: invoice.lines?.data?.[0]?.plan?.nickname || "Assinatura",
-              amount: subAmount,
-            },
-          ])
+          const { data: payment, error: paymentError } = await supabaseAdmin
+            .from("payments")
+            .insert([
+              {
+                user_id: userId,
+                plan: invoice.lines?.data?.[0]?.plan?.nickname || "Assinatura",
+                amount: subAmount,
+                currency: invoice.currency || "eur",
+                status: "active", // Definir como ativo
+                stripe_payment_intent_id: invoice.payment_intent as string,
+              },
+            ])
+            .select()
+            .single()
+
+          if (paymentError) {
+            console.error("Erro ao inserir pagamento de renovação:", paymentError)
+          } else {
+            console.log("Pagamento de renovação inserido com sucesso:", payment)
+          }
+
+          // Atualizar o subscription_status no profile do usuário
+          const { error: profileError } = await supabaseAdmin
+            .from("profiles")
+            .update({ subscription_status: "active" })
+            .eq("id", userId)
+
+          if (profileError) {
+            console.error("Erro ao atualizar profile na renovação:", profileError)
+          } else {
+            console.log("Profile atualizado com subscription_status: active (renovação)")
+          }
         }
         break
       }

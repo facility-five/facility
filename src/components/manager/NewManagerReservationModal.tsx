@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -34,8 +34,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { useManagerAdministrators } from '@/contexts/ManagerAdministratorsContext';
-import { showError, showSuccess } from '@/utils/toast';
+import { showRadixError, showRadixSuccess } from '@/utils/toast';
 
 const formSchema = z.object({
   resident_id: z.string().min(1, "Selecione um residente"),
@@ -84,7 +83,6 @@ export const NewManagerReservationModal = ({
   const [commonAreas, setCommonAreas] = useState<CommonArea[]>([]);
   const [residents, setResidents] = useState<Resident[]>([]);
   const [selectedArea, setSelectedArea] = useState<CommonArea | null>(null);
-  const { selectedAdministratorId } = useManagerAdministrators();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -94,28 +92,24 @@ export const NewManagerReservationModal = ({
   });
 
   useEffect(() => {
-    if (isOpen && selectedAdministratorId) {
+    if (isOpen) {
       fetchCommonAreas();
       fetchResidents();
       form.reset({
         status: 'Pendente',
       });
     }
-  }, [isOpen, selectedAdministratorId, form]);
+  }, [isOpen, form]);
 
   const fetchCommonAreas = async () => {
-    if (!selectedAdministratorId) return;
-
     const { data, error } = await supabase
       .from("common_areas")
       .select(`
         *,
         condominiums!inner(
-          name,
-          administrator_id
+          name
         )
       `)
-      .eq("condominiums.administrator_id", selectedAdministratorId)
       .eq("is_deleted", false)
       .order("name");
 
@@ -127,18 +121,14 @@ export const NewManagerReservationModal = ({
   };
 
   const fetchResidents = async () => {
-    if (!selectedAdministratorId) return;
-
     const { data, error } = await supabase
       .from("residents")
       .select(`
         *,
         condominiums!inner(
-          name,
-          administrator_id
+          name
         )
       `)
-      .eq("condominiums.administrator_id", selectedAdministratorId)
       .eq("is_deleted", false)
       .order("name");
 
@@ -152,13 +142,8 @@ export const NewManagerReservationModal = ({
   const generateCode = () => `RE-${Math.random().toString(36).substr(2, 12).toUpperCase()}`;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!selectedAdministratorId) {
-      showError("Selecione uma administradora primeiro.");
-      return;
-    }
-
     if (!selectedArea) {
-      showError("Selecione uma área comum.");
+      showRadixError("Selecione uma área comum.");
       return;
     }
 
@@ -177,14 +162,14 @@ export const NewManagerReservationModal = ({
       ]);
 
       if (error) {
-        showError(error.message);
+        showRadixError(error.message);
       } else {
-        showSuccess("Reserva criada com sucesso!");
+        showRadixSuccess("Reserva criada com sucesso!");
         onSuccess();
         onClose();
       }
     } catch (error) {
-      showError("Erro inesperado. Tente novamente.");
+      showRadixError("Erro inesperado. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -214,7 +199,7 @@ export const NewManagerReservationModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Residente *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecionar residente..." />
@@ -249,7 +234,7 @@ export const NewManagerReservationModal = ({
                         field.onChange(value);
                         handleAreaChange(value);
                       }} 
-                      defaultValue={field.value}
+                      defaultValue={field.value || ""}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -360,7 +345,7 @@ export const NewManagerReservationModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />

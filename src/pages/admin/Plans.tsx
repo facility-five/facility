@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -40,7 +40,7 @@ const Plans = () => {
     const { data, error } = await supabase.from("plans").select("*").order("created_at");
 
     if (error) {
-      showError("Erro ao buscar planos.");
+      showRadixError("Erro ao buscar planos.");
     } else {
       setPlans(data || []);
     }
@@ -71,9 +71,9 @@ const Plans = () => {
     const { error } = await supabase.from("plans").delete().eq("id", selectedPlan.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Plano eliminado com sucesso!");
+      showRadixSuccess("Plano eliminado com sucesso!");
       fetchPlans();
     }
     setIsDeleteModalOpen(false);
@@ -95,7 +95,7 @@ const Plans = () => {
           className="bg-purple-600 hover:bg-purple-700"
           onClick={handleNewPlan}
         >
-          + Novo Plano
+          + Nuevo Plan
         </Button>
       </div>
 
@@ -121,7 +121,7 @@ const Plans = () => {
               ))
             ) : plans.length > 0 ? (
               plans.map((plan) => (
-                <TableRow key={plan.id} className="border-b-admin-border">
+                <TableRow key={plan.id} className="border-b-admin-border hover:bg-muted/50">
                   <TableCell>
                     <p className="font-medium">{plan.name}</p>
                     <p className="text-sm text-admin-foreground-muted">{plan.description}</p>

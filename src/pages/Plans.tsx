@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PlanCard } from "@/components/PlanCard";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePlan } from "@/hooks/usePlan";
 import { LoadingSpinner } from "@/components/LoadingSpinner"; // Importa o LoadingSpinner
 
 type DbPlan = {
@@ -23,7 +24,9 @@ const Plans = () => {
   const [plans, setPlans] = useState<DbPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const { session } = useAuth();
+  const { refreshPlanStatus } = usePlan();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -35,7 +38,7 @@ const Plans = () => {
         .order("price", { ascending: true });
 
       if (error) {
-        showError("Erro ao carregar planos.");
+        showRadixError("Erro ao carregar planos.");
       } else {
         setPlans(data || []);
       }
@@ -47,26 +50,53 @@ const Plans = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("success")) {
-      showSuccess("Pagamento processado com sucesso! Agora, cadastre sua administradora.");
+      showRadixSuccess("Pagamento processado com sucesso! Agora, cadastre sua administradora.");
+      // Forçar atualização do status do plano após pagamento bem-sucedido
+      setTimeout(() => {
+        refreshPlanStatus();
+      }, 2000); // Aguardar 2 segundos para o webhook processar
       navigate('/registrar-administradora', { replace: true });
     }
     if (params.get("canceled")) {
-      showError("Pagamento cancelado.");
+      showRadixError("Pagamento cancelado.");
     }
-  }, [navigate]);
+  }, [navigate, refreshPlanStatus]);
+
+  // Auto-checkout do plano selecionado quando vem do cadastro
+  useEffect(() => {
+    const fromSignup = location.state?.fromSignup;
+    const selectedPlanData = sessionStorage.getItem('selected_plan');
+    
+    if (fromSignup && selectedPlanData && session) {
+      try {
+        const selectedPlan = JSON.parse(selectedPlanData);
+        // Encontrar o plano correspondente na lista de planos carregados
+        const planToCheckout = plans.find(p => p.id === selectedPlan.id);
+        if (planToCheckout) {
+          // Limpar o sessionStorage
+          sessionStorage.removeItem('selected_plan');
+          // Iniciar o checkout automaticamente
+          handleCheckout(planToCheckout);
+        }
+      } catch (error) {
+        console.error('Erro ao processar plano selecionado:', error);
+        sessionStorage.removeItem('selected_plan');
+      }
+    }
+  }, [location.state, session, plans, handleCheckout]);
 
   const filteredPlans = useMemo(
     () => plans.filter((p) => p.period === billingCycle),
     [plans, billingCycle]
   );
 
-  const handleCheckout = async (plan: DbPlan) => {
+  const handleCheckout = useCallback(async (plan: DbPlan) => {
     if (!session) {
-      showError("Faça login para contratar um plano.");
+      showRadixError("Faça login para contratar um plano.");
       return;
     }
     if (!plan.stripe_price_id) {
-      showError("Este plano não está configurado com Stripe (price_id ausente).");
+      showRadixError("Este plano não está configurado com Stripe (price_id ausente).");
       return;
     }
     const successUrl = `${window.location.origin}/planos?success=1`;
@@ -82,16 +112,16 @@ const Plans = () => {
     });
 
     if (error) {
-      showError(`Erro ao iniciar checkout: ${error.message}`);
+      showRadixError(`Erro ao iniciar checkout: ${error.message}`);
       return;
     }
     const url = (data as any)?.url;
     if (url) {
       window.location.href = url;
     } else {
-      showError("Não foi possível obter a URL do checkout.");
+      showRadixError("Não foi possível obter a URL do checkout.");
     }
-  };
+  }, [session]);
 
   return (
     <div className="min-h-screen w-full bg-[#2a214d] text-white flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">

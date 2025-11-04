@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+﻿import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NewUserModal } from "./NewUserModal";
 import { DeleteUserModal } from "./DeleteUserModal";
@@ -41,7 +41,7 @@ export const SystemUsersTab = () => {
     setLoading(true);
     const { data, error } = await supabase.rpc("get_system_users");
     if (error) {
-      showError("Erro ao buscar usuários.");
+      showRadixError("Erro ao buscar usuários.");
     } else {
       setUsers((data as SystemUser[]) || []);
     }
@@ -87,9 +87,9 @@ export const SystemUsersTab = () => {
       body: { userId: selected.id },
     });
     if (error) {
-      showError(`Erro ao eliminar usuário: ${error.message}`);
+      showRadixError(`Erro ao eliminar usuário: ${error.message}`);
     } else {
-      showSuccess("Usuário eliminado com sucesso!");
+      showRadixSuccess("Usuário eliminado com sucesso!");
       fetchUsers();
     }
     setIsDeleteOpen(false);

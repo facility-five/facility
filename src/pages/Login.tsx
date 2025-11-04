@@ -1,65 +1,110 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthForm } from "@/components/AuthForm";
 import { AuthLayout } from "@/components/AuthLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
+
+type RedirectOptions = {
+  keepSpinner?: boolean;
+};
+
+const normalizeRole = (role: string): string =>
+  role
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z\s]/g, "")
+    .trim()
+    .toLowerCase();
 
 function Login() {
   const { session, profile, loading, profileLoaded } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [processing, setProcessing] = useState(false);
+  const [redirected, setRedirected] = useState(false);
 
   useEffect(() => {
-    // Só age quando o carregamento inicial e a tentativa de buscar o perfil estiverem completos
-    if (!loading && profileLoaded) {
-      if (session) {
-        if (profile) {
-          // Usuário está logado e tem um perfil, redireciona com base na função
-          switch (profile.role) {
-            case 'Administrador':
-              navigate('/admin', { replace: true });
-              break;
-            case 'Administradora':
-            case 'Síndico':
-              navigate('/gestor-dashboard', { replace: true });
-              break;
-            case 'Morador':
-              navigate('/morador-dashboard', { replace: true });
-              break;
-            default:
-              // Fallback para funções desconhecidas ou se profile.role não estiver definido
-              navigate('/', { replace: true });
-              break;
-          }
-        } else {
-          // Usuário está logado, mas não tem perfil (ex: novo usuário após o cadastro, antes do registro do administrador)
-          const checkSystemSetupAndRedirect = async () => {
-            const { data: systemSettings, error: settingsError } = await supabase
-              .from('system_settings')
-              .select('id', { count: 'exact', head: true });
+    let active = true;
 
-            if (settingsError && settingsError.code !== 'PGRST116') {
-              console.error("Login: Erro ao verificar configurações do sistema:", settingsError);
-              // Potencialmente redirecionar para uma página de erro genérica ou login
-              navigate("/", { replace: true });
-            } else if ((systemSettings?.count || 0) === 0) {
-              // Se não houver configurações do sistema, é o primeiro usuário, vai para a configuração mestre
-              navigate("/setup-master", { replace: true });
-            } else {
-              // O sistema está configurado, mas o usuário não tem perfil (precisa registrar a administradora)
-              navigate("/registrar-administradora", { replace: true });
-            }
-          };
-          checkSystemSetupAndRedirect();
+    const clearOnboardingSelection = async () => {
+      sessionStorage.removeItem("onboarding_plan_id");
+      if (session?.user?.user_metadata?.selected_plan_id) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { selected_plan_id: null },
+        });
+        if (updateError) {
+           
+          console.error(
+            "Login: failed to clear selected_plan_id metadata",
+            updateError,
+          );
         }
       }
-      // Se não houver sessão, o componente AuthForm será renderizado, permitindo o login.
-    }
-  }, [loading, profileLoaded, session, profile, navigate]);
+    };
 
-  // Mostra o spinner enquanto o estado inicial de autenticação está sendo determinado
-  if (loading) {
+    const goTo = (path: string, options?: RedirectOptions) => {
+      if (!active || redirected) return;
+      setRedirected(true);
+      if (!options?.keepSpinner) {
+        setProcessing(true);
+      }
+      navigate(path, { replace: true });
+    };
+
+    const redirectAfterLogin = async () => {
+      if (loading || !profileLoaded || redirected) return;
+      if (!session || !profile) return;
+
+      const normalizedRole = normalizeRole(profile.role);
+
+      if (normalizedRole === "admin do saas") {
+        goTo("/admin");
+        return;
+      }
+
+      if (normalizedRole === "administradora") {
+        // Permitir acesso gratuito - redirecionar diretamente para o gestor
+        await clearOnboardingSelection();
+        goTo("/gestor", { keepSpinner: true });
+        return;
+      }
+
+      switch (normalizedRole) {
+        case "sindico":
+          goTo("/sindico");
+          break;
+        case "funcionario":
+        case "funcionrio":
+          goTo("/gestor");
+          break;
+        case "morador":
+          goTo("/morador-dashboard");
+          break;
+        default:
+          goTo("/");
+          break;
+      }
+    };
+
+    redirectAfterLogin();
+
+    return () => {
+      active = false;
+    };
+  }, [loading, profileLoaded, session, profile, navigate, redirected]);
+
+  useEffect(() => {
+    if (!session) {
+      setProcessing(false);
+      setRedirected(false);
+    }
+  }, [session]);
+
+  if (loading || processing) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
         <LoadingSpinner size="lg" className="text-white" />
@@ -69,8 +114,8 @@ function Login() {
 
   return (
     <AuthLayout
-      title="Bem-vindo de volta!"
-      description="Faça login na sua conta para continuar."
+      title={t("auth.welcome_back")}
+      description={t("auth.login_description")}
     >
       <AuthForm />
     </AuthLayout>

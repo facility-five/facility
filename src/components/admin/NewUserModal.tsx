@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { SystemUser } from "@/pages/admin/Users";
 
 import { Button } from "@/components/ui/button";
@@ -115,16 +115,16 @@ export const NewUserModal = ({
       });
 
       if (error) {
-        showError(`Erro ao atualizar usuário: ${error.message}`);
+        showRadixError(`Erro ao atualizar usuário: ${error.message}`);
       } else {
-        showSuccess("Usuário atualizado com sucesso!");
+        showRadixSuccess("Usuário atualizado com sucesso!");
         onSuccess();
         onClose();
       }
     } else {
       // Criação exige senha
       if (!values.password || values.password.length < 6) {
-        showError("Defina uma senha com pelo menos 6 caracteres.");
+        showRadixError("Defina uma senha com pelo menos 6 caracteres.");
         return;
       }
 
@@ -144,9 +144,9 @@ export const NewUserModal = ({
       });
 
       if (error) {
-        showError(`Erro ao criar usuário: ${error.message}`);
+        showRadixError(`Erro ao criar usuário: ${error.message}`);
       } else {
-        showSuccess("Usuário criado com sucesso!");
+        showRadixSuccess("Usuário criado com sucesso!");
         onSuccess();
         onClose();
       }
@@ -199,10 +199,10 @@ export const NewUserModal = ({
             )}
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="role" render={({ field }) => (
-                <FormItem><FormLabel>Tipo de usuário</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Administrador">Admin do SaaS</SelectItem><SelectItem value="Administradora">Administradora</SelectItem><SelectItem value="Síndico">Síndico</SelectItem><SelectItem value="Funcionário">Funcionário</SelectItem><SelectItem value="Morador">Morador</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormItem><FormLabel>Tipo de usuário</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value || ""}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Administrador">Admin do SaaS</SelectItem><SelectItem value="Administradora">Administradora</SelectItem><SelectItem value="Síndico">Síndico</SelectItem><SelectItem value="Funcionário">Funcionário</SelectItem><SelectItem value="Morador">Morador</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="status" render={({ field }) => (
-                <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Ativo">Ativo</SelectItem><SelectItem value="Inativo">Inativo</SelectItem><SelectItem value="Suspenso">Suspenso</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value || ""}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground"><SelectItem value="Ativo">Ativo</SelectItem><SelectItem value="Inativo">Inativo</SelectItem><SelectItem value="Suspenso">Suspenso</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )} />
             </div>
             <DialogFooter>

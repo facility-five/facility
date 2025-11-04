@@ -8,8 +8,10 @@ import { RecentPaymentsTable } from "@/components/admin/RecentPaymentsTable";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { Building, Users, Building2, Euro } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     administrators: 0, // Changed from admins to administrators
     users: 0,
@@ -62,12 +64,12 @@ const Dashboard = () => {
 
   return (
     <AdminLayout>
-      <h1 className="text-3xl font-bold mb-6">Overview</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('admin.dashboard.title')}</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Administradores Totales" value={loading ? "..." : stats.administrators.toString()} icon={Building} />
-        <StatCard title="Total de Usuários" value={loading ? "..." : stats.users.toString()} icon={Users} />
-        <StatCard title="Unidades Totales" value={loading ? "..." : stats.units.toString()} icon={Building2} />
-        <StatCard title="Ingresos totales" value={loading ? "..." : formatCurrency(stats.revenue)} icon={Euro} />
+        <StatCard title={t('admin.dashboard.totalAdministrators')} value={loading ? "..." : stats.administrators.toString()} icon={Building} />
+        <StatCard title={t('admin.dashboard.totalUsers')} value={loading ? "..." : stats.users.toString()} icon={Users} />
+        <StatCard title={t('admin.dashboard.totalUnits')} value={loading ? "..." : stats.units.toString()} icon={Building2} />
+        <StatCard title={t('admin.dashboard.totalRevenue')} value={loading ? "..." : formatCurrency(stats.revenue)} icon={Euro} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <RevenueChart />

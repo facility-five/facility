@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,13 +45,15 @@ const settingsSchema = z.object({
   allow_registrations: z.boolean(),
   logo_url: z.string().nullable().optional(),
   logo_negative_url: z.string().nullable().optional(),
-  logo_file: z.any().optional(),
-  logo_negative_file: z.any().optional(),
+  logo_file: z.instanceof(File).optional(),
+  logo_negative_file: z.instanceof(File).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export const SystemSettingsTab = () => {
+  const [settingsId, setSettingsId] = useState<string | null>(null);
+  
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
@@ -68,6 +70,7 @@ export const SystemSettingsTab = () => {
         .limit(1)
         .single();
       if (data) {
+        setSettingsId(data.id);
         form.reset({
           ...data,
           logo_file: data.logo_url,
@@ -75,13 +78,18 @@ export const SystemSettingsTab = () => {
         });
       }
       if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-        showError("Erro ao carregar configurações.");
+        showRadixError("Erro ao carregar configurações.");
       }
     };
     fetchSettings();
   }, [form]);
 
   async function onSubmit(values: SettingsFormValues) {
+    if (!settingsId) {
+      showRadixError("Configurações não carregadas.");
+      return;
+    }
+
     console.log("Valores do formulário antes do processamento:", values);
 
     const { logo_file, logo_negative_file, ...dbValues } = values;
@@ -89,7 +97,7 @@ export const SystemSettingsTab = () => {
     let newLogoNegativeUrl = form.getValues('logo_negative_url');
     let hasError = false;
 
-    const uploadFile = async (file: any, path: string): Promise<string | null> => {
+    const uploadFile = async (file: File, path: string): Promise<string | null> => {
       if (file instanceof File) {
         console.log(`Iniciando upload para ${path}:`, file.name);
         const fileExt = file.name.split('.').pop();
@@ -99,7 +107,7 @@ export const SystemSettingsTab = () => {
           .upload(fileName, file, { upsert: true });
 
         if (error) {
-          showError(`Erro ao carregar imagem para ${path}: ${error.message}`);
+          showRadixError(`Erro ao carregar imagem para ${path}: ${error.message}`);
           hasError = true;
           return null;
         }
@@ -141,13 +149,13 @@ export const SystemSettingsTab = () => {
           logo_url: newLogoUrl, 
           logo_negative_url: newLogoNegativeUrl 
       })
-      .eq("id", 1);
+      .eq("id", settingsId);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
       console.error("Erro ao salvar configurações no banco de dados:", error);
     } else {
-      showSuccess("Configurações salvas com sucesso!");
+      showRadixSuccess("Configurações salvas com sucesso!");
       console.log("Configurações salvas com sucesso no banco de dados.");
       form.reset({
           ...values,
@@ -209,7 +217,7 @@ export const SystemSettingsTab = () => {
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Idioma Padrão</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                             <SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger>
                         </FormControl>
@@ -227,7 +235,7 @@ export const SystemSettingsTab = () => {
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Fuso Horário</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                             <SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger>
                         </FormControl>
@@ -245,7 +253,7 @@ export const SystemSettingsTab = () => {
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Formato de Data</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                             <SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger>
                         </FormControl>
@@ -263,7 +271,7 @@ export const SystemSettingsTab = () => {
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Moeda</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                             <SelectTrigger className="bg-admin-background border-admin-border"><SelectValue /></SelectTrigger>
                         </FormControl>

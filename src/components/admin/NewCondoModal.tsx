@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -123,9 +123,9 @@ export const NewCondoModal = ({
     ]);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Condomínio registrado com sucesso!");
+      showRadixSuccess("Condomínio registrado com sucesso!");
       onSuccess();
       onClose();
       form.reset();
@@ -149,7 +149,7 @@ export const NewCondoModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Administradora</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!initialAdministratorId}> {/* Disable if pre-filled */}
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""} disabled={!!initialAdministratorId}> {/* Disable if pre-filled */}
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione la administradora" />

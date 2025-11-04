@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Toast</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #5855eb;
+        }
+        #console {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+            min-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Debug Toast - Radix UI</h1>
+        <p>Esta página vai testar se as funções de toast estão funcionando corretamente.</p>
+        
+        <div>
+            <button onclick="testRadixToast()">🧪 Testar Toast Radix</button>
+            <button onclick="testSonnerToast()">🔊 Testar Toast Sonner</button>
+            <button onclick="clearConsole()">🧹 Limpar Console</button>
+        </div>
+        
+        <div id="console">
+            <div>🚀 Console de Debug iniciado...</div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const console = document.getElementById('console');
+            const time = new Date().toLocaleTimeString();
+            console.innerHTML += `<div>[${time}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '<div>🚀 Console de Debug iniciado...</div>';
+        }
+
+        function testRadixToast() {
+            log('🧪 Testando Toast Radix UI...');
+            
+            // Simular chamada da função
+            try {
+                // Verificar se as funções existem no contexto global
+                if (typeof window.showRadixSuccess === 'function') {
+                    window.showRadixSuccess('Teste Radix', 'Toast funcionando!');
+                    log('✅ Função showRadixSuccess chamada com sucesso');
+                } else {
+                    log('❌ Função showRadixSuccess não encontrada no contexto global');
+                    log('🔍 Tentando acessar via import...');
+                }
+            } catch (error) {
+                log(`❌ Erro ao testar Radix Toast: ${error.message}`);
+            }
+        }
+
+        function testSonnerToast() {
+            log('🔊 Testando Toast Sonner...');
+            
+            try {
+                if (typeof window.showSuccess === 'function') {
+                    window.showSuccess('Teste Sonner funcionando!');
+                    log('✅ Função showSuccess (Sonner) chamada com sucesso');
+                } else {
+                    log('❌ Função showSuccess (Sonner) não encontrada no contexto global');
+                }
+            } catch (error) {
+                log(`❌ Erro ao testar Sonner Toast: ${error.message}`);
+            }
+        }
+
+        // Verificar se as funções estão disponíveis
+        window.addEventListener('load', () => {
+            log('🔍 Verificando funções disponíveis...');
+            
+            const radixFunctions = ['showRadixSuccess', 'showRadixError', 'showRadixInfo', 'showRadixWarning', 'showRadixDefault'];
+            const sonnerFunctions = ['showSuccess', 'showError', 'showLoading'];
+            
+            radixFunctions.forEach(func => {
+                if (typeof window[func] === 'function') {
+                    log(`✅ ${func} disponível`);
+                } else {
+                    log(`❌ ${func} não disponível`);
+                }
+            });
+            
+            sonnerFunctions.forEach(func => {
+                if (typeof window[func] === 'function') {
+                    log(`✅ ${func} disponível`);
+                } else {
+                    log(`❌ ${func} não disponível`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

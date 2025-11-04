@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -95,7 +95,7 @@ export const EditAdministratorModal = ({
           .single();
 
         if (error) {
-          showError("Erro ao buscar detalhes da administradora.");
+          showRadixError("Erro ao buscar detalhes da administradora.");
           onClose();
         } else if (data) {
           form.reset({
@@ -120,9 +120,9 @@ export const EditAdministratorModal = ({
       .eq("id", admin.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Administradora atualizada com sucesso!");
+      showRadixSuccess("Administradora atualizada com sucesso!");
       onSuccess();
       onClose();
     }
@@ -197,7 +197,7 @@ export const EditAdministratorModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nombre del responsable</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""}>
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione el usuario..." />

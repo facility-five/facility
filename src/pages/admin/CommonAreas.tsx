@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -44,7 +44,7 @@ const CommonAreas = () => {
       .order("created_at");
 
     if (error) {
-      showError("Erro ao buscar áreas comuns.");
+      showRadixError("Erro ao buscar áreas comuns.");
     } else {
       setAreas(data as any[] || []);
     }
@@ -75,9 +75,9 @@ const CommonAreas = () => {
     const { error } = await supabase.from("common_areas").delete().eq("id", selectedArea.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Área comum eliminada com sucesso!");
+      showRadixSuccess("Área comum eliminada com sucesso!");
       fetchAreas();
     }
     setIsDeleteModalOpen(false);
@@ -123,7 +123,7 @@ const CommonAreas = () => {
               ))
             ) : areas.length > 0 ? (
               areas.map((area) => (
-                <TableRow key={area.id} className="border-b-admin-border">
+                <TableRow key={area.id} className="border-b-admin-border hover:bg-muted/50">
                   <TableCell className="font-medium text-purple-400">{area.code}</TableCell>
                   <TableCell>
                     <p className="font-medium">{area.name}</p>

@@ -4,10 +4,12 @@ import { SignUpForm } from "@/components/SignUpForm";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { AuthLayout } from "@/components/AuthLayout";
+import { useTranslation } from "react-i18next";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkUsers = async () => {
@@ -30,8 +32,8 @@ const SignUp = () => {
 
   return (
     <AuthLayout
-      title="Crie sua conta"
-      description="Cadastre-se para começar a usar a plataforma."
+      title={t("auth.registerTitle")}
+      description={t("auth.registerDescription")}
     >
       <SignUpForm />
     </AuthLayout>

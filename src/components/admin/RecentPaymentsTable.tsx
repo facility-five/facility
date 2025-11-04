@@ -29,6 +29,14 @@ type Payment = {
   } | null;
 };
 
+type PaymentRow = {
+  created_at: string;
+  plan: string;
+  amount: number | string;
+  first_name?: string;
+  last_name?: string;
+};
+
 export const RecentPaymentsTable = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +49,7 @@ export const RecentPaymentsTable = () => {
         console.error("Error fetching recent payments:", error);
         setPayments([]);
       } else {
-        const mapped = (data || []).map((row: any) => ({
+        const mapped = (data || []).map((row: PaymentRow) => ({
           created_at: row.created_at,
           plan: row.plan,
           amount: Number(row.amount),

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -41,7 +41,7 @@ const Communications = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      showError("Erro ao buscar comunicados.");
+      showRadixError("Erro ao buscar comunicados.");
     } else {
       setCommunications(data as any[] || []);
     }
@@ -72,9 +72,9 @@ const Communications = () => {
     const { error } = await supabase.from("communications").delete().eq("id", selectedCommunication.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Comunicado excluído com sucesso!");
+      showRadixSuccess("Comunicado excluído com sucesso!");
       fetchCommunications();
     }
     setIsDeleteModalOpen(false);
@@ -121,7 +121,7 @@ const Communications = () => {
               ))
             ) : communications.length > 0 ? (
               communications.map((comm) => (
-                <TableRow key={comm.id} className="border-b-admin-border">
+                <TableRow key={comm.id} className="border-b-admin-border hover:bg-muted/50">
                   <TableCell className="font-medium text-purple-400">{comm.code}</TableCell>
                   <TableCell>
                     <p className="font-medium">{comm.title}</p>

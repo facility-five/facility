@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Condo } from "@/components/admin/CondoCard"; // Reusing the type from admin
 
 import { Button } from "@/components/ui/button";
@@ -133,9 +133,9 @@ export const EditCondoModal = ({
       .eq("id", condo.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Condomínio atualizado com sucesso!");
+      showRadixSuccess("Condomínio atualizado com sucesso!");
       onSuccess();
       onClose();
     }
@@ -158,7 +158,7 @@ export const EditCondoModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Administradora</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={true}> {/* Disable for manager, should be fixed */}
+                  <Select onValueChange={field.onChange} value={field.value || ""} disabled={true}> {/* Disable for manager, should be fixed */}
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione la administradora" />
@@ -333,7 +333,7 @@ export const EditCondoModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Estado</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione el estado" />

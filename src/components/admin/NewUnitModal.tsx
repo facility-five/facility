@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Unit } from "@/pages/admin/Units";
 
 import { Button } from "@/components/ui/button";
@@ -135,9 +135,9 @@ export const NewUnitModal = ({
     }
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess(`Unidade ${unit ? "atualizada" : "registrada"} com sucesso!`);
+      showRadixSuccess(`Unidade ${unit ? "atualizada" : "registrada"} com sucesso!`);
       onSuccess();
       onClose();
     }
@@ -194,10 +194,10 @@ export const NewUnitModal = ({
                 </TabsContent>
                 <TabsContent value="location" className="space-y-4">
                   <FormField control={form.control} name="condo_id" render={({ field }) => (
-                    <FormItem><FormLabel>Condominio</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue placeholder="Seleccione el condominio..." /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground">{condos.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Condominio</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value || ""}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue placeholder="Seleccione el condominio..." /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground">{condos.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="block_id" render={({ field }) => (
-                    <FormItem><FormLabel>Bloque</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCondoId}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue placeholder="Seleccione el bloque" /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground">{filteredBlocks.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Bloque</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value || ""} disabled={!selectedCondoId}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue placeholder="Seleccione el bloque" /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground">{filteredBlocks.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                   )} />
                 </TabsContent>
               </div>

@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+﻿import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LayoutGrid,
@@ -14,7 +14,8 @@ import {
   Settings,
   User,
   LogOut,
-  Palette, // Import the new icon
+  UserCheck, // Import icon for Leads
+  Palette, // Import icon for Design System
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -27,30 +28,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { showSuccess } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const navItems = [
-  { href: "/admin", icon: LayoutGrid, label: "Painel" },
-  { href: "/admin/administradoras", icon: Building, label: "Administradoras" },
-  { href: "/admin/condominios", icon: Home, label: "Condominios" },
-  { href: "/admin/bloques", icon: Box, label: "Bloques" },
-  { href: "/admin/unidades", icon: Building2, label: "Unidades" },
-  { href: "/admin/areas-comunes", icon: MapPin, label: "Áreas Comunes" },
-  { href: "/admin/comunicados", icon: MessageSquare, label: "Comunicados" },
-  { href: "/admin/usuarios", icon: Users, label: "Usuarios" },
-  { href: "/admin/planes", icon: FileText, label: "Planes" },
-  { href: "/admin/pagos", icon: DollarSign, label: "Pagos" },
-  { href: "/admin/configuracoes", icon: Settings, label: "Configurações" },
-  { href: "/design-system", icon: Palette, label: "Design System" }, // New item for Design System
+  { href: "/admin", icon: LayoutGrid, labelKey: "navigation.dashboard" },
+  { href: "/admin/administradoras", icon: Building, labelKey: "navigation.administrators" },
+  { href: "/admin/condominios", icon: Home, labelKey: "navigation.condominiums" },
+  { href: "/admin/bloques", icon: Box, labelKey: "navigation.blocks" },
+  { href: "/admin/unidades", icon: Building2, labelKey: "navigation.units" },
+  { href: "/admin/areas-comunes", icon: Building, labelKey: "navigation.commonAreas" },
+  { href: "/admin/usuarios", icon: Users, labelKey: "navigation.users" },
+  { href: "/admin/moradores", icon: Users, labelKey: "navigation.residents" },
+  { href: "/admin/planes", icon: FileText, labelKey: "navigation.plans" },
+  { href: "/admin/clientes-potenciales", icon: UserCheck, labelKey: "navigation.leads" },
+  { href: "/admin/pagos", icon: DollarSign, labelKey: "navigation.payments" },
+  { href: "/admin/design-system", icon: Palette, labelKey: "navigation.designSystem" },
+  { href: "/admin/configuracoes", icon: Settings, labelKey: "navigation.settings" },
 ];
 
 export const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, profile } = useAuth(); // Get profile from AuthContext
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await signOut();
-    showSuccess("Você saiu com sucesso!");
+    showRadixSuccess(t('auth.logoutSuccess'));
     navigate("/");
   };
 
@@ -61,48 +65,7 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-admin-card border-r border-admin-border flex flex-col">
-      <div className="p-4 border-b border-admin-border">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-3 cursor-pointer hover:bg-admin-border p-2 rounded-lg transition-colors -m-2">
-              <Avatar>
-                <AvatarImage src={profile?.avatar_url} alt={profile?.first_name} />
-                <AvatarFallback>{getInitials(profile?.first_name, profile?.last_name)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold text-sm text-admin-foreground">{profile?.first_name} {profile?.last_name}</p>
-                <p className="text-xs text-admin-foreground-muted">{profile?.role}</p>
-              </div>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 bg-admin-card border-admin-border text-admin-foreground" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-xs leading-none text-admin-foreground-muted">
-                  Entrou como
-                </p>
-                <p className="text-sm font-medium leading-none text-purple-400">
-                  {profile?.first_name} {profile?.last_name}
-                </p>
-                <p className="text-xs leading-none text-admin-foreground-muted">
-                  {profile?.email}
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-admin-border" />
-            <DropdownMenuItem className="focus:bg-admin-border focus:text-admin-foreground" onClick={() => navigate("/admin/minha-conta")}>
-              <User className="mr-2 h-4 w-4" />
-              <span>Minha Conta</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-admin-border" />
-            <DropdownMenuItem className="focus:bg-admin-border focus:text-admin-foreground" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Sair</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+    <aside className="fixed left-0 top-0 h-full w-64 bg-[#0F1222] text-gray-100 border-r border-[#1F2238] flex flex-col">
       <nav className="flex-1 p-4">
         <ul>
           {navItems.map((item) => (
@@ -110,18 +73,59 @@ export const Sidebar = () => {
               <Link
                 to={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-admin-foreground-muted hover:bg-admin-border hover:text-admin-foreground transition-colors",
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors",
                   location.pathname === item.href &&
                     "bg-purple-600 text-white hover:bg-purple-700 hover:text-white"
                 )}
               >
                 <item.icon className="h-5 w-5" />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             </li>
           ))}
         </ul>
       </nav>
+      <div className="p-4 border-t border-[#1F2238] mt-auto">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-3 cursor-pointer hover:bg-white/10 p-2 rounded-lg transition-colors -m-2">
+              <Avatar>
+                <AvatarImage src={profile?.avatar_url} alt={profile?.first_name} />
+                <AvatarFallback>{getInitials(profile?.first_name, profile?.last_name)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold text-sm text-white">{profile?.first_name} {profile?.last_name}</p>
+                <p className="text-xs text-gray-400">{profile?.role}</p>
+              </div>
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 bg-[#14172B] border-[#1F2238] text-gray-100" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-xs leading-none text-gray-400">
+                  {t('auth.logged_in_as')}
+                </p>
+                <p className="text-sm font-medium leading-none text-purple-400">
+                  {profile?.first_name} {profile?.last_name}
+                </p>
+                <p className="text-xs leading-none text-gray-400">
+                  {profile?.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-[#1F2238]" />
+            <DropdownMenuItem className="focus:bg-white/10 focus:text-white" onClick={() => navigate("/admin/minha-conta")}>
+              <User className="mr-2 h-4 w-4" />
+              <span>{t('navigation.myAccount')}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-[#1F2238]" />
+            <DropdownMenuItem className="focus:bg-white/10 focus:text-white" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>{t('auth.logout')}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </aside>
   );
 };

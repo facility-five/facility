@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ export const StripeSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [settingsId, setSettingsId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -20,23 +21,28 @@ export const StripeSettings = () => {
       const { data, error } = await supabase
         .from("system_settings")
         .select("id, stripe_publishable_key")
-        .eq("id", 1)
+        .limit(1)
         .single();
 
       if (error && error.code !== "PGRST116") { // PGRST116 means no rows found
-        showError("Erro ao carregar configurações do Stripe.");
+        showRadixError("Erro ao carregar configurações do Stripe.");
       }
 
       if (error && error.code === "PGRST116") {
         // If no settings exist, insert a default row
-        const { error: insertError } = await supabase
+        const { data: insertData, error: insertError } = await supabase
           .from("system_settings")
-          .insert([{ id: 1 }]);
+          .insert([{}])
+          .select()
+          .single();
         if (insertError) {
-          showError("Erro ao inicializar configurações.");
+          showRadixError("Erro ao inicializar configurações.");
+        } else if (insertData) {
+          setSettingsId(insertData.id);
         }
       } else if (data) {
         setPublishableKey(data.stripe_publishable_key || "");
+        setSettingsId(data.id);
       }
 
       setLoading(false);
@@ -46,15 +52,21 @@ export const StripeSettings = () => {
   }, []);
 
   const handleSave = async () => {
+    if (!settingsId) {
+      showRadixError("Configurações não carregadas.");
+      return;
+    }
+    
     setSaving(true);
     const { error } = await supabase
       .from("system_settings")
-      .upsert({ id: 1, stripe_publishable_key: publishableKey });
+      .update({ stripe_publishable_key: publishableKey })
+      .eq("id", settingsId);
 
     if (error) {
-      showError("Não foi possível salvar a chave publicável.");
+      showRadixError("Não foi possível salvar a chave publicável.");
     } else {
-      showSuccess("Chave publicável do Stripe salva com sucesso!");
+      showRadixSuccess("Chave publicável do Stripe salva com sucesso!");
     }
     setSaving(false);
   };
@@ -65,7 +77,7 @@ export const StripeSettings = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      showError("Não foi possível copiar o URL do webhook.");
+      showRadixError("Não foi possível copiar o URL do webhook.");
     }
   };
 

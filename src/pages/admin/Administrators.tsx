@@ -1,14 +1,23 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AdministratorCard, Administrator } from "@/components/admin/AdministratorCard";
+import { Administrator } from "@/components/admin/AdministratorCard";
 import { NewAdministratorModal } from "@/components/admin/NewAdministratorModal";
 import { DeleteAdministratorModal } from "@/components/admin/DeleteAdministratorModal";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditAdministratorModal } from "@/components/admin/EditAdministratorModal";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Pencil, Trash2 } from "lucide-react";
 
 const Administrators = () => {
   const [admins, setAdmins] = useState<Administrator[]>([]);
@@ -25,7 +34,7 @@ const Administrators = () => {
 
     const { data, error } = await supabase.rpc("get_administrators_with_details");
     if (error) {
-      showError("Erro ao buscar administradoras.");
+      showRadixError("Erro ao buscar administradoras.");
       setAdmins([]);
     } else {
       const mapped = (data || []).map((row: any) => ({
@@ -53,9 +62,9 @@ const Administrators = () => {
       .eq("id", selectedAdminId);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Administradora eliminada com sucesso!");
+      showRadixSuccess("Administradora eliminada com sucesso!");
       fetchAdmins();
     }
     setIsDeleteModalOpen(false);
@@ -96,24 +105,67 @@ const Administrators = () => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full bg-admin-border" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAdmins.map((admin) => (
-            <AdministratorCard
-              key={admin.id}
-              admin={admin}
-              onDelete={() => openDeleteModal(admin.id)}
-              onEdit={() => openEditModal(admin)}
-            />
-          ))}
-        </div>
-      )}
+      <div className="rounded-lg border border-admin-border bg-admin-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b-purple-700 bg-purple-600 hover:bg-purple-600">
+              <TableHead className="text-white">Código</TableHead>
+              <TableHead className="text-white">Nome</TableHead>
+              <TableHead className="text-white">NIF</TableHead>
+              <TableHead className="text-white">Responsável</TableHead>
+              <TableHead className="text-white">Condomínios</TableHead>
+              <TableHead className="text-white text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i} className="border-b-admin-border">
+                  <TableCell colSpan={6}>
+                    <Skeleton className="h-8 w-full bg-admin-border" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : filteredAdmins.length > 0 ? (
+              filteredAdmins.map((admin) => (
+                <TableRow key={admin.id} className="border-b-admin-border hover:bg-muted/50">
+                  <TableCell className="font-medium text-purple-400">{admin.code}</TableCell>
+                  <TableCell className="font-medium">{admin.name}</TableCell>
+                  <TableCell>{admin.nif}</TableCell>
+                  <TableCell>
+                    {admin.profiles ? (
+                      <div>
+                        <p className="font-medium">{`${admin.profiles.first_name || ''} ${admin.profiles.last_name || ''}`.trim()}</p>
+                      </div>
+                    ) : (
+                      <span className="text-admin-foreground-muted">N/A</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      {admin.condos[0]?.count || 0} condomínios
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => openEditModal(admin)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => openDeleteModal(admin.id)}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow className="border-b-admin-border">
+                <TableCell colSpan={6} className="text-center text-admin-foreground-muted">
+                  Nenhuma administradora encontrada.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <NewAdministratorModal
         isOpen={isNewModalOpen}

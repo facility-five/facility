@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -99,9 +99,9 @@ export const EmailTemplateFormModal = ({
     }
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess(`Plantilla ${template ? "atualizada" : "criada"} com sucesso!`);
+      showRadixSuccess(`Plantilla ${template ? "atualizada" : "criada"} com sucesso!`);
       onSuccess();
       onClose();
     }
@@ -163,7 +163,7 @@ export const EmailTemplateFormModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Estado</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione un estado..." />

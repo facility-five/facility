@@ -20,7 +20,7 @@ serve(async (req) => {
     const { data, error } = await supabaseAdmin
       .from("system_settings")
       .select("system_name")
-      .eq("id", 1)
+      .limit(1)
       .single()
 
     if (error) {

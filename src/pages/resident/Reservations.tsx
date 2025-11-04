@@ -20,10 +20,11 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ResidentStatCard } from "@/components/resident/ResidentStatCard";
 import { NewReservationModal } from "@/components/resident/NewReservationModal";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { DeleteReservationModal } from "@/components/resident/DeleteReservationModal";
 import { Badge } from "@/components/ui/badge";
 
@@ -40,8 +41,9 @@ type Reservation = {
 
 const Reservations = () => {
   const { user } = useAuth();
+  const { showError, resetErrors } = useErrorHandler();
+  const [loading, setLoading] = useState(false);
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -50,14 +52,30 @@ const Reservations = () => {
   const fetchReservations = async () => {
     if (!user) return;
     setLoading(true);
+    
+    // Primeiro, buscar o residente associado ao usuário
+    const { data: residentData, error: residentError } = await supabase
+      .from("residents")
+      .select("id")
+      .eq("profile_id", user.id)
+      .single();
+
+    if (residentError || !residentData) {
+      // Se o usuário não existe na tabela residents, mostrar erro
+      showError("Perfil de morador não encontrado. Entre em contato com a administração para cadastrar seu perfil.", "resident_not_found");
+      setLoading(false);
+      return;
+    }
+
+    // Buscar reservas do residente
     const { data, error } = await supabase
-      .from("reservations")
+      .from("reservas")
       .select("*, common_areas(name)")
-      .eq("resident_id", user.id) // Filter by resident_id
+      .eq("resident_id", residentData.id)
       .order("reservation_date", { ascending: false });
 
     if (error) {
-      showError("Erro ao buscar reservas.");
+      showError("Erro ao buscar reservas: " + error.message, "reservations_fetch_error");
     } else {
       setReservations(data as Reservation[] || []);
     }
@@ -65,8 +83,9 @@ const Reservations = () => {
   };
 
   useEffect(() => {
+    resetErrors(); // Reset error state when user changes
     fetchReservations();
-  }, [user]);
+  }, [user, resetErrors]);
 
   const stats = useMemo(() => {
     const total = reservations.length;
@@ -91,9 +110,9 @@ const Reservations = () => {
     if (!selectedReservation) return;
     const { error } = await supabase.from("reservations").delete().eq("id", selectedReservation.id);
     if (error) {
-      showError("Erro ao cancelar reserva.");
+      showError("Erro ao cancelar reserva: " + error.message, "reservation_cancel_error");
     } else {
-      showSuccess("Reserva cancelada com sucesso.");
+      showRadixSuccess("Reserva cancelada com sucesso.");
       fetchReservations();
     }
     setIsDeleteModalOpen(false);

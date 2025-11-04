@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Communication } from "@/pages/admin/Communications";
 
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,7 @@ export const NewCommunicationModal = ({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        showError("Você precisa estar logado.");
+        showRadixError("Você precisa estar logado.");
         return;
     }
 
@@ -118,9 +118,9 @@ export const NewCommunicationModal = ({
     }
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess(`Comunicado ${communication ? "atualizado" : "registrado"} com sucesso!`);
+      showRadixSuccess(`Comunicado ${communication ? "atualizado" : "registrado"} com sucesso!`);
       onSuccess();
       onClose();
     }
@@ -144,7 +144,7 @@ export const NewCommunicationModal = ({
               <FormItem><FormLabel>Data de Expiração</FormLabel><FormControl><Input type="date" {...field} className="bg-admin-background border-admin-border" /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="condo_id" render={({ field }) => (
-              <FormItem><FormLabel>Condomínio</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue placeholder="Selecione o condomínio..." /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground">{condos.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+              <FormItem><FormLabel>Condomínio</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value || ""}><FormControl><SelectTrigger className="bg-admin-background border-admin-border"><SelectValue placeholder="Selecione o condomínio..." /></SelectTrigger></FormControl><SelectContent className="bg-admin-card border-admin-border text-admin-foreground">{condos.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
             )} />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose}>

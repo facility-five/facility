@@ -2,7 +2,24 @@ import React, { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
-import { showError, showSuccess, showLoading, dismissToast } from '@/utils/toast';
+import { 
+  showError, 
+  showSuccess, 
+  showLoading, 
+  dismissToast,
+  showSuccessWithDescription,
+  showErrorWithDescription,
+  showInfoWithDescription,
+  showWarningWithDescription,
+  showLoadingWithDescription,
+  showCustomToast,
+  showRadixSuccess,
+  showRadixError,
+  showRadixInfo,
+  showRadixWarning,
+  showRadixDefault,
+  showRadixToast
+} from '@/utils/toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Separator } from '@/components/ui/separator';
 import { Terminal } from 'lucide-react';
@@ -24,6 +41,104 @@ export const FeedbackElementsSection = () => {
       dismissToast(toastId);
       showSuccess("Processo concluído!");
     }, 3000);
+  };
+
+  // Novos handlers para toasts com título e descrição
+  const handleShowSuccessWithDescription = () => {
+    showSuccessWithDescription(
+      "Conta criada com sucesso!",
+      "Bem-vindo ao sistema. Você já pode começar a usar todas as funcionalidades."
+    );
+  };
+
+  const handleShowErrorWithDescription = () => {
+    showErrorWithDescription(
+      "Erro de autenticação",
+      "Não foi possível fazer login. Verifique suas credenciais e tente novamente."
+    );
+  };
+
+  const handleShowInfoWithDescription = () => {
+    showInfoWithDescription(
+      "Nova atualização disponível",
+      "Uma nova versão do sistema está disponível. Clique aqui para atualizar."
+    );
+  };
+
+  const handleShowWarningWithDescription = () => {
+    showWarningWithDescription(
+      "Atenção: Dados não salvos",
+      "Você tem alterações não salvas. Deseja continuar sem salvar?"
+    );
+  };
+
+  const handleShowCustomToast = () => {
+    showCustomToast(
+      "Confirmar exclusão",
+      "Esta ação não pode ser desfeita. Tem certeza que deseja excluir este item?",
+      {
+        type: 'warning',
+        duration: 10000,
+        action: {
+          label: "Excluir",
+          onClick: () => {
+            showSuccessWithDescription("Item excluído", "O item foi removido com sucesso.");
+          }
+        },
+        cancel: {
+          label: "Cancelar",
+          onClick: () => {
+            showInfoWithDescription("Operação cancelada", "Nenhum item foi excluído.");
+          }
+        }
+      }
+    );
+  };
+
+  // Novos handlers para toasts do Radix UI com fundo branco
+  const handleShowRadixSuccess = () => {
+    console.log('🧪 DEBUG: Chamando showRadixSuccess...');
+    showRadixSuccess(
+      "Sucesso com Radix UI",
+      "Este é um toast de sucesso usando Radix UI com fundo branco."
+    );
+    console.log('✅ DEBUG: showRadixSuccess chamado com sucesso');
+  };
+
+  const handleShowRadixError = () => {
+    console.log('🧪 DEBUG: Chamando showRadixError...');
+    showRadixError(
+      "Erro com Radix UI",
+      "Este é um toast de erro usando Radix UI com fundo branco."
+    );
+    console.log('✅ DEBUG: showRadixError chamado com sucesso');
+  };
+
+  const handleShowRadixInfo = () => {
+    console.log('🧪 DEBUG: Chamando showRadixInfo...');
+    showRadixInfo(
+      "Informação com Radix UI",
+      "Este é um toast informativo usando Radix UI com fundo branco."
+    );
+    console.log('✅ DEBUG: showRadixInfo chamado com sucesso');
+  };
+
+  const handleShowRadixWarning = () => {
+    console.log('🧪 DEBUG: Chamando showRadixWarning...');
+    showRadixWarning(
+      "Aviso com Radix UI",
+      "Este é um toast de aviso usando Radix UI com fundo branco."
+    );
+    console.log('✅ DEBUG: showRadixWarning chamado com sucesso');
+  };
+
+  const handleShowRadixDefault = () => {
+    console.log('🧪 DEBUG: Chamando showRadixDefault...');
+    showRadixDefault(
+      "Toast Padrão com Radix UI",
+      "Este é um toast padrão usando Radix UI com fundo branco."
+    );
+    console.log('✅ DEBUG: showRadixDefault chamado com sucesso');
   };
 
   return (
@@ -61,11 +176,53 @@ export const FeedbackElementsSection = () => {
           </DialogContent>
         </Dialog>
 
-        <h3 className="text-xl font-semibold">Toasts (Sonner)</h3>
+        <h3 className="text-xl font-semibold">Toasts Simples (Sonner)</h3>
         <div className="flex flex-wrap gap-4">
           <Button onClick={handleShowSuccessToast}>Mostrar Sucesso</Button>
           <Button variant="destructive" onClick={handleShowErrorToast}>Mostrar Erro</Button>
           <Button onClick={handleShowLoadingToast}>Mostrar Carregamento</Button>
+        </div>
+
+        <h3 className="text-xl font-semibold">Toasts com Título e Descrição (Sonner)</h3>
+        <div className="flex flex-wrap gap-4">
+          <Button onClick={handleShowSuccessWithDescription} variant="default">
+            Sucesso com Descrição
+          </Button>
+          <Button onClick={handleShowErrorWithDescription} variant="destructive">
+            Erro com Descrição
+          </Button>
+          <Button onClick={handleShowInfoWithDescription} variant="secondary">
+            Info com Descrição
+          </Button>
+          <Button onClick={handleShowWarningWithDescription} variant="outline">
+            Aviso com Descrição
+          </Button>
+        </div>
+
+        <h3 className="text-xl font-semibold">Toast Customizado com Ações (Sonner)</h3>
+        <div className="flex flex-wrap gap-4">
+          <Button onClick={handleShowCustomToast} variant="outline">
+            Toast com Botões de Ação
+          </Button>
+        </div>
+
+        <h3 className="text-xl font-semibold">Toasts Radix UI (Fundo Branco)</h3>
+        <div className="flex flex-wrap gap-4">
+          <Button onClick={handleShowRadixSuccess} className="bg-green-600 hover:bg-green-700">
+            Sucesso Radix UI
+          </Button>
+          <Button onClick={handleShowRadixError} variant="destructive">
+            Erro Radix UI
+          </Button>
+          <Button onClick={handleShowRadixInfo} className="bg-blue-600 hover:bg-blue-700">
+            Info Radix UI
+          </Button>
+          <Button onClick={handleShowRadixWarning} className="bg-yellow-600 hover:bg-yellow-700">
+            Aviso Radix UI
+          </Button>
+          <Button onClick={handleShowRadixDefault} variant="outline">
+            Padrão Radix UI
+          </Button>
         </div>
 
         <h3 className="text-xl font-semibold">Spinner de Carregamento</h3>

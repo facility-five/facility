@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Link } from "react-router-dom";
-import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
 import { useState } from "react";
@@ -51,11 +51,11 @@ export function AuthForm() {
 
     if (error) {
       if (error.message === "Invalid login credentials") {
-        showError("Email ou senha inválidos.");
+        showRadixError("Email ou senha inválidos.");
       } else if (error.message.includes("Email not confirmed")) {
-        showError("Por favor, confirme seu e-mail antes de fazer login.");
+        showRadixError("Por favor, confirme seu e-mail antes de fazer login.");
       } else {
-        showError(error.message);
+        showRadixError(error.message);
       }
     }
     // A navegação agora é tratada pelo AuthContext
@@ -127,7 +127,14 @@ export function AuthForm() {
           className="w-full bg-purple-600 hover:bg-purple-700"
           disabled={isLoading}
         >
-          {isLoading ? <LoadingSpinner size="sm" /> : "Entrar"}
+          {isLoading ? (
+            <LoadingSpinner size="sm" />
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <LogIn className="h-4 w-4" />
+              Entrar
+            </div>
+          )}
         </Button>
       </form>
     </Form>

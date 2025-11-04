@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Block } from "@/pages/admin/Blocks";
 
 import { Button } from "@/components/ui/button";
@@ -107,9 +107,9 @@ export const NewBlockModal = ({
     }
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess(`Bloque ${block ? "actualizado" : "registrado"} com sucesso!`);
+      showRadixSuccess(`Bloque ${block ? "actualizado" : "registrado"} com sucesso!`);
       onSuccess();
       onClose();
     }
@@ -145,7 +145,7 @@ export const NewBlockModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Condominio</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione un condominio..." />
@@ -169,7 +169,7 @@ export const NewBlockModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Responsável</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione un responsable..." />
@@ -193,7 +193,7 @@ export const NewBlockModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Estado</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione el estado" />

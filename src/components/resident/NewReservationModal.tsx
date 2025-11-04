@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { Button } from "@/components/ui/button";
@@ -76,13 +76,13 @@ export const NewReservationModal = ({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
-      showError("Você precisa estar logado para fazer uma reserva.");
+      showRadixError("Você precisa estar logado para fazer uma reserva.");
       return;
     }
 
     const selectedArea = commonAreas.find(area => area.id === values.common_area_id);
     if (!selectedArea) {
-      showError("Área comum selecionada não é válida.");
+      showRadixError("Área comum selecionada não é válida.");
       return;
     }
 
@@ -98,9 +98,9 @@ export const NewReservationModal = ({
     ]);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Reserva solicitada com sucesso!");
+      showRadixSuccess("Reserva solicitada com sucesso!");
       onSuccess();
       onClose();
     }
@@ -123,7 +123,7 @@ export const NewReservationModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Área Comum</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Selecione uma área..." /></SelectTrigger>
                     </FormControl>

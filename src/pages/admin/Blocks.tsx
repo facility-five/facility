@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -39,7 +39,7 @@ const Blocks = () => {
     const { data, error } = await supabase.rpc("get_blocks_with_details");
 
     if (error) {
-      showError("Erro ao buscar blocos.");
+      showRadixError("Erro ao buscar blocos.");
       setBlocks([]);
     } else {
       const mapped = (data || []).map((row: any) => ({
@@ -81,9 +81,9 @@ const Blocks = () => {
     const { error } = await supabase.from("blocks").delete().eq("id", selectedBlock.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Bloque eliminado com sucesso!");
+      showRadixSuccess("Bloque eliminado com sucesso!");
       fetchBlocks();
     }
     setIsDeleteModalOpen(false);
@@ -124,7 +124,7 @@ const Blocks = () => {
               ))
             ) : blocks.length > 0 ? (
               blocks.map((block) => (
-                <TableRow key={block.id} className="border-b-admin-border">
+                <TableRow key={block.id} className="border-b-admin-border hover:bg-muted/50">
                   <TableCell className="font-medium text-purple-400">{block.code}</TableCell>
                   <TableCell className="font-medium">{block.name}</TableCell>
                   <TableCell>{block.condominiums?.name || 'N/A'}</TableCell>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import { Loader2, AlertTriangle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
-import { showError, showSuccess } from '@/utils/toast';
+import { showRadixError, showRadixSuccess } from '@/utils/toast';
 
 interface Reservation {
   id: string;
@@ -67,14 +67,14 @@ export const DeleteManagerReservationModal = ({
         .eq("id", reservation.id);
 
       if (error) {
-        showError(error.message);
+        showRadixError(error.message);
       } else {
-        showSuccess("Reserva excluída com sucesso!");
+        showRadixSuccess("Reserva excluída com sucesso!");
         onSuccess();
         onClose();
       }
     } catch (error) {
-      showError("Erro inesperado. Tente novamente.");
+      showRadixError("Erro inesperado. Tente novamente.");
     } finally {
       setLoading(false);
     }

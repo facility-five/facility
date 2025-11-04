@@ -1,12 +1,14 @@
-"use client";
+﻿"use client";
 
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Link } from "react-router-dom";
 import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +28,8 @@ const formSchema = z.object({
 });
 
 export function ForgotPasswordForm() {
+  const [isLoading, setIsLoading] = useState(false);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,17 +38,23 @@ export function ForgotPasswordForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const redirectTo = `${window.location.origin}/nova-senha`;
-    const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-      redirectTo,
-    });
+    setIsLoading(true);
+    
+    try {
+      const redirectTo = `${window.location.origin}/nova-senha`;
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo,
+      });
 
-    if (error) {
-      showError(error.message);
-      return;
+      if (error) {
+        showRadixError(error.message);
+        return;
+      }
+
+      showRadixSuccess("Enviamos um e-mail com instruções para redefinir sua senha.");
+    } finally {
+      setIsLoading(false);
     }
-
-    showSuccess("Enviamos um e-mail com instruções para redefinir sua senha.");
   }
 
   return (
@@ -73,8 +83,13 @@ export function ForgotPasswordForm() {
         <Button
           type="submit"
           className="w-full bg-purple-600 hover:bg-purple-700"
+          disabled={isLoading}
         >
-          Enviar link de recuperação
+          {isLoading ? (
+            <LoadingSpinner size="sm" />
+          ) : (
+            "Enviar link de recuperação"
+          )}
         </Button>
         <Button variant="ghost" className="w-full" asChild>
           <Link to="/">Voltar para o login</Link>

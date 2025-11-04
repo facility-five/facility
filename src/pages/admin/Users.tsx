@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/admin/StatCard";
@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, Users as UsersIcon, UserCheck, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NewUserModal } from "@/components/admin/NewUserModal";
 import { DeleteUserModal } from "@/components/admin/DeleteUserModal";
@@ -42,7 +42,7 @@ const Users = () => {
     const { data, error } = await supabase.rpc("get_system_users");
     
     if (error) {
-      showError("Erro ao buscar usuários.");
+      showRadixError("Erro ao buscar usuários.");
       setUsers([]);
     } else {
       setUsers(data || []);
@@ -81,9 +81,9 @@ const Users = () => {
     });
 
     if (error) {
-      showError(`Erro ao eliminar usuário: ${error.message}`);
+      showRadixError(`Erro ao eliminar usuário: ${error.message}`);
     } else {
-      showSuccess("Usuário eliminado com sucesso!");
+      showRadixSuccess("Usuário eliminado com sucesso!");
       fetchUsersAndStats();
     }
     setIsDeleteModalOpen(false);
@@ -130,7 +130,7 @@ const Users = () => {
                 <TableRow key={i} className="border-b-admin-border"><TableCell colSpan={5}><Skeleton className="h-10 w-full bg-admin-border" /></TableCell></TableRow>
               ))
             ) : users.map((user) => (
-              <TableRow key={user.id} className="border-b-admin-border">
+              <TableRow key={user.id} className="border-b-admin-border hover:bg-muted/50">
                 <TableCell>
                   <p className="font-medium">{`${user.first_name || ''} ${user.last_name || ''}`.trim()}</p>
                   <p className="text-sm text-admin-foreground-muted">{user.email}</p>

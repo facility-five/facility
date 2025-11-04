@@ -4,6 +4,7 @@ import { ButtonSection } from "@/components/design-system/ButtonSection";
 import { FormElementsSection } from "@/components/design-system/FormElementsSection";
 import { DisplayElementsSection } from "@/components/design-system/DisplayElementsSection";
 import { FeedbackElementsSection } from "@/components/design-system/FeedbackElementsSection";
+import { TableSection } from "@/components/design-system/TableSection";
 import { Separator } from "@/components/ui/separator";
 
 const DesignSystem = () => {
@@ -30,6 +31,10 @@ const DesignSystem = () => {
         <Separator className="bg-admin-border" />
 
         <DisplayElementsSection />
+
+        <Separator className="bg-admin-border" />
+
+        <TableSection />
 
         <Separator className="bg-admin-border" />
 

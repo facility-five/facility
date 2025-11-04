@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -87,7 +87,7 @@ export const NewAdministratorModal = ({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        showError("Você precisa estar logado para criar uma administradora.");
+        showRadixError("Você precisa estar logado para criar uma administradora.");
         return;
     }
 
@@ -100,9 +100,9 @@ export const NewAdministratorModal = ({
     ]);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Administradora registrada com sucesso!");
+      showRadixSuccess("Administradora registrada com sucesso!");
       onSuccess();
       onClose();
       form.reset();
@@ -178,7 +178,7 @@ export const NewAdministratorModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nombre del responsable</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                     <FormControl>
                       <SelectTrigger className="bg-admin-background border-admin-border">
                         <SelectValue placeholder="Seleccione el usuario..." />

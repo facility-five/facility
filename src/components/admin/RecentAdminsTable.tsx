@@ -26,6 +26,16 @@ type Admin = {
   created_at: string;
 };
 
+type AdminRow = {
+  code: string;
+  name: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  created_at: string;
+};
+
 export const RecentAdminsTable = () => {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +50,7 @@ export const RecentAdminsTable = () => {
         console.error("Error fetching administrators:", error);
         setAdmins([]);
       } else {
-        const mapped = (data || []).map((row: any) => ({
+        const mapped = (data || []).map((row: AdminRow) => ({
           code: row.code,
           name: row.name,
           responsible_name: `${row.first_name || ''} ${row.last_name || ''}`.trim(),

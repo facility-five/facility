@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -45,7 +45,7 @@ const Units = () => {
       .order("created_at");
 
     if (error) {
-      showError("Erro ao buscar unidades.");
+      showRadixError("Erro ao buscar unidades.");
     } else {
       setUnits(data as any[] || []);
     }
@@ -76,9 +76,9 @@ const Units = () => {
     const { error } = await supabase.from("units").delete().eq("id", selectedUnit.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Unidade eliminada com sucesso!");
+      showRadixSuccess("Unidade eliminada com sucesso!");
       fetchUnits();
     }
     setIsDeleteModalOpen(false);
@@ -122,7 +122,7 @@ const Units = () => {
               ))
             ) : units.length > 0 ? (
               units.map((unit) => (
-                <TableRow key={unit.id} className="border-b-admin-border">
+                <TableRow key={unit.id} className="border-b-admin-border hover:bg-muted/50">
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className={cn("h-2 w-2 rounded-full", unit.is_occupied ? "bg-red-500" : "bg-green-500")}></span>

@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Plan } from "@/pages/admin/Plans";
 
 import { Button } from "@/components/ui/button";
@@ -111,9 +111,9 @@ export const PlanFormModal = ({
     }
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess(`Plano ${plan ? "atualizado" : "criado"} com sucesso!`);
+      showRadixSuccess(`Plano ${plan ? "atualizado" : "criado"} com sucesso!`);
       onSuccess();
       onClose();
     }
@@ -191,7 +191,7 @@ export const PlanFormModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Período</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger className="bg-admin-background border-admin-border">
                           <SelectValue placeholder="Selecione o período" />
@@ -212,7 +212,7 @@ export const PlanFormModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger className="bg-admin-background border-admin-border">
                           <SelectValue placeholder="Selecione o status" />

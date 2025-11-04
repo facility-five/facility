@@ -1,18 +1,25 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CondoCard, Condo } from "@/components/admin/CondoCard"; // Reusing CondoCard
+import { Condo } from "@/components/admin/CondoCard"; // Reusing Condo type
+import { ManagerTable, ManagerTableBody, ManagerTableCell, ManagerTableHead, ManagerTableHeader, ManagerTableRow } from "@/components/manager/ManagerTable";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Trash2 } from "lucide-react";
 import { NewCondoModal } from "@/components/admin/NewCondoModal"; // Reusing NewCondoModal
 import { EditCondoModal } from "@/components/manager/EditCondoModal"; // New EditCondoModal
 import { DeleteCondoModal } from "@/components/admin/DeleteCondoModal"; // Reusing DeleteCondoModal
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { PlanGuard } from "@/components/PlanGuard";
+import { UpgradeBanner } from "@/components/UpgradeBanner";
+import { usePlan } from "@/hooks/usePlan";
 
 const ManagerCondominios = () => {
   const { user } = useAuth();
+  const { isFreePlan, isLoading: planLoading } = usePlan();
   const [condos, setCondos] = useState<Condo[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -33,7 +40,7 @@ const ManagerCondominios = () => {
         if (data) {
           setManagerAdministratorId(data.id);
         } else if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-          showError("Erro ao buscar ID da administradora.");
+          showRadixError("Erro ao buscar ID da administradora.");
         }
       }
     };
@@ -52,7 +59,7 @@ const ManagerCondominios = () => {
       .eq('administrator_id', managerAdministratorId);
 
     if (error) {
-      showError("Erro ao buscar condomínios.");
+      showRadixError("Erro ao buscar condomínios.");
     } else {
       setCondos(data || []);
     }
@@ -62,6 +69,9 @@ const ManagerCondominios = () => {
   useEffect(() => {
     if (managerAdministratorId) {
       fetchCondos();
+    } else {
+      // Se não há managerAdministratorId, definir loading como false para mostrar a interface
+      setLoading(false);
     }
   }, [managerAdministratorId]);
 
@@ -88,9 +98,9 @@ const ManagerCondominios = () => {
       .eq("id", selectedCondo.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Condomínio excluído com sucesso!");
+      showRadixSuccess("Condomínio excluído com sucesso!");
       fetchCondos();
     }
     setIsDeleteModalOpen(false);
@@ -112,38 +122,109 @@ const ManagerCondominios = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <Button
-            className="bg-purple-600 hover:bg-purple-700"
-            onClick={handleNewCondo}
-            disabled={!managerAdministratorId} // Disable if no administrator ID is found
-          >
-            Novo Condomínio
-          </Button>
+          {!planLoading && (
+            <>
+              {!isFreePlan ? (
+                // Botão normal para usuários com plano pago
+                <Button
+                  className="bg-purple-600 hover:bg-purple-700"
+                  onClick={handleNewCondo}
+                  disabled={!managerAdministratorId}
+                >
+                  Novo Condomínio
+                </Button>
+              ) : (
+                // Botão de upgrade para usuários com plano gratuito
+                <Button 
+                  onClick={() => window.location.href = '/gestor/mi-plan'}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                >
+                  Fazer Upgrade para Criar Condomínios
+                </Button>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full bg-gray-200" />
-          ))}
-        </div>
-      ) : filteredCondos.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          {managerAdministratorId ? "Nenhum condomínio encontrado para sua administradora." : "Carregando informações da administradora..."}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCondos.map((condo) => (
-            <CondoCard
-              key={condo.id}
-              condo={condo}
-              onDelete={() => openDeleteModal(condo)}
-              onEdit={() => handleEditCondo(condo)}
-            />
-          ))}
+      {isFreePlan && (
+        <div className="mb-6">
+          <UpgradeBanner
+            title="Maximize o potencial do seu negócio"
+            description="Faça upgrade para um plano pago e tenha acesso completo a todas as funcionalidades de gestão."
+            variant="default"
+          />
         </div>
       )}
+
+      <ManagerTable>
+        <ManagerTableHeader>
+          <ManagerTableRow>
+            <ManagerTableHead>Status</ManagerTableHead>
+            <ManagerTableHead>Nome</ManagerTableHead>
+            <ManagerTableHead>Unidades</ManagerTableHead>
+            <ManagerTableHead>Moradores</ManagerTableHead>
+            <ManagerTableHead>Administradora</ManagerTableHead>
+            <ManagerTableHead className="text-right">Ações</ManagerTableHead>
+          </ManagerTableRow>
+        </ManagerTableHeader>
+          <ManagerTableBody>
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <ManagerTableRow key={i}>
+                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-32" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-24" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
+                </ManagerTableRow>
+              ))
+            ) : filteredCondos.length === 0 ? (
+              <ManagerTableRow>
+                <ManagerTableCell colSpan={6} className="text-center text-gray-500 py-8">
+                  {managerAdministratorId ? "Nenhum condomínio encontrado para sua administradora." : "Carregando informações da administradora..."}
+                </ManagerTableCell>
+              </ManagerTableRow>
+            ) : (
+              filteredCondos.map((condo) => (
+                <ManagerTableRow key={condo.id} className="hover:bg-gray-50">
+                  <ManagerTableCell>
+                    {condo.status === "active" ? (
+                      <Badge variant="default" className="bg-green-100 text-green-800">Ativo</Badge>
+                    ) : (
+                      <Badge variant="destructive" className="capitalize">{condo.status}</Badge>
+                    )}
+                  </ManagerTableCell>
+                  <ManagerTableCell className="font-medium">{condo.name}</ManagerTableCell>
+                  <ManagerTableCell>{condo.total_units || 0}</ManagerTableCell>
+                  <ManagerTableCell>124</ManagerTableCell>
+                  <ManagerTableCell>{condo.responsible_name || "N/A"}</ManagerTableCell>
+                  <ManagerTableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditCondo(condo)}
+                        className="h-8 w-8 text-gray-500 hover:text-blue-600"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openDeleteModal(condo)}
+                        className="h-8 w-8 text-gray-500 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </ManagerTableCell>
+                </ManagerTableRow>
+              ))
+            )}
+          </ManagerTableBody>
+        </ManagerTable>
 
       <NewCondoModal
         isOpen={isNewModalOpen}

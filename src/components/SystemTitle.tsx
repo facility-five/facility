@@ -6,15 +6,27 @@ import { useLocation } from "react-router-dom";
 const DEFAULT_TITLE = typeof document !== "undefined" ? document.title : "App";
 
 const routeTitles: Record<string, string> = {
-  "/": "Login",
+  "/": "Facility",
   "/setup-master": "Configuração Inicial",
-  "/criar-conta": "Criar Conta",
+  "/registrarse": "Crear Cuenta",
   "/recuperar-senha": "Recuperar Senha",
-  "/verificar-email": "Verificar E-mail",
-  "/planos": "Planos",
+  "/recuperar-contrasena": "Recuperar Contraseña",
+  // "/verificar-email": "Verificar E-mail",
+  "/planes": "Planos",
+  "/contacto": "Contacto",
   "/acesso-morador": "Acesso do Morador",
 
-  "/gestor-dashboard": "Painel do Gestor",
+  "/gestor": "Painel do Gestor",
+  "/gestor/administradoras": "Administradoras",
+  "/gestor/condominios": "Condomínios",
+  "/gestor/blocos": "Blocos",
+  "/gestor/unidades": "Unidades",
+  "/gestor/residentes": "Residentes",
+  "/gestor/mascotas": "Mascotas",
+  "/gestor/vehiculos": "Vehículos",
+  "/gestor/configuracoes": "Configurações",
+  "/gestor/comunicados": "Comunicados",
+  "/gestor/mi-plan": "Mi Plan (Gestor)",
   "/morador-dashboard": "Painel do Morador",
 
   "/admin": "Dashboard",
@@ -24,12 +36,14 @@ const routeTitles: Record<string, string> = {
   "/admin/bloques": "Blocos",
   "/admin/unidades": "Unidades",
   "/admin/areas-comunes": "Áreas Comunes",
-  "/admin/comunicados": "Comunicados",
   "/admin/usuarios": "Usuários",
   "/admin/planes": "Planes (Admin)",
   "/admin/pagos": "Pagamentos",
   "/admin/configuracoes": "Configurações",
   "/admin/notificacoes": "Notificações",
+  "/admin/pagina": "Página",
+  "/admin/clientes-potenciales": "Clientes Potenciales",
+  "/admin/moradores": "Gestão de Moradores",
   "/design-system": "Design System",
 };
 
@@ -68,9 +82,9 @@ const SystemTitle = () => {
       const { data, error } = await supabase
         .from("system_settings")
         .select("system_name")
-        .eq("id", 1)
-        .single();
-      if (!error) {
+        .limit(1)
+        .maybeSingle();
+      if (!error && data) {
         apply(data?.system_name ?? null);
       }
     };
@@ -85,7 +99,6 @@ const SystemTitle = () => {
             event: "*",
             schema: "public",
             table: "system_settings",
-            filter: "id=eq.1",
           },
           (payload) => {
             const nextName =

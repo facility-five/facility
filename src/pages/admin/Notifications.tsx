@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,7 +35,7 @@ const Notifications = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      showError("Erro ao buscar notificações.");
+      showRadixError("Erro ao buscar notificações.");
     } else {
       setNotifications(data || []);
     }
@@ -56,9 +56,9 @@ const Notifications = () => {
       .in('id', unreadIds);
 
     if (error) {
-      showError("Erro ao marcar notificações como lidas.");
+      showRadixError("Erro ao marcar notificações como lidas.");
     } else {
-      showSuccess("Todas as notificações foram marcadas como lidas.");
+      showRadixSuccess("Todas as notificações foram marcadas como lidas.");
       fetchNotifications();
     }
   };

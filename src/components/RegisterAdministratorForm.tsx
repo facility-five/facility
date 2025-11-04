@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,16 +20,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-const formSchema = z.object({
-  name: z.string().min(1, "O nome da administradora é obrigatório."),
-  nif: z.string().optional(),
-  email: z.string().email("E-mail inválido."),
-  phone: z.string().optional(),
-});
-
 export function RegisterAdministratorForm() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const formSchema = z.object({
+    name: z.string().min(1, t("registerAdmin.form.nameRequired")),
+    nif: z.string().optional(),
+    email: z.string().email(t("registerAdmin.form.emailInvalid")),
+    phone: z.string().optional(),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,7 +46,7 @@ export function RegisterAdministratorForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
-      showError("Sessão expirada. Por favor, faça login novamente.");
+      showRadixError(t("registerAdmin.form.sessionExpired"));
       navigate("/");
       return;
     }
@@ -59,9 +61,9 @@ export function RegisterAdministratorForm() {
     ]);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Administradora registrada com sucesso!");
+      showRadixSuccess(t("registerAdmin.form.success"));
       navigate("/admin");
     }
   }
@@ -74,9 +76,9 @@ export function RegisterAdministratorForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome da Administradora</FormLabel>
+              <FormLabel>{t("registerAdmin.form.nameLabel")}</FormLabel>
               <FormControl>
-                <Input placeholder="Nome da sua empresa" {...field} />
+                <Input placeholder={t("registerAdmin.form.namePlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -87,9 +89,9 @@ export function RegisterAdministratorForm() {
           name="nif"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>NIF / CNPJ</FormLabel>
+              <FormLabel>{t("registerAdmin.form.nifLabel")}</FormLabel>
               <FormControl>
-                <Input placeholder="Número de identificação fiscal" {...field} />
+                <Input placeholder={t("registerAdmin.form.nifPlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -100,9 +102,9 @@ export function RegisterAdministratorForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>E-mail de Contato</FormLabel>
+              <FormLabel>{t("registerAdmin.form.emailLabel")}</FormLabel>
               <FormControl>
-                <Input placeholder="contato@suaempresa.com" {...field} />
+                <Input placeholder={t("registerAdmin.form.emailPlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -113,16 +115,16 @@ export function RegisterAdministratorForm() {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Telefone</FormLabel>
+              <FormLabel>{t("registerAdmin.form.phoneLabel")}</FormLabel>
               <FormControl>
-                <Input placeholder="Telefone comercial" {...field} />
+                <Input placeholder={t("registerAdmin.form.phonePlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
-          Finalizar Cadastro
+          {t("registerAdmin.form.submitButton")}
         </Button>
       </form>
     </Form>

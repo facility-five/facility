@@ -36,27 +36,25 @@ export const DynamicSidebarLogo = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-8 w-8 rounded-md" />
-        <Skeleton className="h-6 w-32" />
+      <div className="flex items-center justify-center">
+        <Skeleton className="h-16 w-16 rounded-md" />
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 truncate">
+    <div className="flex items-center justify-center">
       {logoUrl ? (
         <img
           src={logoUrl}
           alt={systemName ? `${systemName} Logo` : 'Logo do Sistema'}
-          className="h-8 object-contain"
+          className="h-16 object-contain"
         />
       ) : (
-        <div className="h-8 w-8 bg-purple-600 rounded-md flex items-center justify-center text-white">
-            <Building size={20} />
+        <div className="h-16 w-16 bg-purple-600 rounded-md flex items-center justify-center text-white">
+            <Building size={32} />
         </div>
       )}
-      <span className="font-bold text-lg text-white truncate">{systemName}</span>
     </div>
   );
 };

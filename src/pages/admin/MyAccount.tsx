@@ -1,4 +1,4 @@
-import { AdminLayout } from "@/components/admin/AdminLayout";
+﻿import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -112,7 +112,7 @@ const MyAccount = () => {
           .upload(fileName, avatar_file, { upsert: true });
 
         if (uploadError) {
-          showError(`Erro ao carregar foto de perfil: ${uploadError.message}`);
+          showRadixError(`Erro ao carregar foto de perfil: ${uploadError.message}`);
           return;
         }
         const { data: publicURL } = supabase.storage.from('avatars').getPublicUrl(uploadData.path);
@@ -137,7 +137,7 @@ const MyAccount = () => {
       });
 
       if (authError) {
-        showError(authError.message);
+        showRadixError(authError.message);
         return;
       }
 
@@ -152,9 +152,9 @@ const MyAccount = () => {
         .eq('id', user?.id);
 
       if (profileError) {
-        showError(profileError.message);
+        showRadixError(profileError.message);
       } else {
-        showSuccess("Perfil atualizado com sucesso!");
+        showRadixSuccess("Perfil atualizado com sucesso!");
         // Re-buscar usuário para atualizar o estado local com a nova avatar_url
         const { data: { user: updatedUser } } = await supabase.auth.getUser();
         if (updatedUser) {
@@ -169,7 +169,7 @@ const MyAccount = () => {
       }
     } catch (err: any) {
       console.error("Erro não tratado durante a atualização do perfil:", err);
-      showError("Ocorreu um erro inesperado ao atualizar o perfil.");
+      showRadixError("Ocorreu um erro inesperado ao atualizar o perfil.");
     } finally {
       dismissToast(loadingId);
     }
@@ -179,7 +179,7 @@ const MyAccount = () => {
     const loadingId = showLoading("Alterando senha...");
     try {
       if (!email) {
-        showError("Não foi possível identificar seu e-mail.");
+        showRadixError("Não foi possível identificar seu e-mail.");
         return;
       }
 
@@ -190,7 +190,7 @@ const MyAccount = () => {
       });
 
       if (reauthError) {
-        showError("Senha atual incorreta. Tente novamente.");
+        showRadixError("Senha atual incorreta. Tente novamente.");
         return;
       }
 
@@ -200,9 +200,9 @@ const MyAccount = () => {
       });
 
       if (error) {
-        showError(error.message);
+        showRadixError(error.message);
       } else {
-        showSuccess("Senha alterada com sucesso!");
+        showRadixSuccess("Senha alterada com sucesso!");
         passwordForm.reset({
           currentPassword: "",
           password: "",
@@ -211,7 +211,7 @@ const MyAccount = () => {
       }
     } catch (err: any) {
       console.error("Erro não tratado durante a alteração da senha:", err);
-      showError("Ocorreu um erro inesperado ao alterar a senha.");
+      showRadixError("Ocorreu um erro inesperado ao alterar a senha.");
     } finally {
       dismissToast(loadingId);
     }

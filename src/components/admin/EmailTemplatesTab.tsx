@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Mail, Eye, Pencil, Trash2 } from "lucide-react";
 import { EmailTemplateFormModal, EmailTemplate } from "./EmailTemplateFormModal";
@@ -26,7 +26,7 @@ export const EmailTemplatesTab = () => {
       .order("created_at", { ascending: true });
 
     if (error) {
-      showError("Erro ao buscar modelos de e-mail.");
+      showRadixError("Erro ao buscar modelos de e-mail.");
     } else {
       setTemplates(data || []);
     }
@@ -62,9 +62,9 @@ export const EmailTemplatesTab = () => {
     const { error } = await supabase.from("email_templates").delete().eq("id", selectedTemplate.id);
 
     if (error) {
-      showError(error.message);
+      showRadixError(error.message);
     } else {
-      showSuccess("Plantilla eliminada com sucesso!");
+      showRadixSuccess("Plantilla eliminada com sucesso!");
       fetchTemplates();
     }
     setIsDeleteModalOpen(false);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,7 @@ const Payments = () => {
       setLoading(true);
       const { data, error } = await supabase.rpc("get_all_payments_with_profile");
       if (error) {
-        showError("Erro ao buscar pagamentos.");
+        showRadixError("Erro ao buscar pagamentos.");
         setPayments([]);
       } else {
         const mapped = (data || []).map((row: any) => ({
@@ -94,7 +94,7 @@ const Payments = () => {
               ))
             ) : payments.length > 0 ? (
               payments.map((payment) => (
-                <TableRow key={payment.id} className="border-b-admin-border">
+                <TableRow key={payment.id} className="border-b-admin-border hover:bg-muted/50">
                   <TableCell>{formatDate(payment.created_at)}</TableCell>
                   <TableCell className="font-medium">{payment.id.substring(0, 15).toUpperCase()}</TableCell>
                   <TableCell>

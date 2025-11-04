@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { ManagerLayout } from '@/components/manager/ManagerLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+  ManagerTable,
+  ManagerTableBody,
+  ManagerTableCell,
+  ManagerTableHead,
+  ManagerTableHeader,
+  ManagerTableRow,
+} from '@/components/manager/ManagerTable';
 import { 
   Select,
   SelectContent,
@@ -32,11 +32,14 @@ import {
   MapPin
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useManagerAdministrators } from '@/contexts/ManagerAdministratorsContext';
-import { showError, showSuccess } from '@/utils/toast';
+import { showRadixError, showRadixSuccess } from '@/utils/toast';
 import { NewManagerReservationModal } from '@/components/manager/NewManagerReservationModal';
 import { EditManagerReservationModal } from '@/components/manager/EditManagerReservationModal';
 import { DeleteManagerReservationModal } from '@/components/manager/DeleteManagerReservationModal';
+import { PlanGuard } from '@/components/PlanGuard';
+import { UpgradeBanner } from '@/components/UpgradeBanner';
+import { usePlan } from '@/hooks/usePlan';
+import { useManagerAdministradoras } from '@/contexts/ManagerAdministradorasContext';
 
 interface Reservation {
   id: string;
@@ -64,6 +67,8 @@ interface Reservation {
 }
 
 const Reservas = () => {
+  const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { activeAdministratorId } = useManagerAdministradoras();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -74,17 +79,11 @@ const Reservas = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
-  const { selectedAdministratorId } = useManagerAdministrators();
 
   const fetchReservations = async () => {
-    if (!selectedAdministratorId) {
-      setReservations([]);
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
-    const { data, error } = await supabase
+    
+    let query = supabase
       .from("reservas")
       .select(`
         *,
@@ -103,12 +102,17 @@ const Reservas = () => {
           name,
           administrator_id
         )
-      `)
-      .eq("condominiums.administrator_id", selectedAdministratorId)
-      .order("created_at", { ascending: false });
+      `);
+
+    // No plano gratuito, busca todas as reservas. No plano pago, filtra por administradora
+    if (!isFreePlan && activeAdministratorId) {
+      query = query.eq("condominiums.administrator_id", activeAdministratorId);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
-      showError("Erro ao buscar reservas.");
+      showRadixError("Erro ao buscar reservas.");
       console.error("Error fetching reservations:", error);
     } else {
       setReservations(data as any[] || []);
@@ -117,13 +121,20 @@ const Reservas = () => {
   };
 
   const fetchCondominiums = async () => {
-    if (!selectedAdministratorId) return;
+    // No plano gratuito, busca todos os condomínios. No plano pago, filtra por administradora
+    if (!isFreePlan) {
+      if (!activeAdministratorId) return;
+    }
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("condominiums")
-      .select("id, name")
-      .eq("administrator_id", selectedAdministratorId)
-      .order("name");
+      .select("id, name");
+
+    if (!isFreePlan && activeAdministratorId) {
+      query = query.eq("administrator_id", activeAdministratorId);
+    }
+
+    const { data, error } = await query.order("name");
 
     if (error) {
       console.error("Error fetching condominiums:", error);
@@ -133,9 +144,14 @@ const Reservas = () => {
   };
 
   useEffect(() => {
-    fetchReservations();
-    fetchCondominiums();
-  }, [selectedAdministratorId]);
+    if (isFreePlan || activeAdministratorId) {
+      fetchReservations();
+      fetchCondominiums();
+    } else {
+      // Se não há activeAdministratorId no plano pago, definir loading como false para mostrar a interface
+      setLoading(false);
+    }
+  }, [activeAdministratorId, isFreePlan]);
 
   const stats = useMemo(() => {
     const total = reservations.length;
@@ -179,9 +195,9 @@ const Reservas = () => {
       .eq("id", selectedReservation.id);
 
     if (error) {
-      showError("Erro ao excluir reserva.");
+      showRadixError("Erro ao excluir reserva.");
     } else {
-      showSuccess("Reserva excluída com sucesso!");
+      showRadixSuccess("Reserva excluída com sucesso!");
       fetchReservations();
     }
     setIsDeleteModalOpen(false);
@@ -195,9 +211,9 @@ const Reservas = () => {
       .eq("id", reservationId);
 
     if (error) {
-      showError("Erro ao atualizar status da reserva.");
+      showRadixError("Erro ao atualizar status da reserva.");
     } else {
-      showSuccess("Status da reserva atualizado com sucesso!");
+      showRadixSuccess("Status da reserva atualizado com sucesso!");
       fetchReservations();
     }
   };
@@ -226,7 +242,7 @@ const Reservas = () => {
     return variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800';
   };
 
-  if (!selectedAdministratorId) {
+  if (!isFreePlan && !activeAdministratorId) {
     return (
       <ManagerLayout>
         <div className="flex flex-col items-center justify-center h-64">
@@ -253,14 +269,38 @@ const Reservas = () => {
               Gestione las reservas de las áreas comunes
             </p>
           </div>
-          <Button 
-            className="bg-purple-600 hover:bg-purple-700"
-            onClick={() => setIsNewModalOpen(true)}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Reservo
-          </Button>
+          {!planLoading && (
+            <>
+              {!isFreePlan ? (
+                // Botão normal para usuários com plano pago
+                <Button 
+                  className="bg-purple-600 hover:bg-purple-700"
+                  onClick={() => setIsNewModalOpen(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Novo Reservo
+                </Button>
+              ) : (
+                // Botão de upgrade para usuários com plano gratuito
+                <Button 
+                  onClick={() => window.location.href = '/gestor/mi-plan'}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Fazer Upgrade para Criar Reservas
+                </Button>
+              )}
+            </>
+          )}
         </div>
+
+        {isFreePlan && (
+          <UpgradeBanner 
+            title="Gerencie reservas ilimitadas"
+            description="Faça upgrade para um plano pago e tenha acesso completo ao gerenciamento de reservas."
+            variant="default"
+          />
+        )}
 
         {/* Estatísticas */}
         <div className="grid gap-6 md:grid-cols-4">
@@ -341,69 +381,68 @@ const Reservas = () => {
               </Select>
             </div>
 
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-purple-600 hover:bg-purple-600">
-                    <TableHead className="text-white">Código</TableHead>
-                    <TableHead className="text-white">Residente</TableHead>
-                    <TableHead className="text-white">Área Común</TableHead>
-                    <TableHead className="text-white">Condomínio</TableHead>
-                    <TableHead className="text-white">Fecha</TableHead>
-                    <TableHead className="text-white">Horario</TableHead>
-                    <TableHead className="text-white">Status</TableHead>
-                    <TableHead className="text-white">Valor</TableHead>
-                    <TableHead className="text-white text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    Array.from({ length: 5 }).map((_, index) => (
-                      <TableRow key={index}>
-                        {Array.from({ length: 9 }).map((_, cellIndex) => (
-                          <TableCell key={cellIndex}>
-                            <Skeleton className="h-4 w-full" />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : filteredReservations.length > 0 ? (
-                    filteredReservations.map((reservation) => (
-                      <TableRow key={reservation.id}>
-                        <TableCell className="font-medium text-purple-600">
-                          {reservation.code}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{reservation.residents?.name}</p>
-                            <p className="text-sm text-gray-500">{reservation.residents?.email}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>{reservation.common_areas?.name}</TableCell>
-                        <TableCell>{reservation.condominiums?.name}</TableCell>
-                        <TableCell>{formatDate(reservation.reservation_date)}</TableCell>
-                        <TableCell>
-                          {formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={reservation.status}
-                            onValueChange={(value) => handleStatusChange(reservation.id, value)}
-                          >
-                            <SelectTrigger className="w-32">
-                              <Badge className={getStatusBadge(reservation.status)}>
-                                {reservation.status}
-                              </Badge>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Pendente">Pendente</SelectItem>
-                              <SelectItem value="Confirmada">Confirmada</SelectItem>
-                              <SelectItem value="Cancelada">Cancelada</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>{formatCurrency(reservation.total_value)}</TableCell>
-                        <TableCell className="text-right">
+            <ManagerTable>
+              <ManagerTableHeader>
+                <ManagerTableRow>
+                  <ManagerTableHead>Código</ManagerTableHead>
+                  <ManagerTableHead>Residente</ManagerTableHead>
+                  <ManagerTableHead>Área Común</ManagerTableHead>
+                  <ManagerTableHead>Condomínio</ManagerTableHead>
+                  <ManagerTableHead>Fecha</ManagerTableHead>
+                  <ManagerTableHead>Horario</ManagerTableHead>
+                  <ManagerTableHead>Status</ManagerTableHead>
+                  <ManagerTableHead>Valor</ManagerTableHead>
+                  <ManagerTableHead className="text-right">Acciones</ManagerTableHead>
+                </ManagerTableRow>
+              </ManagerTableHeader>
+              <ManagerTableBody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <ManagerTableRow key={index}>
+                      {Array.from({ length: 9 }).map((_, cellIndex) => (
+                        <ManagerTableCell key={cellIndex}>
+                          <Skeleton className="h-4 w-full" />
+                        </ManagerTableCell>
+                      ))}
+                    </ManagerTableRow>
+                  ))
+                ) : filteredReservations.length > 0 ? (
+                  filteredReservations.map((reservation) => (
+                    <ManagerTableRow key={reservation.id}>
+                      <ManagerTableCell className="font-medium text-purple-600">
+                        {reservation.code}
+                      </ManagerTableCell>
+                      <ManagerTableCell>
+                        <div>
+                          <p className="font-medium">{reservation.residents?.name}</p>
+                          <p className="text-sm text-gray-500">{reservation.residents?.email}</p>
+                        </div>
+                      </ManagerTableCell>
+                      <ManagerTableCell>{reservation.common_areas?.name}</ManagerTableCell>
+                      <ManagerTableCell>{reservation.condominiums?.name}</ManagerTableCell>
+                      <ManagerTableCell>{formatDate(reservation.reservation_date)}</ManagerTableCell>
+                      <ManagerTableCell>
+                        {formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}
+                      </ManagerTableCell>
+                      <ManagerTableCell>
+                        <Select
+                          value={reservation.status}
+                          onValueChange={(value) => handleStatusChange(reservation.id, value)}
+                        >
+                          <SelectTrigger className="w-32">
+                            <Badge className={getStatusBadge(reservation.status)}>
+                              {reservation.status}
+                            </Badge>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Pendente">Pendente</SelectItem>
+                            <SelectItem value="Confirmada">Confirmada</SelectItem>
+                            <SelectItem value="Cancelada">Cancelada</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </ManagerTableCell>
+                      <ManagerTableCell>{formatCurrency(reservation.total_value)}</ManagerTableCell>
+                      <ManagerTableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button 
                               variant="ghost" 
@@ -420,23 +459,22 @@ const Reservas = () => {
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
+                        </ManagerTableCell>
+                      </ManagerTableRow>
                     ))
                   ) : (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center text-gray-500 py-8">
+                    <ManagerTableRow>
+                      <ManagerTableCell colSpan={9} className="text-center text-gray-500 py-8">
                         <div className="flex flex-col items-center">
                           <MapPin className="h-12 w-12 text-gray-300 mb-4" />
                           <p className="text-lg font-medium">No hay nada registrado aquí.</p>
                           <p className="text-sm">Ainda não há nenhum conteúdo registrado nesta seção.</p>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </ManagerTableCell>
+                    </ManagerTableRow>
                   )}
-                </TableBody>
-              </Table>
-            </div>
+                </ManagerTableBody>
+              </ManagerTable>
           </CardContent>
         </Card>
       </div>
