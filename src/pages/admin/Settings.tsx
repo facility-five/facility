@@ -16,11 +16,31 @@ const Settings = () => {
           </p>
         </div>
         <Tabs defaultValue="system" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-admin-card border-admin-border">
-            <TabsTrigger value="system">Configurações do Sistema</TabsTrigger>
-            <TabsTrigger value="users">Usuários do Sistema</TabsTrigger>
-            <TabsTrigger value="email">Modelos de E-mail</TabsTrigger>
-            <TabsTrigger value="stripe">Stripe</TabsTrigger>
+          <TabsList className="flex w-full gap-2 bg-admin-card border-admin-border">
+            <TabsTrigger
+              value="system"
+              className="flex-1 justify-center focus:bg-purple-600 focus:text-white focus:outline-none focus:ring-0 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
+              Configurações do Sistema
+            </TabsTrigger>
+            <TabsTrigger
+              value="users"
+              className="flex-1 justify-center focus:bg-purple-600 focus:text-white focus:outline-none focus:ring-0 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
+              Usuários do Sistema
+            </TabsTrigger>
+            <TabsTrigger
+              value="email"
+              className="flex-1 justify-center focus:bg-purple-600 focus:text-white focus:outline-none focus:ring-0 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
+              Modelos de E-mail
+            </TabsTrigger>
+            <TabsTrigger
+              value="stripe"
+              className="flex-1 justify-center focus:bg-purple-600 focus:text-white focus:outline-none focus:ring-0 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
+              Stripe
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="system">
             <SystemSettingsTab />
