@@ -19,11 +19,9 @@ export const EmailTemplatesTab = () => {
 
   const categories = [
     { id: "welcome", label: "Boas-vindas", name: "resident-welcome" },
-    { id: "activation_done", label: "Ativação Concluída", name: "activation-completed" },
-    { id: "suspension", label: "Suspensão", name: "suspension-notice" },
-    { id: "reactivation", label: "Reativação", name: "reactivation-notice" },
-    { id: "inactivation", label: "Inativação", name: "inactivation-notice" },
-    { id: "reminder", label: "Lembrete", name: "invoice-reminder" },
+    { id: "payment_success", label: "Pagamento Bem-sucedido", name: "payment-success" },
+    { id: "payment_failed", label: "Falha no Pagamento", name: "payment-failed" },
+    { id: "invoice_reminder", label: "Lembrete de Fatura", name: "invoice-reminder" },
   ];
 
   const fetchTemplates = async () => {
@@ -133,7 +131,7 @@ export const EmailTemplatesTab = () => {
                         className="mt-2 bg-admin-background border-admin-border"
                       />
                       <p className="text-xs text-admin-foreground-muted mt-2">
-                        Use variáveis como {{"{{first_name}}"}} para personalizar o assunto.
+                        Use variáveis como {"{{first_name}}"} para personalizar o assunto.
                       </p>
                     </div>
                     <div>
@@ -145,7 +143,7 @@ export const EmailTemplatesTab = () => {
                         className="mt-2 min-h-[220px] bg-admin-background border-admin-border"
                       />
                       <p className="text-xs text-admin-foreground-muted mt-2">
-                        Suporte a placeholders como {{"{{first_name}}"}}, {{"{{condo_name}}"}} e {{"{{date}}"}}.
+                        Suporte a placeholders como {"{{first_name}}"}, {"{{condo_name}}"} e {"{{date}}"}.
                       </p>
                     </div>
                     <div className="flex justify-end">
