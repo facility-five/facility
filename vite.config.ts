@@ -6,8 +6,8 @@ import path from "path";
 export default defineConfig(() => ({
   server: {
     host: "0.0.0.0",
-    port: 8080,
-    strictPort: true,
+    port: Number(process.env.PORT) || 8080,
+    strictPort: false,
   },
   plugins: [dyadComponentTagger(), react()],
   resolve: {
