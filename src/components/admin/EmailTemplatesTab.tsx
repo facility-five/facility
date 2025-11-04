@@ -113,7 +113,7 @@ export const EmailTemplatesTab = () => {
                 <TabsTrigger
                   key={cat.id}
                   value={cat.id}
-                  className="flex-1 justify-center focus:bg-purple-600 focus:text-white focus:outline-none focus:ring-0"
+                  className="flex-1 justify-center focus:bg-purple-600 focus:text-white focus:outline-none focus:ring-0 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
                 >
                   {cat.label}
                 </TabsTrigger>
