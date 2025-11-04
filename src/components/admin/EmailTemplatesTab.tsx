@@ -110,7 +110,11 @@ export const EmailTemplatesTab = () => {
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="flex w-full gap-2 bg-admin-card border-admin-border">
               {categories.map(cat => (
-                <TabsTrigger key={cat.id} value={cat.id} className="flex-1 justify-center">
+                <TabsTrigger
+                  key={cat.id}
+                  value={cat.id}
+                  className="flex-1 justify-center focus:bg-purple-600 focus:text-white focus:outline-none focus:ring-0"
+                >
                   {cat.label}
                 </TabsTrigger>
               ))}
