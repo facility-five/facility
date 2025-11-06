@@ -4,6 +4,7 @@ import { SystemSettingsTab } from "@/components/admin/SystemSettingsTab";
 import { SystemUsersTab } from "@/components/admin/SystemUsersTab";
 import { EmailTemplatesTab } from "@/components/admin/EmailTemplatesTab";
 import StripeSettings from "@/components/admin/StripeSettings";
+import PayPalSettings from "@/components/admin/PayPalSettings";
 
 const Settings = () => {
   return (
@@ -41,6 +42,12 @@ const Settings = () => {
             >
               Stripe
             </TabsTrigger>
+            <TabsTrigger
+              value="paypal"
+              className="flex-1 justify-center focus:bg-purple-600 focus:text-white focus:outline-none focus:ring-0 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+            >
+              PayPal
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="system">
             <SystemSettingsTab />
@@ -53,6 +60,9 @@ const Settings = () => {
           </TabsContent>
           <TabsContent value="stripe">
             <StripeSettings />
+          </TabsContent>
+          <TabsContent value="paypal">
+            <PayPalSettings />
           </TabsContent>
         </Tabs>
       </div>
