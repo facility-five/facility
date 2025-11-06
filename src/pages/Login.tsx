@@ -141,9 +141,9 @@ function Login() {
         description={t("auth.login_description")}
         variant="single"
       >
-        <div className="space-y-4">
+        <div className="space-y-4 text-center">
           <p className="text-gray-700">Você já está autenticado.</p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center">
             <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => navigate(getDashboardRoute())}>
               Meu Painel
             </Button>
