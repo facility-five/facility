@@ -58,20 +58,12 @@ function Login() {
     };
 
     const redirectAfterLogin = async () => {
-      if (loading || !profileLoaded || redirected) return;
+      if (loading || redirected) return;
       if (!session) return;
 
-      // Apenas redireciona automaticamente se veio do fluxo de login
-      const fromLogin = (() => { try { return sessionStorage.getItem('fromLogin') === '1'; } catch { return false; } })();
-      if (!fromLogin) return;
-
-      // Se existe sessão mas não há perfil, NÃO redirecionar.
-      // Mantemos o usuário na página de login para escolher o próximo passo.
-      if (!profile) {
-        return;
-      }
-
-      const normalizedRole = normalizeRole(profile.role);
+      // Detecta papel via profile ou, como fallback, via user_metadata
+      const roleSource = profile?.role || (session.user?.user_metadata as any)?.role || "";
+      const normalizedRole = normalizeRole(roleSource);
 
       if (normalizedRole === "admin do saas") {
         goTo("/admin");
