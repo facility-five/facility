@@ -44,6 +44,10 @@ export function AuthForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+    try {
+      // Marcar que o fluxo de login foi iniciado para permitir redireciono pós-login
+      sessionStorage.setItem('fromLogin', '1');
+    } catch {}
     const { error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
@@ -57,6 +61,10 @@ export function AuthForm() {
       } else {
         showRadixError(error.message);
       }
+      try {
+        // Evitar redireciono automático se houve erro
+        sessionStorage.removeItem('fromLogin');
+      } catch {}
     }
     // A navegação agora é tratada pelo AuthContext
     setIsLoading(false);

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthForm } from "@/components/AuthForm";
 import { AuthLayout } from "@/components/AuthLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +22,7 @@ const normalizeRole = (role: string): string =>
     .toLowerCase();
 
 function Login() {
-  const { session, profile, loading, profileLoaded } = useAuth();
+  const { session, profile, loading, profileLoaded, signOut } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [processing, setProcessing] = useState(false);
@@ -52,12 +53,17 @@ function Login() {
       if (!options?.keepSpinner) {
         setProcessing(true);
       }
+      try { sessionStorage.removeItem('fromLogin'); } catch {}
       navigate(path, { replace: true });
     };
 
     const redirectAfterLogin = async () => {
       if (loading || !profileLoaded || redirected) return;
       if (!session) return;
+
+      // Apenas redireciona automaticamente se veio do fluxo de login
+      const fromLogin = (() => { try { return sessionStorage.getItem('fromLogin') === '1'; } catch { return false; } })();
+      if (!fromLogin) return;
 
       // Se existe sessão mas não há perfil, enviar para a Home (Landing)
       // A Landing não faz redirecionamento automático; usuário decide o próximo passo.
@@ -116,6 +122,38 @@ function Login() {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
         <LoadingSpinner size="lg" className="text-white" />
       </div>
+    );
+  }
+
+  // Se o usuário já está autenticado e não estamos processando, mostrar opções ao invés de redirecionar automaticamente
+  if (session) {
+    const normalizedRole = normalizeRole(profile?.role || "");
+    const getDashboardRoute = () => {
+      if (normalizedRole === "admin do saas") return "/admin";
+      if (["administradora", "administrador", "funcionario", "funcionrio"].includes(normalizedRole)) return "/gestor";
+      if (normalizedRole === "sindico") return "/sindico";
+      if (normalizedRole === "morador") return "/morador-dashboard";
+      return "/";
+    };
+
+    return (
+      <AuthLayout
+        title={t("auth.welcome_back")}
+        description={t("auth.login_description")}
+        variant="single"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">Você já está autenticado.</p>
+          <div className="flex gap-2">
+            <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => navigate(getDashboardRoute())}>
+              Meu Painel
+            </Button>
+            <Button variant="outline" onClick={async () => { await signOut(); navigate("/"); }}>
+              Sair
+            </Button>
+          </div>
+        </div>
+      </AuthLayout>
     );
   }
 
