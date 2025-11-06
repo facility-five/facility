@@ -69,7 +69,7 @@ export const Sidebar = () => {
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-[#0F1222] text-gray-100 border-r border-[#1F2238] flex flex-col">
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-4 overflow-y-auto">
         <ul>
           {navItems.map((item) => (
             <li key={item.href}>
@@ -88,7 +88,7 @@ export const Sidebar = () => {
           ))}
         </ul>
       </nav>
-      <div className="p-4 border-t border-[#1F2238] mt-auto">
+      <div className="sticky bottom-0 z-10 p-4 border-t border-[#1F2238] bg-[#0F1222] mt-auto">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div className="flex items-center gap-3 cursor-pointer hover:bg-white/10 p-2 rounded-lg transition-colors -m-2">
