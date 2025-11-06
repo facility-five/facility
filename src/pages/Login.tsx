@@ -65,10 +65,9 @@ function Login() {
       const fromLogin = (() => { try { return sessionStorage.getItem('fromLogin') === '1'; } catch { return false; } })();
       if (!fromLogin) return;
 
-      // Se existe sessão mas não há perfil, enviar para a Home (Landing)
-      // A Landing não faz redirecionamento automático; usuário decide o próximo passo.
+      // Se existe sessão mas não há perfil, NÃO redirecionar.
+      // Mantemos o usuário na página de login para escolher o próximo passo.
       if (!profile) {
-        goTo("/");
         return;
       }
 
