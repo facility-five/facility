@@ -57,7 +57,14 @@ function Login() {
 
     const redirectAfterLogin = async () => {
       if (loading || !profileLoaded || redirected) return;
-      if (!session || !profile) return;
+      if (!session) return;
+
+      // Se existe sessão mas não há perfil, enviar para a Home (Landing)
+      // A Landing não faz redirecionamento automático; usuário decide o próximo passo.
+      if (!profile) {
+        goTo("/");
+        return;
+      }
 
       const normalizedRole = normalizeRole(profile.role);
 

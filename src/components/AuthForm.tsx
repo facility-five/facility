@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Link } from "react-router-dom";
 import { Lock, Mail, Eye, EyeOff, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { showError } from "@/utils/toast";
+import { showRadixError } from "@/utils/toast";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
