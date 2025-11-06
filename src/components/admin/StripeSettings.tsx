@@ -1,12 +1,13 @@
-﻿import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { supabase, SUPABASE_URL } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-const WEBHOOK_URL = "https://riduqdqarirfqouazgwf.supabase.co/functions/v1/stripe-webhook";
+// Construir dinamicamente a URL do webhook com base no projeto atual do Supabase
+const WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/stripe-webhook`;
 
 export const StripeSettings = () => {
   const [publishableKey, setPublishableKey] = useState("");

@@ -64,6 +64,8 @@ import LandingPageV2 from "./pages/LandingPageV2";
 import Contacto from "./pages/Contacto";
 import Leads from "./pages/admin/Leads";
 import ResidentsManagement from "./pages/admin/ResidentsManagement";
+import Soporte from "./pages/admin/Soporte";
+import Tareas from "./pages/admin/Tareas";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -447,6 +449,22 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
                     <DesignSystem />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/soporte"
+                element={
+                  <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
+                    <Soporte />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/tareas"
+                element={
+                  <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
+                    <Tareas />
                   </ProtectedRoute>
                 }
               />

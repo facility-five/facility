@@ -89,9 +89,47 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
       if (error) throw error;
 
       if (payments && payments.length > 0) {
-        console.log("usePlan: Plano ativo encontrado:", payments[0]);
+        const payment = payments[0] as any;
+        console.log("usePlan: Pagamento ativo encontrado:", payment);
         setHasActivePlan(true);
-        setCurrentPlan(payments[0].plans as Plan);
+
+        // Se a relação 'plans' não vier (por falta de FK), buscar pelo plan_id
+        if (payment.plans) {
+          setCurrentPlan(payment.plans as Plan);
+        } else if (payment.plan_id) {
+          console.log("usePlan: Relação 'plans' ausente; buscando plano por plan_id:", payment.plan_id);
+          const { data: planById, error: planByIdError } = await supabase
+            .from("plans")
+            .select("id,name,description,price,features,max_condos,max_admins")
+            .eq("id", payment.plan_id)
+            .single();
+
+          if (planByIdError) {
+            console.error("usePlan: Erro ao buscar plano por ID:", planByIdError);
+            // Manter acesso ativo com um plano padrão
+            setCurrentPlan({
+              id: payment.plan_id,
+              name: payment.plan || "Plano Ativo",
+              description: "Acesso habilitado após pagamento",
+              price: payment.amount || 0,
+              features: [],
+              max_condos: null,
+              max_admins: null,
+            });
+          } else if (planById) {
+            setCurrentPlan({
+              id: planById.id,
+              name: planById.name,
+              description: planById.description ?? "",
+              price: planById.price ?? 0,
+              features: planById.features ?? [],
+              max_condos: planById.max_condos ?? null,
+              max_admins: planById.max_admins ?? null,
+            });
+          }
+        } else {
+          console.warn("usePlan: Pagamento ativo sem plan_id; mantendo acesso via subscription_status");
+        }
       } else {
         console.log("usePlan: Nenhum plano ativo encontrado");
         

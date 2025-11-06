@@ -1,4 +1,4 @@
-﻿import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LayoutGrid,
@@ -16,6 +16,7 @@ import {
   LogOut,
   UserCheck, // Import icon for Leads
   Palette, // Import icon for Design System
+  ListTodo, // Icon for Tareas
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -37,6 +38,8 @@ const navItems = [
   { href: "/admin/bloques", icon: Box, labelKey: "navigation.blocks" },
   { href: "/admin/unidades", icon: Building2, labelKey: "navigation.units" },
   { href: "/admin/areas-comunes", icon: Building, labelKey: "navigation.commonAreas" },
+  { href: "/admin/soporte", icon: MessageSquare, labelKey: "navigation.support" },
+  { href: "/admin/tareas", icon: ListTodo, labelKey: "navigation.tasks" },
   { href: "/admin/usuarios", icon: Users, labelKey: "navigation.users" },
   { href: "/admin/moradores", icon: Users, labelKey: "navigation.residents" },
   { href: "/admin/planes", icon: FileText, labelKey: "navigation.plans" },

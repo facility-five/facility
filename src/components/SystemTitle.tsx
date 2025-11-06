@@ -12,7 +12,7 @@ const routeTitles: Record<string, string> = {
   "/recuperar-senha": "Recuperar Senha",
   "/recuperar-contrasena": "Recuperar Contraseña",
   // "/verificar-email": "Verificar E-mail",
-  "/planes": "Planos",
+  "/planes": "Planes",
   "/contacto": "Contacto",
   "/acesso-morador": "Acesso do Morador",
 
@@ -44,6 +44,8 @@ const routeTitles: Record<string, string> = {
   "/admin/pagina": "Página",
   "/admin/clientes-potenciales": "Clientes Potenciales",
   "/admin/moradores": "Gestão de Moradores",
+  "/admin/soporte": "Soporte",
+  "/admin/tareas": "Tareas",
   "/design-system": "Design System",
 };
 

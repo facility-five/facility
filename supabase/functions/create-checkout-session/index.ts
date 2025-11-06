@@ -63,6 +63,11 @@ serve(async (req) => {
       })
     }
 
+    // Ensure success_url carries the Checkout Session id for client-side verification
+    const successUrlWithSession = success_url.includes("?")
+      ? `${success_url}&session_id={CHECKOUT_SESSION_ID}`
+      : `${success_url}?session_id={CHECKOUT_SESSION_ID}`;
+
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
@@ -71,7 +76,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: success_url,
+      success_url: successUrlWithSession,
       cancel_url: cancel_url,
       metadata: {
         user_id: user.id,

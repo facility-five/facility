@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.resident_settings (
 );
 
 -- Índices para melhor performance
-CREATE UNIQUE INDEX idx_resident_settings_resident_id ON public.resident_settings(resident_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_resident_settings_resident_id ON public.resident_settings(resident_id);
 
 -- Trigger para atualizar updated_at automaticamente
 CREATE OR REPLACE FUNCTION update_resident_settings_updated_at()
@@ -40,6 +40,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_resident_settings_updated_at ON public.resident_settings;
 CREATE TRIGGER update_resident_settings_updated_at
     BEFORE UPDATE ON public.resident_settings
     FOR EACH ROW
@@ -50,9 +51,19 @@ ALTER TABLE public.resident_settings ENABLE ROW LEVEL SECURITY;
 
 -- Políticas de acesso
 -- Moradores podem ver e editar apenas suas próprias configurações
-CREATE POLICY "Residents can manage own settings" ON public.resident_settings
-    FOR ALL USING (auth.uid() = resident_id)
-    WITH CHECK (auth.uid() = resident_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE policyname = 'Residents can manage own settings'
+      AND schemaname = 'public'
+      AND tablename = 'resident_settings'
+  ) THEN
+    EXECUTE 'CREATE POLICY "Residents can manage own settings" ON public.resident_settings
+      FOR ALL USING (auth.uid() = resident_id)
+      WITH CHECK (auth.uid() = resident_id)';
+  END IF;
+END $$;
 
 -- Comentários para documentação
 COMMENT ON TABLE public.resident_settings IS 'Configurações personalizadas dos moradores';
