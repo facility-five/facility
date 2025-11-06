@@ -89,7 +89,7 @@ npx supabase functions deploy invite-user
 
 ## GitHub
 O repositório remoto está em:
-- `https://github.com/facility-five/app-facility`
+- `https://github.com/facility-five/facility`
 
 Fluxo básico:
 ```bash
