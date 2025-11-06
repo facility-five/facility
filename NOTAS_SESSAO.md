@@ -6,6 +6,7 @@
 - Sincronizar código local com repositório remoto
 - Pesquisar alternativas de pagamento para Espanha
 - Preparar integração com PayPal
+- **✅ Corrigir bug de criação/edição de usuários Admin SaaS**
 
 ---
 
@@ -36,6 +37,28 @@
 - **Mudança**: URL do repositório corrigida
   - ❌ Antiga: `https://github.com/facility-five/app-facility`
   - ✅ Nova: `https://github.com/facility-five/facility`
+
+### 4. Correção Bug: Criação/Edição de Usuários Admin SaaS
+- **Status**: ✅ Concluído
+- **Problema**: Usuários do tipo "Admin do SaaS" não eram salvos corretamente e não podiam ser editados
+- **Causa Raiz**: 
+  1. Inconsistência no valor do role (display mostrava "Admin do SaaS" mas value era "Administrador")
+  2. Falta de trigger para criar perfil automaticamente na tabela `profiles`
+  3. Colunas faltantes na tabela `profiles` (created_at, updated_at, last_sign_in_at)
+
+- **Correções Implementadas**:
+  - ✅ **NewUserModal.tsx**: Corrigido valor do SelectItem de "Administrador" para "Admin do SaaS"
+  - ✅ **Migration**: Criado trigger `on_auth_user_created` que cria perfil automaticamente
+  - ✅ **Migration**: Criado trigger `on_auth_user_login` que atualiza last_sign_in_at
+  - ✅ **Migration**: Criada função RPC `get_system_users()` para listar usuários
+  - ✅ **Migration**: Adicionadas colunas faltantes (created_at, updated_at, last_sign_in_at)
+  - ✅ **Migration**: Criadas políticas RLS para segurança
+  - ✅ **Migration**: Criados índices para performance
+
+- **Arquivos Modificados**:
+  - `src/components/admin/NewUserModal.tsx`
+  - `supabase/migrations/20251106040000_create_profiles_trigger.sql` (novo)
+  - `supabase/migrations/20251106040001_add_missing_columns_to_profiles.sql` (aplicado)
 
 ---
 
@@ -184,7 +207,107 @@ PAYPAL_SECRET_KEY=seu_secret_sandbox
 2. **Implementar integração PayPal** quando credenciais estiverem disponíveis
 3. **Testar fluxo de pagamento** em ambiente sandbox
 4. **Documentar processo** de configuração PayPal
+5. **✅ Testar criação de usuário Admin SaaS** - Pronto para teste em https://www.facilityfincas.es/admin/usuarios
 
 ---
 
-**Última atualização**: 06/11/2025 - 17:59 UTC-03:00
+## 🧪 Como Testar as Correções
+
+### Teste 1: Criar Novo Usuário Admin SaaS
+1. Acesse: https://www.facilityfincas.es/admin/usuarios
+2. Clique em **"+ Adicionar Usuário"**
+3. Preencha os dados:
+   - Nome: Teste
+   - Sobrenome: Admin
+   - E-mail: teste@exemplo.com
+   - WhatsApp: (99) 99999-9999
+   - Senha: minimo6caracteres
+   - **Tipo de usuário: Admin do SaaS** ← Agora funciona corretamente!
+   - Status: Ativo
+4. Clique em **"Registrar"**
+5. ✅ Deve aparecer mensagem: "Usuário criado com sucesso!"
+6. ✅ O usuário deve aparecer na lista
+
+### Teste 2: Editar Usuário Existente
+1. Na lista de usuários, clique no ícone de **edição (lápis)**
+2. Modifique qualquer campo (ex: nome, WhatsApp, status)
+3. Clique em **"Salvar"**
+4. ✅ Deve aparecer mensagem: "Usuário atualizado com sucesso!"
+5. ✅ As alterações devem ser refletidas na lista
+
+### Teste 3: Verificar no Banco de Dados
+Execute no SQL Editor do Supabase:
+```sql
+-- Ver todos os perfis
+SELECT id, first_name, last_name, email, role, status
+FROM public.profiles
+ORDER BY created_at DESC;
+
+-- Ver apenas Admin SaaS
+SELECT * FROM public.profiles WHERE role = 'Admin do SaaS';
+```
+
+---
+
+## 📊 Resumo Técnico das Correções
+
+### Problema Original
+- **Erro**: "Edge Function returned a non-2xx status code"
+- **Impacto**: Impossível criar ou editar usuários do tipo "Admin do SaaS"
+
+### Causa Raiz
+1. **Bug no Frontend**: Valor inconsistente no SelectItem
+   - Display: "Admin do SaaS"
+   - Value: "Administrador" ❌
+   
+2. **Bug no Backend**: Falta de trigger automático
+   - Usuários criados no `auth.users` não geravam perfil em `public.profiles`
+   
+3. **Schema Incompleto**: Colunas faltantes
+   - `created_at`, `updated_at`, `last_sign_in_at` não existiam
+
+### Solução Implementada
+
+#### Frontend (React)
+```typescript
+// Antes (ERRADO)
+<SelectItem value="Administrador">Admin do SaaS</SelectItem>
+
+// Depois (CORRETO)
+<SelectItem value="Admin do SaaS">Admin do SaaS</SelectItem>
+```
+
+#### Backend (PostgreSQL)
+```sql
+-- 1. Trigger para criar perfil automaticamente
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_new_user();
+
+-- 2. Trigger para atualizar last_sign_in_at
+CREATE TRIGGER on_auth_user_login
+    AFTER UPDATE OF last_sign_in_at ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_user_login();
+
+-- 3. RPC para listar usuários (com segurança)
+CREATE FUNCTION public.get_system_users()
+RETURNS TABLE (...) 
+SECURITY DEFINER;
+```
+
+### Arquivos Alterados
+- ✅ `src/components/admin/NewUserModal.tsx` - Corrigido valor do role
+- ✅ `supabase/migrations/20251106040000_create_profiles_trigger.sql` - Triggers e RPC
+- ✅ Banco de dados atualizado via MCP Supabase
+
+### Segurança (RLS Policies)
+- ✅ Usuários podem ver apenas seu próprio perfil
+- ✅ Admin SaaS pode ver todos os perfis
+- ✅ Usuários podem atualizar apenas seu próprio perfil
+- ✅ Admin SaaS pode atualizar qualquer perfil
+
+---
+
+**Última atualização**: 06/11/2025 - 19:26 UTC-03:00
