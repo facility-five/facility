@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RegisterAdministratorForm } from "@/components/RegisterAdministratorForm";
 import { AuthLayout } from "@/components/AuthLayout";
@@ -21,7 +21,9 @@ const RegisterAdministrator = () => {
         return;
       }
 
-      if (profile?.role !== "Administradora") {
+      // Se não há profile ainda, permitir prosseguir (onboarding)
+      // Se há profile e não é Administradora, bloquear
+      if (profile && profile.role !== "Administradora") {
         navigate("/", { replace: true });
         return;
       }

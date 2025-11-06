@@ -64,7 +64,8 @@ export function RegisterAdministratorForm() {
       showRadixError(error.message);
     } else {
       showRadixSuccess(t("registerAdmin.form.success"));
-      navigate("/admin");
+      // Após registrar a administradora, encaminhar para o painel do gestor
+      navigate("/gestor", { replace: true });
     }
   }
 

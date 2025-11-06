@@ -19,9 +19,11 @@ const isAllowedRole = (role: string, allowed?: string[]) => {
 interface ProtectedRouteProps {
   children: ReactNode;
   allowedRoles?: string[];
+  // Permite acesso mesmo sem profile carregado (útil para onboarding)
+  allowWithoutProfile?: boolean;
 }
 
-const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, allowedRoles, allowWithoutProfile }: ProtectedRouteProps) => {
   const { loading, session, profile, profileLoaded } = useAuth();
   const location = useLocation();
 
@@ -34,6 +36,10 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   }
 
   if (!profile) {
+    // Em fluxos de onboarding, permitimos seguir mesmo sem profile
+    if (allowWithoutProfile) {
+      return <>{children}</>;
+    }
     return <Navigate to="/" replace />;
   }
 

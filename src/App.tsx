@@ -319,7 +319,7 @@ const App = () => (
               <Route
                 path="/registrar-administradora"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora"]}>
+                  <ProtectedRoute allowedRoles={["Administradora"]} allowWithoutProfile>
                     <RegisterAdministrator />
                   </ProtectedRoute>
                 }
