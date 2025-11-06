@@ -102,7 +102,7 @@ const App = () => (
               <Route
                 path="/gestor"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerDashboard />
                     </ManagerAdministradorasProvider>
@@ -112,7 +112,7 @@ const App = () => (
               <Route
                 path="/gestor-dashboard"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerDashboard />
                     </ManagerAdministradorasProvider>
@@ -122,7 +122,7 @@ const App = () => (
               <Route
                 path="/gestor/administradoras"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerAdministradoras />
                     </ManagerAdministradorasProvider>
@@ -132,7 +132,7 @@ const App = () => (
               <Route
                 path="/gestor/condominios"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerCondominios />
                     </ManagerAdministradorasProvider>
@@ -142,7 +142,7 @@ const App = () => (
               <Route
                 path="/gestor/residentes"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerResidentes />
                     </ManagerAdministradorasProvider>
@@ -152,7 +152,7 @@ const App = () => (
               <Route
                 path="/gestor/configuracoes"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerConfiguracoes />
                     </ManagerAdministradorasProvider>
@@ -162,7 +162,7 @@ const App = () => (
               <Route
                 path="/gestor/mi-plan"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <MiPlan />
                     </ManagerAdministradorasProvider>
@@ -172,7 +172,7 @@ const App = () => (
               <Route
                 path="/gestor/comunicados"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerComunicados />
                     </ManagerAdministradorasProvider>
@@ -182,7 +182,7 @@ const App = () => (
               <Route
                 path="/gestor/areas-comuns"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerAreasComuns />
                     </ManagerAdministradorasProvider>
@@ -192,7 +192,7 @@ const App = () => (
               <Route
                 path="/gestor/reservas"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerReservas />
                     </ManagerAdministradorasProvider>
@@ -202,7 +202,7 @@ const App = () => (
               <Route
                 path="/gestor/vehiculos"
                 element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
+                  <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
                       <ManagerVehiculos />
                     </ManagerAdministradorasProvider>
