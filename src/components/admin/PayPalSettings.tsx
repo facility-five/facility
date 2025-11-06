@@ -27,28 +27,20 @@ export const PayPalSettings = () => {
         .from("system_settings")
         .select("id, paypal_client_id, paypal_mode")
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") {
+      if (error) {
+        // Qualquer erro diferente de "sem linhas" será exibido, mas não faz logout
         showRadixError("Erro ao carregar configurações do PayPal.");
       }
 
-      if (error && error.code === "PGRST116") {
-        // If no settings exist, insert a default row
-        const { data: insertData, error: insertError } = await supabase
-          .from("system_settings")
-          .insert([{}])
-          .select()
-          .single();
-        if (insertError) {
-          showRadixError("Erro ao inicializar configurações.");
-        } else if (insertData) {
-          setSettingsId(insertData.id);
-        }
-      } else if (data) {
+      if (data) {
         setClientId(data.paypal_client_id || "");
         setMode((data.paypal_mode as "sandbox" | "live") || "sandbox");
         setSettingsId(data.id);
+      } else {
+        // Sem linhas: manter estado padrão e nenhum settingsId
+        setSettingsId(null);
       }
 
       setLoading(false);
@@ -58,26 +50,35 @@ export const PayPalSettings = () => {
   }, []);
 
   const handleSave = async () => {
-    if (!settingsId) {
-      showRadixError("Configurações não carregadas.");
-      return;
-    }
-    
     setSaving(true);
-    const { error } = await supabase
-      .from("system_settings")
-      .update({ 
-        paypal_client_id: clientId,
-        paypal_mode: mode
-      })
-      .eq("id", settingsId);
-
-    if (error) {
-      showRadixError("Não foi possível salvar as configurações do PayPal.");
-    } else {
+    try {
+      if (settingsId) {
+        const { error } = await supabase
+          .from("system_settings")
+          .update({ 
+            paypal_client_id: clientId,
+            paypal_mode: mode
+          })
+          .eq("id", settingsId);
+        if (error) throw error;
+      } else {
+        const { data: inserted, error } = await supabase
+          .from("system_settings")
+          .insert([{ 
+            paypal_client_id: clientId,
+            paypal_mode: mode
+          }])
+          .select()
+          .single();
+        if (error) throw error;
+        if (inserted?.id) setSettingsId(inserted.id);
+      }
       showRadixSuccess("Configurações do PayPal salvas com sucesso!");
+    } catch (e) {
+      showRadixError("Não foi possível salvar as configurações do PayPal.");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const copyWebhook = async () => {
