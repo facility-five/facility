@@ -8,18 +8,8 @@ const Index = () => {
   const { session, profile, loading, profileLoaded } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Só age quando o carregamento inicial e a tentativa de buscar o perfil estiverem completos
-    if (!loading && profileLoaded) {
-      if (session && profile === null) {
-        // Usuário está logado, mas não tem perfil (ex: novo usuário após o cadastro)
-        // Redireciona para registrar administradora
-        navigate("/registrar-administradora", { replace: true });
-      }
-      // Usuários logados com perfil podem acessar a landing page normalmente
-      // Não há redirecionamento automático baseado no role
-    }
-  }, [loading, profileLoaded, session, profile, navigate]);
+  // Landing page não deve executar nenhum redirecionamento automático.
+  // Usuários logados com ou sem perfil permanecem aqui até ação explícita.
 
   // Mostra o spinner enquanto o estado inicial de autenticação está sendo determinado
   if (loading) {

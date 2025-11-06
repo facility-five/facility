@@ -36,14 +36,16 @@ const RegisterAdministrator = () => {
 
       if (error) {
         console.error("RegisterAdministrator: error al validar pagos", error);
+        // Exibe erro mas permite prosseguir com o cadastro
         showRadixError(t("registerAdmin.paymentValidationError"));
-        navigate("/planes", { replace: true });
+        setChecking(false);
         return;
       }
 
       if (!data || data.length === 0) {
+        // Sem pagamento ativo: informar e permitir continuar o cadastro
         showRadixError(t("registerAdmin.paymentMissingError"));
-        navigate("/planes", { replace: true });
+        setChecking(false);
         return;
       }
 

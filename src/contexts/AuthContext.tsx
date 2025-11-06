@@ -9,7 +9,7 @@ export interface Profile {
   first_name: string;
   last_name: string;
   avatar_url: string;
-  role: 'Administrador' | 'Administradora' | 'Síndico' | 'Funcionário' | 'Morador';
+  role: 'Admin do SaaS' | 'Administrador' | 'Administradora' | 'Síndico' | 'Funcionário' | 'Morador';
   status: 'Ativo' | 'Inativo';
   whatsapp: string;
   email: string; // Adicionado o campo email aqui
@@ -55,15 +55,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .single();
         
         if (isMounted) {
-          if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-            console.error("AuthContext: Error fetching user profile:", error);
-            setProfile(null);
-          } else {
-            // Combine profile data with user's email
+          if (error) {
+            if (error.code === 'PGRST116') {
+              // Nenhum perfil encontrado para este usuário
+              setProfile(null);
+            } else {
+              console.error("AuthContext: Error fetching user profile:", error);
+              setProfile(null);
+            }
+          } else if (userProfile) {
+            // Combina dados do perfil com o email do usuário
             setProfile({
-              ...(userProfile as Omit<Profile, 'email'>), // Cast to omit email, then add it
-              email: currentSession.user.email || '', // Ensure email is always a string
+              ...(userProfile as Omit<Profile, 'email'>),
+              email: currentSession.user.email || '',
             });
+          } else {
+            // Sem erro, mas sem dados (incomum) — tratar como sem perfil
+            setProfile(null);
           }
         }
       } else {
