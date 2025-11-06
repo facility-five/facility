@@ -126,7 +126,7 @@ function Login() {
 
   // Se o usuário já está autenticado e não estamos processando, mostrar opções ao invés de redirecionar automaticamente
   if (session) {
-    const normalizedRole = normalizeRole(profile?.role || "");
+    const normalizedRole = normalizeRole(profile?.role || (session?.user?.user_metadata as any)?.role || "");
     const getDashboardRoute = () => {
       if (normalizedRole === "admin do saas") return "/admin";
       if (["administradora", "administrador", "funcionario", "funcionrio"].includes(normalizedRole)) return "/gestor";
@@ -144,7 +144,7 @@ function Login() {
         <div className="space-y-4 text-center">
           <p className="text-gray-700">Você já está autenticado.</p>
           <div className="flex gap-2 justify-center">
-            <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => navigate(getDashboardRoute())}>
+            <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => navigate(getDashboardRoute(), { replace: true })}>
               Meu Painel
             </Button>
             <Button variant="outline" onClick={async () => { await signOut(); navigate("/"); }}>
