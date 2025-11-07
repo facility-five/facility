@@ -65,19 +65,19 @@ export const ManagerSidebar = () => {
   };
 
   return (
-    <div className="hidden h-full border-r bg-[#1E1E2D] text-white lg:block">
+    <div className="hidden h-screen border-r bg-[#1E1E2D] text-white lg:block">
       <div className="flex h-full flex-col">
-        <div className="flex h-20 items-center border-b border-gray-800 px-6">
+        <div className="flex h-20 items-center border-b border-gray-800 px-6 flex-shrink-0">
           <DynamicSidebarLogo />
         </div>
-        <div className="flex-1 overflow-y-auto py-4">
+        <div className="flex-1 overflow-y-auto py-4 min-h-0">
           <nav className="grid items-start px-4 gap-1">
             {navItems.map((item) => (
               <NavItem key={item.href} {...item} />
             ))}
           </nav>
         </div>
-        <div className="mt-auto p-4">
+        <div className="flex-shrink-0 p-4">
           <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 rounded-lg p-4 shadow-lg border border-purple-500/30">
             <div className="flex items-center gap-2 mb-2">
               <div className="bg-yellow-400/20 p-1.5 rounded-full">
