@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
 import { showRadixSuccess, showRadixError } from "@/utils/toast";
+import { FreePlanDebug } from "@/components/FreePlanDebug";
 
 interface Stats {
   condos: number;
@@ -109,6 +110,9 @@ const ManagerDashboardContent = () => {
           </div>
         </div>
       </Card>
+
+      {/* Componente de Debug do Plano Gratuito */}
+      <FreePlanDebug />
 
       {/* Banner de Upgrade para Plano Gratuito */}
       {hasActivePlan && currentPlan?.price === 0 && (
