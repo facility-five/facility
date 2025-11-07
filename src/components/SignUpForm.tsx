@@ -62,7 +62,7 @@ export function SignUpForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -81,8 +81,15 @@ export function SignUpForm() {
       // Limpar qualquer plano selecionado no sessionStorage
       sessionStorage.removeItem('selected_plan');
       
-      // Redirecionar diretamente para o ambiente da administradora
-      navigate("/gestor");
+      // Verificar se o usuário foi criado e tem sessão
+      if (data.session) {
+        // Login automático funcionou, redirecionar para gestor
+        navigate("/gestor");
+      } else {
+        // Confirmação de email necessária
+        showRadixSuccess("Por favor, confirme seu email para continuar.");
+        navigate("/login");
+      }
     }
   }
 
