@@ -24,7 +24,7 @@ BEGIN
             status, 
             features, 
             stripe_price_id,
-            max_condominiums,
+            max_condos,
             max_units
         )
         VALUES (
@@ -61,20 +61,20 @@ BEGIN
         -- Atualizar para garantir limites generosos
         UPDATE public.plans
         SET 
-            max_condominiums = COALESCE(max_condominiums, 999999),
+            max_condos = COALESCE(max_condos, 999999),
             max_units = COALESCE(max_units, 999999),
             status = 'active'
         WHERE id = free_plan_id;
     END IF;
     
     -- 2. Ativar plano gratuito para TODOS os usuários que não têm payment ativo
-    INSERT INTO public.payments (user_id, plan, amount, status, payment_method)
+    INSERT INTO public.payments (user_id, plan, amount, status, plan_id)
     SELECT 
         p.id,
-        free_plan_id,
+        'free',
         0,
         'active',
-        'free'
+        free_plan_id
     FROM public.profiles p
     WHERE NOT EXISTS (
         SELECT 1 FROM public.payments pay 
@@ -93,11 +93,11 @@ BEGIN
     )
     AND (subscription_status IS NULL OR subscription_status != 'active');
     
-    -- 4. Corrigir payments que estão ativos mas sem plan associado
+    -- 4. Corrigir payments que estão ativos mas sem plan_id associado
     UPDATE public.payments
-    SET plan = free_plan_id
+    SET plan_id = free_plan_id
     WHERE status = 'active'
-      AND (plan IS NULL OR plan NOT IN (SELECT id FROM public.plans))
+      AND (plan_id IS NULL OR plan_id NOT IN (SELECT id FROM public.plans))
       AND amount = 0;
     
     RAISE NOTICE 'Plano gratuito ativado para todos os usuários sem plano ativo';
@@ -141,8 +141,8 @@ BEGIN
     END IF;
     
     -- Criar payment gratuito
-    INSERT INTO public.payments (user_id, plan, amount, status, payment_method)
-    VALUES (target_user_id, free_plan_id, 0, 'active', 'free')
+    INSERT INTO public.payments (user_id, plan, amount, status, plan_id)
+    VALUES (target_user_id, 'free', 0, 'active', free_plan_id)
     RETURNING id INTO payment_id;
     
     -- Atualizar subscription_status
@@ -183,14 +183,14 @@ BEGIN
         'active_payments', (
             SELECT json_agg(json_build_object(
                 'payment_id', pay.id,
-                'plan_id', pay.plan,
+                'plan_id', pay.plan_id,
                 'plan_name', pl.name,
                 'amount', pay.amount,
                 'status', pay.status,
                 'created_at', pay.created_at
             ))
             FROM public.payments pay
-            LEFT JOIN public.plans pl ON pl.id = pay.plan
+            LEFT JOIN public.plans pl ON pl.id = pay.plan_id
             WHERE pay.user_id = p.id AND pay.status = 'active'
         )
     ) INTO result
