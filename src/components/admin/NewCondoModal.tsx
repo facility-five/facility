@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -68,7 +69,7 @@ export const NewCondoModal = ({
   onSuccess,
   initialAdministratorId,
 }: NewCondoModalProps) => {
-  const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  const { administrators } = useManagerAdministradoras();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -89,12 +90,7 @@ export const NewCondoModal = ({
   });
 
   useEffect(() => {
-    const fetchAdministrators = async () => {
-      const { data } = await supabase.from("administrators").select("id, name");
-      setAdministrators(data || []);
-    };
     if (isOpen) {
-      fetchAdministrators();
       form.reset({
         administrator_id: initialAdministratorId || "", // Reset with initialAdministratorId
         name: "",
