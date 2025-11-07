@@ -65,10 +65,10 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
         .from("payments")
         .select(`
           id,
-          plan_id,
+          plan,
           status,
           created_at,
-          plans (
+          plans:plan (
             id,
             name,
             description,
@@ -93,23 +93,23 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
         console.log("usePlan: Pagamento ativo encontrado:", payment);
         setHasActivePlan(true);
 
-        // Se a relação 'plans' não vier (por falta de FK), buscar pelo plan_id
+        // Se a relação 'plans' não vier (por falta de FK), buscar pelo plan
         if (payment.plans) {
           setCurrentPlan(payment.plans as Plan);
-        } else if (payment.plan_id) {
-          console.log("usePlan: Relação 'plans' ausente; buscando plano por plan_id:", payment.plan_id);
+        } else if (payment.plan) {
+          console.log("usePlan: Relação 'plans' ausente; buscando plano por plan:", payment.plan);
           const { data: planById, error: planByIdError } = await supabase
             .from("plans")
             .select("id,name,description,price,features,max_condos,max_admins")
-            .eq("id", payment.plan_id)
+            .eq("id", payment.plan)
             .single();
 
           if (planByIdError) {
             console.error("usePlan: Erro ao buscar plano por ID:", planByIdError);
             // Manter acesso ativo com um plano padrão
             setCurrentPlan({
-              id: payment.plan_id,
-              name: payment.plan || "Plano Ativo",
+              id: payment.plan,
+              name: "Plano Ativo",
               description: "Acesso habilitado após pagamento",
               price: payment.amount || 0,
               features: [],
@@ -128,7 +128,7 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
             });
           }
         } else {
-          console.warn("usePlan: Pagamento ativo sem plan_id; mantendo acesso via subscription_status");
+          console.warn("usePlan: Pagamento ativo sem plan; mantendo acesso via subscription_status");
         }
       } else {
         console.log("usePlan: Nenhum plano ativo encontrado");
