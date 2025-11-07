@@ -12,13 +12,13 @@ import { DeleteCondoModal } from "@/components/admin/DeleteCondoModal"; // Reusi
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/contexts/AuthContext";
 import { PlanGuard } from "@/components/PlanGuard";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { usePlan } from "@/hooks/usePlan";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 const ManagerCondominios = () => {
-  const { user } = useAuth();
+  const { activeAdministratorId, activeAdministrator } = useManagerAdministradoras();
   const { isFreePlan, isLoading: planLoading, currentPlan } = usePlan();
   const [condos, setCondos] = useState<Condo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,28 +27,9 @@ const ManagerCondominios = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCondo, setSelectedCondo] = useState<Condo | null>(null);
-  const [managerAdministratorId, setManagerAdministratorId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchAdministratorId = async () => {
-      if (user) {
-        const { data, error } = await supabase
-          .from('administrators')
-          .select('id')
-          .eq('responsible_id', user.id)
-          .single();
-        if (data) {
-          setManagerAdministratorId(data.id);
-        } else if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-          showRadixError("Erro ao buscar ID da administradora.");
-        }
-      }
-    };
-    fetchAdministratorId();
-  }, [user]);
 
   const fetchCondos = async () => {
-    if (!managerAdministratorId) {
+    if (!activeAdministratorId) {
       setLoading(false);
       return;
     }
@@ -56,7 +37,7 @@ const ManagerCondominios = () => {
     const { data, error } = await supabase
       .from("condominiums") // Changed from "condos" to "condominiums"
       .select("*")
-      .eq('administrator_id', managerAdministratorId);
+      .eq('administrator_id', activeAdministratorId);
 
     if (error) {
       showRadixError("Erro ao buscar condomínios.");
@@ -67,16 +48,16 @@ const ManagerCondominios = () => {
   };
 
   useEffect(() => {
-    if (managerAdministratorId) {
+    if (activeAdministratorId) {
       fetchCondos();
     } else {
-      // Se não há managerAdministratorId, definir loading como false para mostrar a interface
+      // Se não há activeAdministratorId, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [managerAdministratorId]);
+  }, [activeAdministratorId]);
 
   const handleNewCondo = () => {
-    if (!managerAdministratorId) {
+    if (!activeAdministratorId) {
       showRadixError("Aguarde o carregamento das informações da administradora");
       return;
     }
@@ -188,7 +169,7 @@ const ManagerCondominios = () => {
             ) : filteredCondos.length === 0 ? (
               <ManagerTableRow>
                 <ManagerTableCell colSpan={6} className="text-center text-gray-500 py-8">
-                  {managerAdministratorId ? "Nenhum condomínio encontrado para sua administradora." : "Carregando informações da administradora..."}
+                  {activeAdministratorId ? "Nenhum condomínio encontrado para sua administradora." : "Carregando informações da administradora..."}
                 </ManagerTableCell>
               </ManagerTableRow>
             ) : (
@@ -236,14 +217,14 @@ const ManagerCondominios = () => {
         onClose={() => setIsNewModalOpen(false)}
         onSuccess={fetchCondos}
         // Pass the manager's administrator ID to pre-fill the form
-        initialAdministratorId={managerAdministratorId || undefined}
+        initialAdministratorId={activeAdministratorId || undefined}
       />
       <EditCondoModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={fetchCondos}
         condo={selectedCondo}
-        managerAdministratorId={managerAdministratorId}
+        managerAdministratorId={activeAdministratorId}
       />
       <DeleteCondoModal
         isOpen={isDeleteModalOpen}
