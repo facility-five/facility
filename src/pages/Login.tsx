@@ -62,9 +62,41 @@ function Login() {
       if (!session) return;
       if (!profileLoaded) return; // Aguardar o profile ser carregado
 
+      // Se não há profile, criar um profile padrão
+      if (!profile) {
+        console.log("Login: Usuário sem profile, criando profile padrão...");
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: session.user.id,
+            email: session.user.email,
+            first_name: session.user.user_metadata?.first_name || "",
+            last_name: session.user.user_metadata?.last_name || "",
+            role: session.user.user_metadata?.role || "Morador",
+            status: "Ativo"
+          });
+        
+        if (profileError) {
+          console.error("Login: Erro ao criar profile:", profileError);
+          showError("Erro ao configurar perfil. Por favor, tente novamente.");
+          return;
+        }
+        
+        // Recarregar a página para pegar o novo profile
+        window.location.reload();
+        return;
+      }
+
       // Detecta papel via profile ou, como fallback, via user_metadata
       const roleSource = profile?.role || (session.user?.user_metadata as any)?.role || "";
       const normalizedRole = normalizeRole(roleSource);
+
+      // Se não há role definido, não redirecionar (evitar loop)
+      if (!normalizedRole) {
+        console.log("Login: Usuário sem role definido");
+        showError("Seu perfil não está configurado corretamente. Entre em contato com o suporte.");
+        return;
+      }
 
       if (normalizedRole === "admin do saas") {
         goTo("/admin");
@@ -90,7 +122,8 @@ function Login() {
           goTo("/morador-dashboard");
           break;
         default:
-          goTo("/");
+          console.log("Login: Role não reconhecido:", normalizedRole);
+          showError("Tipo de perfil não reconhecido. Entre em contato com o suporte.");
           break;
       }
     };
@@ -117,20 +150,9 @@ function Login() {
     );
   }
 
-  // Se o usuário já está autenticado, redirecionar automaticamente para o dashboard correto
-  // Isso evita que usuários logados fiquem presos na página de login
+  // Se o usuário já está autenticado mas ainda não foi redirecionado pelo useEffect,
+  // mostrar spinner enquanto processa
   if (session && profileLoaded && !redirected) {
-    const normalizedRole = normalizeRole(profile?.role || (session?.user?.user_metadata as any)?.role || "");
-    const getDashboardRoute = () => {
-      if (normalizedRole === "admin do saas") return "/admin";
-      if (["administradora", "administrador", "funcionario", "funcionrio"].includes(normalizedRole)) return "/gestor";
-      if (normalizedRole === "sindico") return "/sindico";
-      if (normalizedRole === "morador") return "/morador-dashboard";
-      return "/";
-    };
-
-    // Redirecionar imediatamente
-    navigate(getDashboardRoute(), { replace: true });
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
         <LoadingSpinner size="lg" className="text-white" />
