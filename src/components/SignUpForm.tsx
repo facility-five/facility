@@ -83,10 +83,18 @@ export function SignUpForm() {
       
       // Verificar se o usuário foi criado e tem sessão
       if (data.session) {
-        // Login automático funcionou, redirecionar para gestor
+        // Login automático funcionou
+        console.log("Sessão criada após signup:", data.session);
+        
+        // Aguardar um pouco para o trigger criar o profile e o plano
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Redirecionar para gestor
+        console.log("Redirecionando para /gestor");
         navigate("/gestor");
       } else {
         // Confirmação de email necessária
+        console.log("Sem sessão após signup, redirecionando para login");
         showRadixSuccess("Por favor, confirme seu email para continuar.");
         navigate("/login");
       }
