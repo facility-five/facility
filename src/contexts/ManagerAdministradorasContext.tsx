@@ -62,7 +62,7 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     setLoading(true);
 
     try {
-      // Busca administradoras com join correto para profiles
+      // Busca administradoras (sem join com profiles por enquanto)
       const { data, error } = await supabase
         .from("administrators")
         .select(`
@@ -72,8 +72,8 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
           nif,
           user_id,
           responsible_id,
-          profiles!administrators_user_id_fkey(first_name, last_name, email, phone),
-          condominiums(count)
+          email,
+          phone
         `)
         .or(`user_id.eq.${user.id},responsible_id.eq.${user.id}`);
       
@@ -98,13 +98,10 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
         code: row.code ?? "",
         name: row.name ?? "Administradora",
         nif: row.nif ?? "",
-        condos: [{ count: row.condominiums?.length || 0 }],
-        profiles: row.profiles ? {
-          first_name: row.profiles.first_name ?? "",
-          last_name: row.profiles.last_name ?? ""
-        } : null,
-        email: row.profiles?.email ?? null,
-        phone: row.profiles?.phone ?? null,
+        condos: [{ count: 0 }], // Contar depois se necessário
+        profiles: null, // Não temos profiles por enquanto
+        email: row.email ?? null,
+        phone: row.phone ?? null,
       })) as ManagerAdministrator[];
 
       console.log("🔍 ManagerAdministradorasContext: Dados mapeados", mapped);
