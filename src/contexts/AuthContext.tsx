@@ -48,29 +48,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (currentSession?.user) {
         // console.log("AuthContext: User found, fetching profile...");
-        const { data: userProfile, error } = await supabase
+        const { data: userProfiles, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', currentSession.user.id)
-          .single();
+          .order('created_at', { ascending: false })
+          .limit(1);
         
         if (isMounted) {
           if (error) {
-            if (error.code === 'PGRST116') {
-              // Nenhum perfil encontrado para este usuário
-              setProfile(null);
-            } else {
-              console.error("AuthContext: Error fetching user profile:", error);
-              setProfile(null);
-            }
-          } else if (userProfile) {
+            console.error("AuthContext: Error fetching user profile:", error);
+            setProfile(null);
+          } else if (userProfiles && userProfiles.length > 0) {
+            // Pegar o profile mais recente (primeiro da lista)
+            const userProfile = userProfiles[0];
             // Combina dados do perfil com o email do usuário
             setProfile({
               ...(userProfile as Omit<Profile, 'email'>),
               email: currentSession.user.email || '',
             });
           } else {
-            // Sem erro, mas sem dados (incomum) — tratar como sem perfil
+            // Nenhum perfil encontrado para este usuário
             setProfile(null);
           }
         }
