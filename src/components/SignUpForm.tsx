@@ -148,10 +148,10 @@ export function SignUpForm() {
     <Form {...form}>
       {/* Barra de progresso */}
       {isLoading && (
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="h-1 bg-gray-200">
+        <div className="fixed top-0 left-0 right-0 z-[9999]">
+          <div className="h-1 bg-gray-200/50 backdrop-blur-sm">
             <div 
-              className="h-full bg-purple-600 transition-all duration-300 ease-out"
+              className="h-full bg-purple-600 shadow-lg shadow-purple-500/50 transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
