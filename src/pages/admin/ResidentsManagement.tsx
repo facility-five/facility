@@ -198,7 +198,7 @@ const ResidentsManagement = () => {
     }
   };
 
-  const fetchAllData = useCallback(async () => {
+  const fetchAllData = async () => {
     setLoading(true);
     await Promise.all([
       fetchResidents(),
@@ -207,10 +207,10 @@ const ResidentsManagement = () => {
       fetchBlocks()
     ]);
     setLoading(false);
-  }, [fetchResidents, fetchAdministrators, fetchCondominiums, fetchBlocks]);
+  };
 
   // Filter functions
-  const applyFilters = useCallback(() => {
+  const applyFilters = () => {
     let filtered = residents;
 
     // Search filter
@@ -251,6 +251,17 @@ const ResidentsManagement = () => {
     }
 
     setFilteredResidents(filtered);
+  };
+
+  // Effects
+  useEffect(() => {
+    fetchAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     residents,
     searchTerm,
@@ -258,19 +269,7 @@ const ResidentsManagement = () => {
     selectedCondo,
     selectedBlock,
     selectedStatus,
-    administrators,
-    condominiums,
-    blocks,
   ]);
-
-  // Effects
-  useEffect(() => {
-    fetchAllData();
-  }, [fetchAllData]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
 
   // Helper functions
   const getStatusBadge = (status: string) => {
@@ -352,25 +351,21 @@ const ResidentsManagement = () => {
                 title="Total de Moradores"
                 value={stats.total.toString()}
                 icon={Users}
-                trend={{ value: 0, isPositive: true }}
               />
               <StatCard
                 title="Ativos"
                 value={stats.active.toString()}
                 icon={UserCheck}
-                trend={{ value: 0, isPositive: true }}
               />
               <StatCard
                 title="Inativos"
                 value={stats.inactive.toString()}
                 icon={UserX}
-                trend={{ value: 0, isPositive: false }}
               />
               <StatCard
                 title="Pendentes"
                 value={stats.pending.toString()}
                 icon={Users}
-                trend={{ value: 0, isPositive: true }}
               />
             </div>
 
