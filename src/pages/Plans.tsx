@@ -44,12 +44,9 @@ const Plans = () => {
           .from('payments')
           .insert({
             user_id: session.user.id,
-            plan_id: plan.id,
+            plan: plan.id,
             amount: 0,
-            status: 'active',
-            payment_method: 'free',
-            period_start: new Date().toISOString(),
-            period_end: null, // Plano gratuito não expira
+            status: 'active'
           });
 
         if (paymentError) throw paymentError;
