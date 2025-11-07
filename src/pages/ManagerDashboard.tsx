@@ -84,10 +84,11 @@ const ManagerDashboardContent = () => {
         </CardHeader>
       </Card>
 
-      {isFreePlan && (
+      {!isLoading && isFreePlan && (
         <UpgradeBanner
           title="Maximize o potencial do seu negócio"
           description="Faça upgrade para um plano pago e tenha acesso completo a todas as funcionalidades de gestão."
+          ctaText="Ver Planos"
           variant="default"
         />
       )}
