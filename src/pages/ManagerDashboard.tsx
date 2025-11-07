@@ -10,7 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
 import { showRadixSuccess, showRadixError } from "@/utils/toast";
-import { FreePlanDebug } from "@/components/FreePlanDebug";
 
 interface Stats {
   condos: number;
@@ -92,27 +91,6 @@ const ManagerDashboardContent = () => {
           </CardDescription>
         </CardHeader>
       </Card>
-
-      {/* DEBUG VISUAL */}
-      <Card className="border-4 border-red-500 bg-red-50">
-        <div className="p-4">
-          <h3 className="font-bold text-red-800 mb-2">🔴 DEBUG - Por que banner não aparece?</h3>
-          <div className="space-y-1 text-sm">
-            <p><strong>hasActivePlan:</strong> <span className={hasActivePlan ? "text-green-600" : "text-red-600"}>{String(hasActivePlan)}</span></p>
-            <p><strong>currentPlan:</strong> {currentPlan ? JSON.stringify(currentPlan) : "NULL"}</p>
-            <p><strong>currentPlan?.price:</strong> <span className="text-blue-600">{currentPlan?.price ?? "undefined"}</span></p>
-            <p><strong>currentPlan?.price === 0:</strong> <span className={currentPlan?.price === 0 ? "text-green-600" : "text-red-600"}>{String(currentPlan?.price === 0)}</span></p>
-            <p className="mt-2 pt-2 border-t border-red-300">
-              <strong>Condição completa:</strong> <span className={hasActivePlan && currentPlan?.price === 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-                {hasActivePlan && currentPlan?.price === 0 ? "✅ TRUE - Banner DEVE aparecer" : "❌ FALSE - Banner NÃO aparece"}
-              </span>
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Componente de Debug do Plano Gratuito */}
-      <FreePlanDebug />
 
       {/* Banner de Upgrade para Plano Gratuito */}
       {hasActivePlan && currentPlan?.price === 0 && (
