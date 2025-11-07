@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -63,7 +63,7 @@ export const NewManagerAdministratorModal = ({
       {
         ...values,
         code: generateCode(),
-        owner_id: user.id, // Set the current user as owner
+        user_id: user.id, // Set the current user as owner
         responsible_id: user.id, // Set the current user as responsible
       },
     ]);
