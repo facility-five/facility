@@ -86,12 +86,29 @@ export function SignUpForm() {
         // Login automático funcionou
         console.log("Sessão criada após signup:", data.session);
         
-        // Aguardar um pouco para o trigger criar o profile e o plano
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Aguardar trigger criar profile e plano
+        await new Promise(resolve => setTimeout(resolve, 3000));
         
-        // Redirecionar para gestor
-        console.log("Redirecionando para /gestor");
-        navigate("/gestor");
+        // Fazer logout e login novamente para sincronizar profile
+        console.log("Fazendo logout e login para sincronizar profile...");
+        await supabase.auth.signOut();
+        
+        // Fazer login novamente
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+        
+        if (loginError) {
+          console.error("Erro ao fazer login após signup:", loginError);
+          showRadixError("Conta criada! Por favor, faça login.");
+          navigate("/login");
+        } else {
+          // Aguardar mais um pouco para garantir que o AuthContext carregou
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log("Login bem-sucedido, redirecionando para /gestor");
+          navigate("/gestor");
+        }
       } else {
         // Confirmação de email necessária
         console.log("Sem sessão após signup, redirecionando para login");
