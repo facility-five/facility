@@ -9,17 +9,19 @@ import {
   Car,
   Settings,
   CreditCard,
-  LogOut,
   Building2,
   DoorOpen,
   MessageSquare,
   MapPin,
   Calendar,
+  Crown,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
 import { DynamicSidebarLogo } from "@/components/DynamicSidebarLogo";
+import { usePlan } from "@/hooks/usePlan";
 
 const navItems = [
   { href: "/gestor", icon: LayoutGrid, labelKey: "navigation.dashboard" },
@@ -57,13 +59,12 @@ const NavItem = ({ href, icon: Icon, labelKey }: { href: string; icon: ElementTy
 };
 
 export const ManagerSidebar = () => {
-  const { signOut } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isFreePlan, isLoading } = usePlan();
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/');
+  const handleUpgrade = () => {
+    navigate('/gestor/mi-plan');
   };
 
   return (
@@ -79,16 +80,31 @@ export const ManagerSidebar = () => {
             ))}
           </nav>
         </div>
-        <div className="mt-auto p-4">
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-            className="flex w-full items-center justify-start gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-300 transition-all hover:bg-purple-600/20 hover:text-white"
-          >
-            <LogOut className="h-5 w-5" />
-            {t('auth.logout')}
-          </Button>
-        </div>
+        {!isLoading && isFreePlan && (
+          <div className="mt-auto p-4">
+            <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 rounded-lg p-4 shadow-lg border border-purple-500/30">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-yellow-400/20 p-1.5 rounded-full">
+                  <Crown className="h-4 w-4 text-yellow-300" />
+                </div>
+                <Sparkles className="h-4 w-4 text-yellow-300" />
+              </div>
+              <h4 className="text-sm font-bold text-white mb-1">
+                ¡Actualiza tu Plan!
+              </h4>
+              <p className="text-xs text-purple-100 mb-3 leading-relaxed">
+                Desbloquea todas las funcionalidades premium
+              </p>
+              <Button
+                onClick={handleUpgrade}
+                size="sm"
+                className="w-full bg-white text-purple-700 hover:bg-purple-50 font-semibold text-xs shadow-md"
+              >
+                Ver Planes
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
