@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -62,20 +63,25 @@ export function SignUpForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const { data, error } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: {
-        data: {
-          first_name: values.firstName,
-          last_name: values.lastName,
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: {
+            first_name: values.firstName,
+            last_name: values.lastName,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      showRadixError(error.message);
-    } else {
+      if (error) {
+        showRadixError(error.message);
+        setIsLoading(false);
+        return;
+      }
       showRadixSuccess(t("auth.signup.success"));
       
       // Limpar qualquer plano selecionado no sessionStorage
@@ -115,6 +121,10 @@ export function SignUpForm() {
         showRadixSuccess("Por favor, confirme seu email para continuar.");
         navigate("/login");
       }
+    } catch (error: any) {
+      console.error("Erro no cadastro:", error);
+      showRadixError(error.message || "Erro ao criar conta. Tente novamente.");
+      setIsLoading(false);
     }
   }
 
@@ -241,8 +251,16 @@ export function SignUpForm() {
         <Button
           type="submit"
           className="w-full bg-purple-600 hover:bg-purple-700"
+          disabled={isLoading}
         >
-          {t("auth.signup.createAccount")}
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Criando conta...
+            </div>
+          ) : (
+            t("auth.signup.createAccount")
+          )}
         </Button>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
