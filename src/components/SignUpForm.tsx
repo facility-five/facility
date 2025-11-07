@@ -74,6 +74,7 @@ export function SignUpForm() {
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
+            role: 'Administradora', // Define role padrão para ativar plano gratuito
           },
         },
       });
