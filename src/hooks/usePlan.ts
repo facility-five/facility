@@ -264,7 +264,8 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
     };
   }, [session?.user?.id, refreshPlanStatus]);
 
-  const isFreePlan = !hasActivePlan;
+  // isFreePlan deve verificar se o plano atual tem preço 0, não se não tem plano
+  const isFreePlan = hasActivePlan && currentPlan?.price === 0;
 
   return {
     hasActivePlan,
