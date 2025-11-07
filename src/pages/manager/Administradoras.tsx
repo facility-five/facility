@@ -3,10 +3,12 @@ import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { BadgeCheck, Plus } from "lucide-react";
+import { BadgeCheck, Plus, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 import { NewManagerAdministratorModal } from "@/components/manager/NewManagerAdministratorModal";
+import { EditManagerAdministratorModal } from "@/components/manager/EditManagerAdministratorModal";
+import type { ManagerAdministrator } from "@/contexts/ManagerAdministradorasContext";
 import { PlanGuard } from "@/components/PlanGuard";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { usePlan } from "@/hooks/usePlan";
@@ -33,6 +35,8 @@ const ManagerAdministradorasContent = () => {
   } = useManagerAdministradoras();
   const [search, setSearch] = useState("");
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedAdministrator, setSelectedAdministrator] = useState<ManagerAdministrator | null>(null);
 
   const filteredAdministrators = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -71,6 +75,7 @@ const ManagerAdministradorasContent = () => {
           <ManagerTableHead>Condomínios</ManagerTableHead>
           <ManagerTableHead>E-mail</ManagerTableHead>
           <ManagerTableHead>Telefone</ManagerTableHead>
+          <ManagerTableHead className="text-right">Ações</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
       <ManagerTableBody>
@@ -84,6 +89,7 @@ const ManagerAdministradorasContent = () => {
             <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-4 w-40" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-4 w-28" /></ManagerTableCell>
+            <ManagerTableCell><Skeleton className="h-8 w-8 ml-auto" /></ManagerTableCell>
           </ManagerTableRow>
         ))}
       </ManagerTableBody>
@@ -102,11 +108,12 @@ const ManagerAdministradorasContent = () => {
           <ManagerTableHead>Condomínios</ManagerTableHead>
           <ManagerTableHead>E-mail</ManagerTableHead>
           <ManagerTableHead>Telefone</ManagerTableHead>
+          <ManagerTableHead className="text-right">Ações</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
       <ManagerTableBody>
         <ManagerTableRow>
-          <ManagerTableCell colSpan={8} className="text-center py-10 text-gray-600">
+          <ManagerTableCell colSpan={9} className="text-center py-10 text-gray-600">
             Nenhuma administradora encontrada.
           </ManagerTableCell>
         </ManagerTableRow>
@@ -126,6 +133,7 @@ const ManagerAdministradorasContent = () => {
           <ManagerTableHead>Condomínios</ManagerTableHead>
           <ManagerTableHead>E-mail</ManagerTableHead>
           <ManagerTableHead>Telefone</ManagerTableHead>
+          <ManagerTableHead className="text-right">Ações</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
       <ManagerTableBody>
@@ -138,6 +146,12 @@ const ManagerAdministradorasContent = () => {
 
           const handleActivate = () => {
             setActiveAdministratorId(admin.id);
+          };
+
+          const handleEdit = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setSelectedAdministrator(admin);
+            setIsEditModalOpen(true);
           };
 
           return (
@@ -168,6 +182,17 @@ const ManagerAdministradorasContent = () => {
               </ManagerTableCell>
               <ManagerTableCell>{admin.email || "N/A"}</ManagerTableCell>
               <ManagerTableCell>{admin.phone || "N/A"}</ManagerTableCell>
+              <ManagerTableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEdit}
+                  className="h-8 w-8 p-0 hover:bg-purple-100"
+                  title="Editar administradora"
+                >
+                  <Pencil className="h-4 w-4 text-purple-600" />
+                </Button>
+              </ManagerTableCell>
             </ManagerTableRow>
           );
         })}
@@ -250,6 +275,16 @@ const ManagerAdministradorasContent = () => {
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
         onSuccess={refetch}
+      />
+
+      <EditManagerAdministratorModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedAdministrator(null);
+        }}
+        onSuccess={refetch}
+        administrator={selectedAdministrator}
       />
     </div>
   );
