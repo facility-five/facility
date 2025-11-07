@@ -60,6 +60,7 @@ function Login() {
     const redirectAfterLogin = async () => {
       if (loading || redirected) return;
       if (!session) return;
+      if (!profileLoaded) return; // Aguardar o profile ser carregado
 
       // Detecta papel via profile ou, como fallback, via user_metadata
       const roleSource = profile?.role || (session.user?.user_metadata as any)?.role || "";

@@ -214,7 +214,7 @@ const LandingPageV2 = () => {
                   <Button 
                     variant="ghost" 
                     className="text-gray-600 hover:text-purple-600 rounded-[20px] transition-all duration-500 ease-out hover:scale-105"
-                    onClick={() => window.location.href = '/login'}
+                    onClick={() => navigate('/login')}
                   >
                     Iniciar Sesión
                     <LogIn className="w-4 h-4 ml-2 transition-transform duration-300 ease-out" />
