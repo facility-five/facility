@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -39,14 +39,14 @@ import { Textarea } from "@/components/ui/textarea";
 const formSchema = z.object({
   name: z.string().min(1, "O nome do plano é obrigatório."),
   price: z.coerce.number().min(0, "O preço deve ser um número positivo."),
-  stripe_price_id: z.string().optional(),
-  description: z.string().optional(),
+  stripe_price_id: z.string().nullable().optional().or(z.literal("")),
+  description: z.string().nullable().optional().or(z.literal("")),
   period: z.string().min(1, "O período é obrigatório."),
   status: z.string().min(1, "O status é obrigatório."),
-  max_admins: z.coerce.number().optional(),
-  max_condos: z.coerce.number().optional(),
-  max_units: z.coerce.number().optional(),
-  features: z.string().optional(),
+  max_admins: z.coerce.number().nullable().optional(),
+  max_condos: z.coerce.number().nullable().optional(),
+  max_units: z.coerce.number().nullable().optional(),
+  features: z.string().nullable().optional().or(z.literal("")),
 });
 
 interface PlanFormModalProps {
