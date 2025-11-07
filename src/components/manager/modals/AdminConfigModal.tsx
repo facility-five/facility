@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, MapPin, Phone, Mail, Globe, FileText } from "lucide-react";
+import { Building2, MapPin, Phone, Mail, Globe, FileText, Loader2 } from "lucide-react";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
+import { supabase } from "@/integrations/supabase/client";
+import { showRadixSuccess, showRadixError } from "@/utils/toast";
 
 interface AdminConfigModalProps {
   open: boolean;
@@ -15,10 +18,12 @@ interface AdminConfigModalProps {
 }
 
 export const AdminConfigModal = ({ open, onOpenChange }: AdminConfigModalProps) => {
+  const { activeAdministrator, refetch } = useManagerAdministradoras();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     // Informações Básicas
     name: "",
-    cnpj: "",
+    nif: "",
     description: "",
     website: "",
     
@@ -30,7 +35,7 @@ export const AdminConfigModal = ({ open, onOpenChange }: AdminConfigModalProps) 
     city: "",
     state: "",
     zipCode: "",
-    country: "Brasil",
+    country: "España",
     
     // Contato
     phone: "",
@@ -43,14 +48,64 @@ export const AdminConfigModal = ({ open, onOpenChange }: AdminConfigModalProps) 
     language: "es-ES"
   });
 
+  // Carrega os dados da administradora ativa quando o modal abre
+  useEffect(() => {
+    if (open && activeAdministrator) {
+      setFormData({
+        name: activeAdministrator.name || "",
+        nif: activeAdministrator.nif || "",
+        description: "",
+        website: "",
+        street: "",
+        number: "",
+        complement: "",
+        neighborhood: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "España",
+        phone: activeAdministrator.phone || "",
+        email: activeAdministrator.email || "",
+        whatsapp: "",
+        timezone: "Europe/Madrid",
+        currency: "EUR",
+        language: "es-ES"
+      });
+    }
+  }, [open, activeAdministrator]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    // Aqui implementaria a lógica de salvamento
-    console.log("Salvando configurações:", formData);
-    onOpenChange(false);
+  const handleSave = async () => {
+    if (!activeAdministrator?.id) {
+      showRadixError("Nenhuma administradora selecionada");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("administrators")
+        .update({
+          name: formData.name,
+          nif: formData.nif || null,
+          email: formData.email || null,
+          phone: formData.phone || null,
+        })
+        .eq("id", activeAdministrator.id);
+
+      if (error) throw error;
+
+      showRadixSuccess("Configurações salvas com sucesso!");
+      await refetch();
+      onOpenChange(false);
+    } catch (error: any) {
+      showRadixError(error.message || "Erro ao salvar configurações");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -97,12 +152,12 @@ export const AdminConfigModal = ({ open, onOpenChange }: AdminConfigModalProps) 
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="cnpj">NIF *</Label>
+                    <Label htmlFor="nif">NIF *</Label>
                     <Input
-                      id="cnpj"
-                      value={formData.cnpj}
-                      onChange={(e) => handleInputChange("cnpj", e.target.value)}
-                      placeholder="00.000.000/0000-00"
+                      id="nif"
+                      value={formData.nif}
+                      onChange={(e) => handleInputChange("nif", e.target.value)}
+                      placeholder="X0000000X"
                     />
                   </div>
                 </div>
@@ -326,11 +381,12 @@ export const AdminConfigModal = ({ open, onOpenChange }: AdminConfigModalProps) 
         </Tabs>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} className="bg-purple-600 hover:bg-purple-700">
-            Salvar Configurações
+          <Button onClick={handleSave} className="bg-purple-600 hover:bg-purple-700" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? "Salvando..." : "Salvar Configurações"}
           </Button>
         </DialogFooter>
       </DialogContent>
