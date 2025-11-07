@@ -118,7 +118,6 @@ const Administrators = () => {
               <TableHead className="text-white">Nome</TableHead>
               <TableHead className="text-white">NIF</TableHead>
               <TableHead className="text-white">Responsável</TableHead>
-              <TableHead className="text-white">Condomínios</TableHead>
               <TableHead className="text-white text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -126,7 +125,7 @@ const Administrators = () => {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i} className="border-b-admin-border">
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={5}>
                     <Skeleton className="h-8 w-full bg-admin-border" />
                   </TableCell>
                 </TableRow>
@@ -149,11 +148,6 @@ const Administrators = () => {
                       <span className="text-admin-foreground-muted">N/A</span>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      {admin.condos[0]?.count || 0} condomínios
-                    </span>
-                  </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => openEditModal(admin)}>
                       <Pencil className="h-4 w-4" />
@@ -166,7 +160,7 @@ const Administrators = () => {
               ))
             ) : (
               <TableRow className="border-b-admin-border">
-                <TableCell colSpan={6} className="text-center text-admin-foreground-muted">
+                <TableCell colSpan={5} className="text-center text-admin-foreground-muted">
                   Nenhuma administradora encontrada.
                 </TableCell>
               </TableRow>
