@@ -35,10 +35,49 @@ const Plans = () => {
       showRadixError("Inicia sesión para contratar un plan.");
       return;
     }
+
+    // Se o plano é gratuito (preço = 0), ativar diretamente sem passar pelo Stripe
+    if (plan.price === 0) {
+      try {
+        // Criar registro de pagamento para plano gratuito
+        const { error: paymentError } = await supabase
+          .from('payments')
+          .insert({
+            user_id: session.user.id,
+            plan_id: plan.id,
+            amount: 0,
+            status: 'active',
+            payment_method: 'free',
+            period_start: new Date().toISOString(),
+            period_end: null, // Plano gratuito não expira
+          });
+
+        if (paymentError) throw paymentError;
+
+        // Atualizar profile com status de assinatura ativa
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ subscription_status: 'active' })
+          .eq('id', session.user.id);
+
+        if (profileError) throw profileError;
+
+        showRadixSuccess("¡Plan gratuito activado con éxito!");
+        await refreshPlanStatus();
+        navigate('/gestor');
+        return;
+      } catch (error: any) {
+        showRadixError(`Error al activar plan gratuito: ${error.message}`);
+        return;
+      }
+    }
+
+    // Para planos pagos, verificar se tem stripe_price_id
     if (!plan.stripe_price_id) {
       showRadixError("Este plan no está configurado con Stripe (falta price_id).");
       return;
     }
+
     // Guardar el plan seleccionado para posibles fallbacks post-checkout
     try {
       sessionStorage.setItem('selected_plan', JSON.stringify({ id: plan.id }));
@@ -65,7 +104,7 @@ const Plans = () => {
     } else {
       showRadixError("No fue posible obtener la URL del checkout.");
     }
-  }, [session]);
+  }, [session, refreshPlanStatus, navigate]);
 
   const handleContinueWithoutPlan = useCallback(() => {
     try {
