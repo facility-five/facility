@@ -107,6 +107,7 @@ export function AuthForm() {
                     placeholder="••••••••"
                     {...field}
                     className="pl-10 pr-10"
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
