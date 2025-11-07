@@ -1,4 +1,4 @@
-﻿import {
+import {
   createContext,
   useCallback,
   useContext,
@@ -8,7 +8,7 @@
 } from "react";
 import type { Administrator } from "@/components/admin/AdministratorCard";
 import { supabase } from "@/integrations/supabase/client";
-import { showError } from "@/utils/toast";
+import { showError, showRadixError } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
 
@@ -58,16 +58,7 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       return;
     }
 
-    // No plano free, não precisa buscar administradoras - funciona sem elas
-    if (isFreePlan) {
-      console.log("🔍 ManagerAdministradorasContext: Plano free - não buscando administradoras");
-      setAdministrators([]);
-      setActiveAdministratorId(null);
-      setLoading(false);
-      return;
-    }
-
-    console.log("🔍 ManagerAdministradorasContext: Iniciando busca de administradoras para usuário", user.id);
+    console.log("🔍 ManagerAdministradorasContext: Iniciando busca de administradoras para usuário", user.id, { isFreePlan });
     setLoading(true);
 
     try {
@@ -167,43 +158,30 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
     const { data: paymentData, error: paymentError } = await supabase
       .from("payments")
-      .select("plan")
+      .select("plan_id, plans(name, max_admins)")
       .eq("user_id", user.id)
+      .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (paymentError && paymentError.code !== "PGRST116") {
       console.error("ManagerAdministradorasContext: erro ao buscar pagamento ativo", paymentError);
-      showRadixError("Erro ao buscar informa��ões do plano.");
+      showRadixError("Erro ao buscar informações do plano.");
       setPlanName(null);
       setPlanLimit(null);
       setPlanLoading(false);
       return;
     }
 
-    const latestPlanName = paymentData?.plan ?? null;
+    const planData = paymentData?.plans as any;
+    const latestPlanName = planData?.name ?? null;
+    const maxAdmins = planData?.max_admins ?? null;
+    
+    console.log("🔍 ManagerAdministradorasContext: Plan info", { latestPlanName, maxAdmins, paymentData });
+    
     setPlanName(latestPlanName);
-
-    if (latestPlanName) {
-      const { data: planRecord, error: planError } = await supabase
-        .from("plans")
-        .select("name, max_admins")
-        .eq("name", latestPlanName)
-        .maybeSingle();
-
-      if (planError && planError.code !== "PGRST116") {
-        console.error("ManagerAdministradorasContext: erro ao carregar detalhes do plano", planError);
-        showRadixError("Erro ao carregar detalhes do plano atual.");
-        setPlanLimit(null);
-      } else {
-        setPlanName(planRecord?.name ?? latestPlanName);
-        setPlanLimit(planRecord?.max_admins ?? null);
-      }
-    } else {
-      setPlanLimit(null);
-    }
-
+    setPlanLimit(maxAdmins);
     setPlanLoading(false);
   }, [user?.id]);
 
