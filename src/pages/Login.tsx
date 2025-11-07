@@ -62,28 +62,13 @@ function Login() {
       if (!session) return;
       if (!profileLoaded) return; // Aguardar o profile ser carregado
 
-      // Se não há profile, criar um profile padrão
+      // Se não há profile, aguardar um pouco e tentar novamente (o trigger deve criar)
       if (!profile) {
-        console.log("Login: Usuário sem profile, criando profile padrão...");
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert({
-            id: session.user.id,
-            email: session.user.email,
-            first_name: session.user.user_metadata?.first_name || "",
-            last_name: session.user.user_metadata?.last_name || "",
-            role: session.user.user_metadata?.role || "Morador",
-            status: "Ativo"
-          });
-        
-        if (profileError) {
-          console.error("Login: Erro ao criar profile:", profileError);
-          showError("Erro ao configurar perfil. Por favor, tente novamente.");
-          return;
-        }
-        
-        // Recarregar a página para pegar o novo profile
-        window.location.reload();
+        console.log("Login: Usuário sem profile, aguardando criação automática...");
+        // Aguardar 2 segundos e recarregar para dar tempo do trigger criar o profile
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
         return;
       }
 
