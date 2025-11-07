@@ -70,8 +70,8 @@ export const ManagerSidebar = () => {
         <div className="flex h-20 items-center border-b border-gray-800 px-6">
           <DynamicSidebarLogo />
         </div>
-        <div className="flex-1 py-4">
-          <nav className="grid items-start px-4">
+        <div className="flex-1 overflow-y-auto py-4">
+          <nav className="grid items-start px-4 gap-1">
             {navItems.map((item) => (
               <NavItem key={item.href} {...item} />
             ))}
