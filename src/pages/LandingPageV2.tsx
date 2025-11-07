@@ -136,19 +136,10 @@ const LandingPageV2 = () => {
   };
 
   const handleStartNow = (plan: any) => {
-    try {
-      console.log('handleStartNow chamado com plano:', plan);
-      console.log('Navigate function:', navigate);
-      // Armazenar o plano selecionado no sessionStorage para usar após o cadastro
-      sessionStorage.setItem('selected_plan', JSON.stringify(plan));
-      console.log('Plano armazenado no sessionStorage');
-      // Redirecionar para a página de cadastro
-      console.log('Tentando navegar para /criar-conta...');
-      navigate('/criar-conta');
-      console.log('Navigate chamado com sucesso');
-    } catch (error) {
-      console.error('Erro em handleStartNow:', error);
-    }
+    // Armazenar o plano selecionado no sessionStorage para usar após o cadastro
+    sessionStorage.setItem('selected_plan', JSON.stringify(plan));
+    // Redirecionar para página de cadastro
+    navigate('/registrarse');
   };
 
   return (
@@ -331,14 +322,8 @@ const LandingPageV2 = () => {
                 size="lg" 
                 className="bg-purple-600 text-white hover:bg-purple-700 font-semibold px-8 py-4 rounded-[20px] transition-all duration-500 ease-out hover:scale-105 hover:shadow-xl"
                 onClick={() => {
-                  console.log('🔗 Botão "Crear cuenta" (hero) clicado');
-                  console.log('🧭 Navegando para: /registrarse');
-                  try {
-                    navigate('/registrarse');
-                    console.log('✅ Navegação para /registrarse bem-sucedida');
-                  } catch (error) {
-                    console.error('❌ Erro na navegação para /registrarse:', error);
-                  }
+                  const pricingSection = document.getElementById('pricing');
+                  pricingSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
               >
                 Crear cuenta
