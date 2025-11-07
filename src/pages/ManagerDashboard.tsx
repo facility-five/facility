@@ -84,6 +84,22 @@ const ManagerDashboardContent = () => {
         </CardHeader>
       </Card>
 
+      {/* Debug temporário - Remover depois */}
+      <Card className="border-2 border-blue-500 bg-blue-50">
+        <div className="p-4">
+          <h3 className="font-bold text-blue-800 mb-2">🔍 Debug do Plano</h3>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <p><strong>isLoading:</strong> <span className={isLoading ? "text-orange-600" : "text-green-600"}>{isLoading ? "SIM" : "NÃO"}</span></p>
+            <p><strong>isFreePlan:</strong> <span className={isFreePlan ? "text-green-600" : "text-red-600"}>{isFreePlan ? "SIM" : "NÃO"}</span></p>
+            <p><strong>hasActivePlan:</strong> <span className={hasActivePlan ? "text-green-600" : "text-red-600"}>{hasActivePlan ? "SIM" : "NÃO"}</span></p>
+            <p><strong>currentPlan:</strong> {currentPlan ? `${currentPlan.name} (€${currentPlan.price})` : "NULL"}</p>
+          </div>
+          <p className="mt-2 text-xs text-blue-600">
+            Banner deve aparecer: {!isLoading && isFreePlan ? "✅ SIM" : "❌ NÃO"}
+          </p>
+        </div>
+      </Card>
+
       {!isLoading && isFreePlan && (
         <UpgradeBanner
           title="Maximize o potencial do seu negócio"
