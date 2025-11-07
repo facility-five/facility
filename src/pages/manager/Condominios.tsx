@@ -111,19 +111,11 @@ const ManagerCondominios = () => {
     condo.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Verificar se pode criar mais condomínios baseado no limite do plano
-  const canCreateMoreCondos = () => {
-    // Se ainda está carregando, não bloquear
-    if (loading || planLoading) return true;
-    // Se não tem plano, não bloquear
-    if (!currentPlan) return true;
-    // Se o plano permite ilimitado, não bloquear
-    if (currentPlan.max_condos === null) return true;
-    // Verificar se ainda não atingiu o limite
-    return condos.length < currentPlan.max_condos;
-  };
-
-  const hasReachedLimit = !canCreateMoreCondos() && !loading && !planLoading;
+  // Verificar se atingiu o limite de condomínios
+  const hasReachedLimit = 
+    currentPlan && 
+    currentPlan.max_condos !== null && 
+    condos.length >= currentPlan.max_condos;
 
   return (
     <ManagerLayout>
@@ -136,27 +128,22 @@ const ManagerCondominios = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {!planLoading && !loading && (
-            <>
-              {hasReachedLimit ? (
-                // Botão de upgrade quando atingir o limite
-                <Button 
-                  onClick={() => window.location.href = '/gestor/mi-plan'}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                >
-                  Fazer Upgrade para Criar Mais Condomínios
-                </Button>
-              ) : (
-                // Botão normal quando ainda pode criar
-                <Button
-                  className="bg-purple-600 hover:bg-purple-700"
-                  onClick={handleNewCondo}
-                  disabled={loading || !managerAdministratorId}
-                >
-                  Novo Condomínio
-                </Button>
-              )}
-            </>
+          {hasReachedLimit ? (
+            // Botão de upgrade quando atingir o limite
+            <Button 
+              onClick={() => window.location.href = '/gestor/mi-plan'}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+            >
+              Fazer Upgrade para Criar Mais Condomínios
+            </Button>
+          ) : (
+            // Botão normal quando ainda pode criar
+            <Button
+              className="bg-purple-600 hover:bg-purple-700"
+              onClick={handleNewCondo}
+            >
+              Novo Condomínio
+            </Button>
           )}
         </div>
       </div>
