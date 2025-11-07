@@ -136,7 +136,7 @@ const ManagerCondominios = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {!planLoading && (
+          {!planLoading && !loading && (
             <>
               {hasReachedLimit ? (
                 // Botão de upgrade quando atingir o limite
@@ -151,7 +151,7 @@ const ManagerCondominios = () => {
                 <Button
                   className="bg-purple-600 hover:bg-purple-700"
                   onClick={handleNewCondo}
-                  disabled={!managerAdministratorId}
+                  disabled={loading || !managerAdministratorId}
                 >
                   Novo Condomínio
                 </Button>
