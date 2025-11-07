@@ -76,6 +76,10 @@ const ManagerCondominios = () => {
   }, [managerAdministratorId]);
 
   const handleNewCondo = () => {
+    if (!managerAdministratorId) {
+      showRadixError("Aguarde o carregamento das informações da administradora");
+      return;
+    }
     setSelectedCondo(null);
     setIsNewModalOpen(true);
   };
