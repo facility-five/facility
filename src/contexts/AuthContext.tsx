@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -33,9 +33,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-  };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -105,14 +105,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []); // Empty dependency array to run once on mount
 
-  const value = {
+  const value = useMemo(() => ({
     session,
     user,
     profile,
     loading,
     profileLoaded,
     signOut,
-  };
+  }), [session, user, profile, loading, profileLoaded, signOut]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

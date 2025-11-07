@@ -38,11 +38,8 @@ export const DynamicLogo = ({ className, imageClassName }: DynamicLogoProps) => 
   }, []);
 
   if (loading) {
-    return (
-      <div className={cn("flex flex-col items-center justify-center mb-8 h-20", className)}>
-        <Skeleton className="h-full w-48" />
-      </div>
-    );
+    // Retorna o logo padrão enquanto carrega para evitar flash de skeleton
+    return <Logo />;
   }
 
   if (logoUrl) {
