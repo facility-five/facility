@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ interface Plan {
   price: number;
   stripe_price_id: string;
   features: string[];
-  max_condominiums: number;
+  max_condos: number;
   max_units: number;
   is_popular: boolean;
 }
@@ -86,7 +86,7 @@ const MiPlan = () => {
             description,
             price,
             features,
-            max_condominiums,
+            max_condos,
             max_units
           )
         `)
@@ -190,7 +190,7 @@ const MiPlan = () => {
                 <div className="text-center">
                   <Building className="h-8 w-8 mx-auto mb-2 text-green-600" />
                   <p className="text-sm text-muted-foreground">Condomínios</p>
-                  <p className="font-semibold">{currentPlan.max_condominiums}</p>
+                  <p className="font-semibold">{currentPlan.max_condos}</p>
                 </div>
                 <div className="text-center">
                   <Users className="h-8 w-8 mx-auto mb-2 text-green-600" />
@@ -252,7 +252,7 @@ const MiPlan = () => {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Building className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Até {plan.max_condominiums} condomínios</span>
+                      <span className="text-sm">Até {plan.max_condos} condomínios</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-muted-foreground" />
