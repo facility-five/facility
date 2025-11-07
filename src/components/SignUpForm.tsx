@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -255,7 +256,7 @@ export function SignUpForm() {
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <LoadingSpinner size="sm" />
               Criando conta...
             </div>
           ) : (
