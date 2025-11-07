@@ -62,6 +62,15 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     setLoading(true);
 
     try {
+      // Buscar selected_administrator_id do perfil do usuário
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("selected_administrator_id")
+        .eq("id", user.id)
+        .single();
+
+      console.log("🔍 ManagerAdministradorasContext: Selected administrator do perfil", profileData);
+
       // Busca administradoras (sem join com profiles por enquanto)
       const { data, error } = await supabase
         .from("administrators")
@@ -124,12 +133,23 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       console.log("🔍 ManagerAdministradorasContext: Administradoras filtradas", filtered);
 
       setAdministrators(filtered);
-      setActiveAdministratorId((previous) => {
-        if (previous && filtered.some((admin) => admin.id === previous)) {
-          return previous;
-        }
-        return filtered[0]?.id ?? null;
-      });
+      
+      // Usar selected_administrator_id do perfil, ou a primeira disponível
+      const selectedId = profileData?.selected_administrator_id;
+      const validSelectedId = selectedId && filtered.some((admin) => admin.id === selectedId) 
+        ? selectedId 
+        : filtered[0]?.id ?? null;
+      
+      setActiveAdministratorId(validSelectedId);
+      
+      // Se não tinha selected_administrator_id ou mudou, atualizar no perfil
+      if (validSelectedId && validSelectedId !== selectedId) {
+        await supabase
+          .from("profiles")
+          .update({ selected_administrator_id: validSelectedId })
+          .eq("id", user.id);
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error("❌ ManagerAdministradorasContext: Erro inesperado", error);
@@ -191,9 +211,19 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     return administrators.find((admin) => admin.id === activeAdministratorId) ?? null;
   }, [administrators, activeAdministratorId]);
 
-  const updateActiveAdministratorId = useCallback((id: string | null) => {
+  const updateActiveAdministratorId = useCallback(async (id: string | null) => {
     setActiveAdministratorId(id);
-  }, []);
+    
+    // Salvar no perfil do usuário
+    if (user?.id && id) {
+      await supabase
+        .from("profiles")
+        .update({ selected_administrator_id: id })
+        .eq("id", user.id);
+      
+      console.log("🔍 ManagerAdministradorasContext: Administradora selecionada atualizada no perfil", id);
+    }
+  }, [user?.id]);
 
   const totalAdministrators = administrators.length;
   const remainingSlots =

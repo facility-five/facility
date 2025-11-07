@@ -6,7 +6,6 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
-import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,17 +26,9 @@ import {
 
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
-  administrator_id: z.string().min(1, "Selecione a administradora."),
   name: z.string().min(1, "O nome é obrigatório."),
   nif: z.string().optional(),
   website: z.string().optional(),
@@ -55,13 +46,8 @@ interface NewCondoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  initialAdministratorId?: string; // New prop for pre-filling
+  initialAdministratorId?: string; // ID da administradora selecionada
 }
-
-type Administrator = {
-  id: string;
-  name: string;
-};
 
 export const NewCondoModal = ({
   isOpen,
@@ -69,12 +55,10 @@ export const NewCondoModal = ({
   onSuccess,
   initialAdministratorId,
 }: NewCondoModalProps) => {
-  const { administrators } = useManagerAdministradoras();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      administrator_id: initialAdministratorId || "", // Use initialAdministratorId
       name: "",
       nif: "",
       website: "",
@@ -92,7 +76,6 @@ export const NewCondoModal = ({
   useEffect(() => {
     if (isOpen) {
       form.reset({
-        administrator_id: initialAdministratorId || "", // Reset with initialAdministratorId
         name: "",
         nif: "",
         website: "",
@@ -111,9 +94,15 @@ export const NewCondoModal = ({
   const generateCode = () => `CO-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!initialAdministratorId) {
+      showRadixError("Nenhuma administradora selecionada");
+      return;
+    }
+
     const { error } = await supabase.from("condominiums").insert([ // Changed from "condos" to "condominiums"
       {
         ...values,
+        administrator_id: initialAdministratorId,
         code: generateCode(),
       },
     ]);
@@ -139,30 +128,6 @@ export const NewCondoModal = ({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
-            <FormField
-              control={form.control}
-              name="administrator_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Administradora</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || ""} disabled={!!initialAdministratorId}> {/* Disable if pre-filled */}
-                    <FormControl>
-                      <SelectTrigger className="bg-admin-background border-admin-border">
-                        <SelectValue placeholder="Seleccione la administradora" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
-                      {administrators.map((admin) => (
-                        <SelectItem key={admin.id} value={admin.id}>
-                          {admin.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="name"
