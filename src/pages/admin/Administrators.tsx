@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,11 @@ const Administrators = () => {
         name: row.name,
         nif: row.nif,
         condos: [{ count: row.condos_count || 0 }],
-        profiles: row.first_name || row.last_name ? { first_name: row.first_name, last_name: row.last_name } : null,
+        profiles: row.first_name || row.last_name || row.responsible_email ? { 
+          first_name: row.first_name, 
+          last_name: row.last_name,
+          email: row.responsible_email 
+        } : null,
       })) as Administrator[];
       setAdmins(mapped);
     }
@@ -135,7 +139,10 @@ const Administrators = () => {
                   <TableCell>
                     {admin.profiles ? (
                       <div>
-                        <p className="font-medium">{`${admin.profiles.first_name || ''} ${admin.profiles.last_name || ''}`.trim()}</p>
+                        <p className="font-medium">{`${admin.profiles.first_name || ''} ${admin.profiles.last_name || ''}`.trim() || 'Sem nome'}</p>
+                        {admin.profiles.email && (
+                          <p className="text-xs text-admin-foreground-muted">{admin.profiles.email}</p>
+                        )}
                       </div>
                     ) : (
                       <span className="text-admin-foreground-muted">N/A</span>
