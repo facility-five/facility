@@ -117,8 +117,9 @@ function Login() {
     );
   }
 
-  // Se o usuário já está autenticado e não estamos processando, mostrar opções ao invés de redirecionar automaticamente
-  if (session) {
+  // Se o usuário já está autenticado, redirecionar automaticamente para o dashboard correto
+  // Isso evita que usuários logados fiquem presos na página de login
+  if (session && profileLoaded && !redirected) {
     const normalizedRole = normalizeRole(profile?.role || (session?.user?.user_metadata as any)?.role || "");
     const getDashboardRoute = () => {
       if (normalizedRole === "admin do saas") return "/admin";
@@ -128,24 +129,12 @@ function Login() {
       return "/";
     };
 
+    // Redirecionar imediatamente
+    navigate(getDashboardRoute(), { replace: true });
     return (
-      <AuthLayout
-        title={t("auth.welcome_back")}
-        description={t("auth.login_description")}
-        variant="single"
-      >
-        <div className="space-y-4 text-center">
-          <p className="text-gray-700">Você já está autenticado.</p>
-          <div className="flex gap-2 justify-center">
-            <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => navigate(getDashboardRoute(), { replace: true })}>
-              Meu Painel
-            </Button>
-            <Button variant="outline" onClick={async () => { await signOut(); navigate("/"); }}>
-              Sair
-            </Button>
-          </div>
-        </div>
-      </AuthLayout>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-indigo-900 to-purple-600 p-4">
+        <LoadingSpinner size="lg" className="text-white" />
+      </div>
     );
   }
 
