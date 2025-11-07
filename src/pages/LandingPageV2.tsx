@@ -221,7 +221,10 @@ const LandingPageV2 = () => {
                   </Button>
                   <Button 
                     className="bg-purple-600 hover:bg-purple-700 text-white rounded-[20px] px-8 transition-all duration-500 ease-out hover:scale-105 hover:shadow-lg"
-                    onClick={() => navigate('/planes')}
+                    onClick={() => {
+                      const pricingSection = document.getElementById('pricing');
+                      pricingSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
                   >
                     Crear cuenta
                     <ArrowDownRight className="w-4 h-4 ml-2 transition-transform duration-300 ease-out" />
