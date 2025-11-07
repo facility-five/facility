@@ -23,6 +23,12 @@ const ManagerDashboardContent = () => {
   const [stats, setStats] = useState<Stats>({ condos: 0, blocks: 0, units: 0, residents: 0 });
   const [loading, setLoading] = useState(true);
 
+  // Debug temporário
+  console.log('ManagerDashboard - isFreePlan:', isFreePlan);
+  console.log('ManagerDashboard - hasActivePlan:', hasActivePlan);
+  console.log('ManagerDashboard - currentPlan:', currentPlan);
+  console.log('ManagerDashboard - isLoading:', isLoading);
+
   useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
