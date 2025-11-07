@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ import { usePlan } from "@/hooks/usePlan";
 
 const ManagerCondominios = () => {
   const { user } = useAuth();
-  const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { isFreePlan, isLoading: planLoading, currentPlan } = usePlan();
   const [condos, setCondos] = useState<Condo[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -111,6 +111,15 @@ const ManagerCondominios = () => {
     condo.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Verificar se pode criar mais condomínios baseado no limite do plano
+  const canCreateMoreCondos = () => {
+    if (!currentPlan) return false;
+    if (currentPlan.max_condos === null) return true; // Ilimitado
+    return condos.length < currentPlan.max_condos;
+  };
+
+  const hasReachedLimit = !canCreateMoreCondos();
+
   return (
     <ManagerLayout>
       <div className="flex justify-between items-center mb-6">
@@ -124,8 +133,16 @@ const ManagerCondominios = () => {
           />
           {!planLoading && (
             <>
-              {!isFreePlan ? (
-                // Botão normal para usuários com plano pago
+              {hasReachedLimit ? (
+                // Botão de upgrade quando atingir o limite
+                <Button 
+                  onClick={() => window.location.href = '/gestor/mi-plan'}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                >
+                  Fazer Upgrade para Criar Mais Condomínios
+                </Button>
+              ) : (
+                // Botão normal quando ainda pode criar
                 <Button
                   className="bg-purple-600 hover:bg-purple-700"
                   onClick={handleNewCondo}
@@ -133,25 +150,17 @@ const ManagerCondominios = () => {
                 >
                   Novo Condomínio
                 </Button>
-              ) : (
-                // Botão de upgrade para usuários com plano gratuito
-                <Button 
-                  onClick={() => window.location.href = '/gestor/mi-plan'}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                >
-                  Fazer Upgrade para Criar Condomínios
-                </Button>
               )}
             </>
           )}
         </div>
       </div>
 
-      {isFreePlan && (
+      {hasReachedLimit && currentPlan && (
         <div className="mb-6">
           <UpgradeBanner
-            title="Maximize o potencial do seu negócio"
-            description="Faça upgrade para um plano pago e tenha acesso completo a todas as funcionalidades de gestão."
+            title={`Limite de ${currentPlan.max_condos} condomínio${currentPlan.max_condos === 1 ? '' : 's'} atingido`}
+            description={`Você está usando ${condos.length} de ${currentPlan.max_condos} condomínio${currentPlan.max_condos === 1 ? '' : 's'} do seu plano. Faça upgrade para criar mais condomínios e expandir sua gestão.`}
             variant="default"
           />
         </div>
