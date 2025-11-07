@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Building, Box, Building2, Users } from "lucide-react";
+import { Building, Box, Building2, Users, Crown, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { ManagerStatCard } from "@/components/manager/ManagerStatCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { usePlan } from "@/hooks/usePlan";
 import { showRadixSuccess, showRadixError } from "@/utils/toast";
 
@@ -19,6 +20,7 @@ interface Stats {
 
 const ManagerDashboardContent = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { isFreePlan, hasActivePlan, currentPlan, isLoading, refreshPlanStatus } = usePlan();
   const [stats, setStats] = useState<Stats>({ condos: 0, blocks: 0, units: 0, residents: 0 });
   const [loading, setLoading] = useState(true);
@@ -90,13 +92,30 @@ const ManagerDashboardContent = () => {
         </CardHeader>
       </Card>
 
-      {isFreePlan && (
-        <UpgradeBanner
-          title="Maximize o potencial do seu negócio"
-          description="Faça upgrade para um plano pago e tenha acesso completo a todas as funcionalidades de gestão."
-          ctaText="Ver Planos"
-          variant="default"
-        />
+      {/* Banner de Upgrade para Plano Gratuito */}
+      {hasActivePlan && currentPlan?.price === 0 && (
+        <Card className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 shadow-lg">
+          <div className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="bg-white/20 p-3 rounded-full">
+                <Crown className="w-6 h-6 text-yellow-300" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg mb-1">Maximize o potencial do seu negócio</h3>
+                <p className="text-sm text-white/90 mb-3">
+                  Faça upgrade para um plano pago e tenha acesso completo a todas as funcionalidades de gestão.
+                </p>
+                <Button
+                  onClick={() => navigate("/gestor/mi-plan")}
+                  className="bg-white text-emerald-600 hover:bg-gray-100 font-semibold px-6"
+                >
+                  Ver Planos
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
