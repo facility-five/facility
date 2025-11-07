@@ -221,17 +221,7 @@ const LandingPageV2 = () => {
                   </Button>
                   <Button 
                     className="bg-purple-600 hover:bg-purple-700 text-white rounded-[20px] px-8 transition-all duration-500 ease-out hover:scale-105 hover:shadow-lg"
-                    onClick={() => {
-                      try {
-                        console.log('Botão "Crear cuenta" clicado');
-                        console.log('Navigate function:', navigate);
-                        console.log('Tentando navegar para /registrarse...');
-                        navigate('/registrarse');
-                        console.log('Navigate chamado com sucesso');
-                      } catch (error) {
-                        console.error('Erro ao navegar:', error);
-                      }
-                    }}
+                    onClick={() => navigate('/planes')}
                   >
                     Crear cuenta
                     <ArrowDownRight className="w-4 h-4 ml-2 transition-transform duration-300 ease-out" />
