@@ -26,7 +26,6 @@ export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -66,7 +65,6 @@ export function SignUpForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    setProgress(10);
     
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -80,12 +78,9 @@ export function SignUpForm() {
         },
       });
 
-      setProgress(30);
-
       if (error) {
         showRadixError(error.message);
         setIsLoading(false);
-        setProgress(0);
         return;
       }
       
@@ -97,10 +92,8 @@ export function SignUpForm() {
         // Login automático funcionou
         console.log("Sessão criada após signup:", data.session);
         
-        setProgress(50);
         // Aguardar trigger criar profile e plano
         await new Promise(resolve => setTimeout(resolve, 3000));
-        setProgress(70);
         
         // Fazer logout e login novamente para sincronizar profile
         console.log("Fazendo logout e login para sincronizar profile...");
@@ -112,19 +105,14 @@ export function SignUpForm() {
           password: values.password,
         });
         
-        setProgress(85);
-        
         if (loginError) {
           console.error("Erro ao fazer login após signup:", loginError);
           showRadixError("Conta criada! Por favor, faça login.");
           setIsLoading(false);
-          setProgress(0);
           navigate("/login");
         } else {
-          setProgress(95);
           // Aguardar mais um pouco para garantir que o AuthContext carregou
           await new Promise(resolve => setTimeout(resolve, 1000));
-          setProgress(100);
           console.log("Login bem-sucedido, redirecionando para /gestor");
           navigate("/gestor");
         }
@@ -133,31 +121,17 @@ export function SignUpForm() {
         console.log("Sem sessão após signup, redirecionando para login");
         showRadixSuccess("Por favor, confirme seu email para continuar.");
         setIsLoading(false);
-        setProgress(0);
         navigate("/login");
       }
     } catch (error: any) {
       console.error("Erro no cadastro:", error);
       showRadixError(error.message || "Erro ao criar conta. Tente novamente.");
       setIsLoading(false);
-      setProgress(0);
     }
   }
 
   return (
     <Form {...form}>
-      {/* Barra de progresso */}
-      {isLoading && (
-        <div className="fixed top-0 left-0 right-0 z-[9999]">
-          <div className="h-1 bg-gray-200/50 backdrop-blur-sm">
-            <div 
-              className="h-full bg-purple-600 shadow-lg shadow-purple-500/50 transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-      )}
-      
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
