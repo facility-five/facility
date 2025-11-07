@@ -67,27 +67,19 @@ const ManagerAdministradorasContent = () => {
     <ManagerTable>
       <ManagerTableHeader>
         <ManagerTableRow>
-          <ManagerTableHead>Status</ManagerTableHead>
-          <ManagerTableHead>Nome</ManagerTableHead>
           <ManagerTableHead>Código</ManagerTableHead>
-          <ManagerTableHead>Responsável</ManagerTableHead>
+          <ManagerTableHead>Nome</ManagerTableHead>
           <ManagerTableHead>NIF</ManagerTableHead>
-          <ManagerTableHead>Condomínios</ManagerTableHead>
-          <ManagerTableHead>E-mail</ManagerTableHead>
-          <ManagerTableHead>Telefone</ManagerTableHead>
+          <ManagerTableHead>Responsável</ManagerTableHead>
           <ManagerTableHead className="text-right">Ações</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
       <ManagerTableBody>
         {Array.from({ length: 6 }).map((_, index) => (
           <ManagerTableRow key={index}>
-            <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
-            <ManagerTableCell><Skeleton className="h-4 w-32" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-4 w-20" /></ManagerTableCell>
-            <ManagerTableCell><Skeleton className="h-4 w-28" /></ManagerTableCell>
+            <ManagerTableCell><Skeleton className="h-4 w-32" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-4 w-24" /></ManagerTableCell>
-            <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
-            <ManagerTableCell><Skeleton className="h-4 w-40" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-4 w-28" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-8 w-8 ml-auto" /></ManagerTableCell>
           </ManagerTableRow>
@@ -100,20 +92,16 @@ const ManagerAdministradorasContent = () => {
     <ManagerTable>
       <ManagerTableHeader>
         <ManagerTableRow>
-          <ManagerTableHead>Status</ManagerTableHead>
-          <ManagerTableHead>Nome</ManagerTableHead>
           <ManagerTableHead>Código</ManagerTableHead>
-          <ManagerTableHead>Responsável</ManagerTableHead>
+          <ManagerTableHead>Nome</ManagerTableHead>
           <ManagerTableHead>NIF</ManagerTableHead>
-          <ManagerTableHead>Condomínios</ManagerTableHead>
-          <ManagerTableHead>E-mail</ManagerTableHead>
-          <ManagerTableHead>Telefone</ManagerTableHead>
+          <ManagerTableHead>Responsável</ManagerTableHead>
           <ManagerTableHead className="text-right">Ações</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
       <ManagerTableBody>
         <ManagerTableRow>
-          <ManagerTableCell colSpan={9} className="text-center py-10 text-gray-600">
+          <ManagerTableCell colSpan={5} className="text-center py-10 text-gray-600">
             Nenhuma administradora encontrada.
           </ManagerTableCell>
         </ManagerTableRow>
@@ -125,14 +113,10 @@ const ManagerAdministradorasContent = () => {
     <ManagerTable>
       <ManagerTableHeader>
         <ManagerTableRow>
-          <ManagerTableHead>Status</ManagerTableHead>
-          <ManagerTableHead>Nome</ManagerTableHead>
           <ManagerTableHead>Código</ManagerTableHead>
-          <ManagerTableHead>Responsável</ManagerTableHead>
+          <ManagerTableHead>Nome</ManagerTableHead>
           <ManagerTableHead>NIF</ManagerTableHead>
-          <ManagerTableHead>Condomínios</ManagerTableHead>
-          <ManagerTableHead>E-mail</ManagerTableHead>
-          <ManagerTableHead>Telefone</ManagerTableHead>
+          <ManagerTableHead>Responsável</ManagerTableHead>
           <ManagerTableHead className="text-right">Ações</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
@@ -142,11 +126,7 @@ const ManagerAdministradorasContent = () => {
             admin.profiles && `${admin.profiles.first_name || ""} ${admin.profiles.last_name || ""}`.trim()
               ? `${admin.profiles.first_name || ""} ${admin.profiles.last_name || ""}`.trim()
               : "N/A";
-          const isActive = admin.id === activeAdministratorId;
-
-          const handleActivate = () => {
-            setActiveAdministratorId(admin.id);
-          };
+          const responsibleEmail = admin.profiles?.email || "N/A";
 
           const handleEdit = (e: React.MouseEvent) => {
             e.stopPropagation();
@@ -157,31 +137,17 @@ const ManagerAdministradorasContent = () => {
           return (
             <ManagerTableRow
               key={admin.id}
-              className={cn(
-                "cursor-pointer transition-colors hover:bg-purple-50",
-                isActive && "bg-purple-100 hover:bg-purple-100"
-              )}
-              onClick={handleActivate}
+              className="transition-colors hover:bg-purple-50"
             >
-              <ManagerTableCell>
-                {isActive ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-purple-600/10 px-2.5 py-1 text-xs font-semibold text-purple-600">
-                    <BadgeCheck className="h-3 w-3" />
-                    Ativa
-                  </span>
-                ) : (
-                  <span className="text-gray-400 text-xs">Inativa</span>
-                )}
-              </ManagerTableCell>
+              <ManagerTableCell className="font-medium text-purple-600">{admin.code || "N/A"}</ManagerTableCell>
               <ManagerTableCell className="font-medium">{admin.name}</ManagerTableCell>
-              <ManagerTableCell>{admin.code || "N/A"}</ManagerTableCell>
-              <ManagerTableCell>{responsibleName}</ManagerTableCell>
               <ManagerTableCell>{admin.nif || "N/A"}</ManagerTableCell>
-              <ManagerTableCell className="font-semibold">
-                {admin.condos[0]?.count ?? 0}
+              <ManagerTableCell>
+                <div className="flex flex-col">
+                  <span className="font-medium">{responsibleName}</span>
+                  <span className="text-xs text-gray-500">{responsibleEmail}</span>
+                </div>
               </ManagerTableCell>
-              <ManagerTableCell>{admin.email || "N/A"}</ManagerTableCell>
-              <ManagerTableCell>{admin.phone || "N/A"}</ManagerTableCell>
               <ManagerTableCell className="text-right">
                 <Button
                   variant="ghost"

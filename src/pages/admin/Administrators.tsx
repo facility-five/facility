@@ -43,11 +43,12 @@ const Administrators = () => {
         name: row.name,
         nif: row.nif,
         condos: [{ count: row.condos_count || 0 }],
-        profiles: row.first_name || row.last_name || row.responsible_email ? { 
-          first_name: row.first_name, 
-          last_name: row.last_name,
-          email: row.responsible_email 
+        profiles: row.created_by_first_name || row.created_by_last_name || row.created_by_email ? {
+          first_name: row.created_by_first_name,
+          last_name: row.created_by_last_name,
+          email: row.created_by_email
         } : null,
+        created_by: null,
       })) as Administrator[];
       setAdmins(mapped);
     }
