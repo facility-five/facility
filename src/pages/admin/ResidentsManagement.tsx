@@ -109,10 +109,10 @@ const ResidentsManagement = () => {
             blocks!inner(
               id,
               name,
-              condominiums!inner(
+              condominiums!blocks_condominium_id_fkey!inner(
                 id,
                 name,
-                administrators!inner(
+                administrators!condominiums_administrator_id_fkey!inner(
                   id,
                   name
                 )
