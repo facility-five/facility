@@ -113,12 +113,17 @@ const ManagerCondominios = () => {
 
   // Verificar se pode criar mais condomínios baseado no limite do plano
   const canCreateMoreCondos = () => {
-    if (!currentPlan) return false;
-    if (currentPlan.max_condos === null) return true; // Ilimitado
+    // Se ainda está carregando, não bloquear
+    if (loading || planLoading) return true;
+    // Se não tem plano, não bloquear
+    if (!currentPlan) return true;
+    // Se o plano permite ilimitado, não bloquear
+    if (currentPlan.max_condos === null) return true;
+    // Verificar se ainda não atingiu o limite
     return condos.length < currentPlan.max_condos;
   };
 
-  const hasReachedLimit = !canCreateMoreCondos();
+  const hasReachedLimit = !canCreateMoreCondos() && !loading && !planLoading;
 
   return (
     <ManagerLayout>
