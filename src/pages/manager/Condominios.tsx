@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,7 @@ const ManagerCondominios = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCondo, setSelectedCondo] = useState<Condo | null>(null);
 
-  const fetchCondos = async () => {
+  const fetchCondos = useCallback(async () => {
     if (!activeAdministratorId) {
       setLoading(false);
       return;
@@ -81,16 +81,18 @@ const ManagerCondominios = () => {
     }
     
     setLoading(false);
-  };
+  }, [activeAdministratorId]);
 
   useEffect(() => {
+    console.log('🔄 Condominios: activeAdministratorId mudou para:', activeAdministratorId);
     if (activeAdministratorId) {
       fetchCondos();
     } else {
-      // Se não há activeAdministratorId, definir loading como false para mostrar a interface
+      console.log('🔄 Condominios: Nenhuma administradora selecionada, limpando lista');
+      setCondos([]);
       setLoading(false);
     }
-  }, [activeAdministratorId]);
+  }, [activeAdministratorId, fetchCondos]);
 
   const handleNewCondo = () => {
     if (!activeAdministratorId) {
