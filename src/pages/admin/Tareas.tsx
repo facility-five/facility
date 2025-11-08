@@ -6,8 +6,9 @@ import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { TaskModal } from "@/components/admin/TaskModal";
+import { DeleteTaskModal } from "@/components/admin/DeleteTaskModal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
@@ -28,6 +29,8 @@ const Tareas = () => {
   const [items, setItems] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [isNewOpen, setIsNewOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [query, setQuery] = useState("");
 
   const fetchItems = async () => {
@@ -65,6 +68,24 @@ const Tareas = () => {
       showRadixSuccess("Estado actualizado");
       fetchItems();
     }
+  };
+
+  const openDeleteModal = (task: Task) => {
+    setSelectedTask(task);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedTask) return;
+    const { error } = await supabase.from('admin_tasks').delete().eq('id', selectedTask.id);
+    if (error) {
+      showRadixError('Error al eliminar tarea', error.message);
+    } else {
+      showRadixSuccess('Tarea eliminada');
+      fetchItems();
+    }
+    setIsDeleteOpen(false);
+    setSelectedTask(null);
   };
 
   return (
@@ -128,6 +149,7 @@ const Tareas = () => {
                 <TableCell>{new Date(task.created_at).toLocaleString()}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => openDeleteModal(task)} className="text-red-500"><Trash2 className="h-4 w-4" /></Button>
                 </TableCell>
               </TableRow>
             ))}
