@@ -63,23 +63,36 @@ const ManagerAdministradorasContent = () => {
     return filteredAdministrators.some((admin) => admin.id === activeAdministratorId);
   }, [filteredAdministrators, activeAdministratorId]);
 
+  const formatSpanishPhone = (phone: string | null | undefined) => {
+    if (!phone) return "N/A";
+    // Remove todos os caracteres não numéricos
+    const cleaned = phone.replace(/\D/g, '');
+    // Formato espanhol: +34 XXX XX XX XX ou XXX XX XX XX
+    if (cleaned.length === 11 && cleaned.startsWith('34')) {
+      return `+34 ${cleaned.slice(2, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7, 9)} ${cleaned.slice(9)}`;
+    } else if (cleaned.length === 9) {
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7)}`;
+    }
+    return phone;
+  };
+
   const renderSkeleton = () => (
     <ManagerTable>
       <ManagerTableHeader>
         <ManagerTableRow>
-          <ManagerTableHead>Código</ManagerTableHead>
-          <ManagerTableHead>Nome</ManagerTableHead>
+          <ManagerTableHead>Nombre de la Administradora</ManagerTableHead>
           <ManagerTableHead>NIF</ManagerTableHead>
-          <ManagerTableHead>Responsável</ManagerTableHead>
-          <ManagerTableHead className="text-right">Ações</ManagerTableHead>
+          <ManagerTableHead>Correo Electrónico</ManagerTableHead>
+          <ManagerTableHead>Teléfono</ManagerTableHead>
+          <ManagerTableHead className="text-right">Acciones</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
       <ManagerTableBody>
         {Array.from({ length: 6 }).map((_, index) => (
           <ManagerTableRow key={index}>
-            <ManagerTableCell><Skeleton className="h-4 w-20" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-4 w-32" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-4 w-24" /></ManagerTableCell>
+            <ManagerTableCell><Skeleton className="h-4 w-40" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-4 w-28" /></ManagerTableCell>
             <ManagerTableCell><Skeleton className="h-8 w-8 ml-auto" /></ManagerTableCell>
           </ManagerTableRow>
@@ -92,17 +105,17 @@ const ManagerAdministradorasContent = () => {
     <ManagerTable>
       <ManagerTableHeader>
         <ManagerTableRow>
-          <ManagerTableHead>Código</ManagerTableHead>
-          <ManagerTableHead>Nome</ManagerTableHead>
+          <ManagerTableHead>Nombre de la Administradora</ManagerTableHead>
           <ManagerTableHead>NIF</ManagerTableHead>
-          <ManagerTableHead>Responsável</ManagerTableHead>
-          <ManagerTableHead className="text-right">Ações</ManagerTableHead>
+          <ManagerTableHead>Correo Electrónico</ManagerTableHead>
+          <ManagerTableHead>Teléfono</ManagerTableHead>
+          <ManagerTableHead className="text-right">Acciones</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
       <ManagerTableBody>
         <ManagerTableRow>
           <ManagerTableCell colSpan={5} className="text-center py-10 text-gray-600">
-            Nenhuma administradora encontrada.
+            No se encontraron administradoras.
           </ManagerTableCell>
         </ManagerTableRow>
       </ManagerTableBody>
@@ -113,21 +126,15 @@ const ManagerAdministradorasContent = () => {
     <ManagerTable>
       <ManagerTableHeader>
         <ManagerTableRow>
-          <ManagerTableHead>Código</ManagerTableHead>
-          <ManagerTableHead>Nome</ManagerTableHead>
+          <ManagerTableHead>Nombre de la Administradora</ManagerTableHead>
           <ManagerTableHead>NIF</ManagerTableHead>
-          <ManagerTableHead>Responsável</ManagerTableHead>
-          <ManagerTableHead className="text-right">Ações</ManagerTableHead>
+          <ManagerTableHead>Correo Electrónico</ManagerTableHead>
+          <ManagerTableHead>Teléfono</ManagerTableHead>
+          <ManagerTableHead className="text-right">Acciones</ManagerTableHead>
         </ManagerTableRow>
       </ManagerTableHeader>
       <ManagerTableBody>
         {filteredAdministrators.map((admin) => {
-          const responsibleName =
-            admin.profiles && `${admin.profiles.first_name || ""} ${admin.profiles.last_name || ""}`.trim()
-              ? `${admin.profiles.first_name || ""} ${admin.profiles.last_name || ""}`.trim()
-              : "N/A";
-          const responsibleEmail = admin.profiles?.email || "N/A";
-
           const handleEdit = (e: React.MouseEvent) => {
             e.stopPropagation();
             setSelectedAdministrator(admin);
@@ -139,15 +146,10 @@ const ManagerAdministradorasContent = () => {
               key={admin.id}
               className="transition-colors hover:bg-purple-50"
             >
-              <ManagerTableCell className="font-medium text-purple-600">{admin.code || "N/A"}</ManagerTableCell>
               <ManagerTableCell className="font-medium">{admin.name}</ManagerTableCell>
               <ManagerTableCell>{admin.nif || "N/A"}</ManagerTableCell>
-              <ManagerTableCell>
-                <div className="flex flex-col">
-                  <span className="font-medium">{responsibleName}</span>
-                  <span className="text-xs text-gray-500">{responsibleEmail}</span>
-                </div>
-              </ManagerTableCell>
+              <ManagerTableCell>{admin.email || "N/A"}</ManagerTableCell>
+              <ManagerTableCell>{formatSpanishPhone(admin.phone)}</ManagerTableCell>
               <ManagerTableCell className="text-right">
                 <Button
                   variant="ghost"
@@ -172,25 +174,24 @@ const ManagerAdministradorasContent = () => {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Administradoras</h1>
           <p className="text-gray-600">
-            Consulte a relacao de administradoras cadastradas na plataforma e ative aquela que deseja
-            gerenciar.
+            Consulte la lista de administradoras registradas en la plataforma y active la que desea gestionar.
           </p>
           {activeAdministrator && (
               <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-700">
                 <BadgeCheck className="h-4 w-4 text-purple-600" />
-                <span>Administradora Seleccionada desde el encabezado:</span>
+                <span>Administradora seleccionada desde el encabezado:</span>
                 <span className="text-purple-800">{activeAdministrator.name}</span>
               </div>
           )}
           {!activeVisible && filteredAdministrators.length > 0 && activeAdministrator && (
             <p className="text-xs font-medium text-purple-600">
-              A administradora ativa nao esta nos resultados atuais. Limpe a busca para visualiza-la.
+              La administradora activa no está en los resultados actuales. Limpie la búsqueda para visualizarla.
             </p>
           )}
         </div>
         <div className="flex items-center gap-4">
           <Input
-            placeholder="Buscar por nome, NIF ou responsavel"
+            placeholder="Buscar por nombre, NIF o email"
             className="w-full bg-white md:w-72"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -198,24 +199,24 @@ const ManagerAdministradorasContent = () => {
           {!planLoading && (
             <>
               {!isFreePlan ? (
-                // Botão normal para usuários com plano pago
+                // Botón normal para usuarios con plan pago
                 <Button
                   className="bg-purple-600 hover:bg-purple-700"
                   onClick={() => setIsNewModalOpen(true)}
                   disabled={!canCreateAdministrator}
-                  title={!canCreateAdministrator ? `Limite do plano atingido (${remainingSlots === 0 ? 'máximo atingido' : 'sem slots disponíveis'})` : undefined}
+                  title={!canCreateAdministrator ? `Límite del plan alcanzado (${remainingSlots === 0 ? 'máximo alcanzado' : 'sin espacios disponibles'})` : undefined}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Nova Administradora
+                  Nueva Administradora
                 </Button>
               ) : (
-                // Botão de upgrade para usuários com plano gratuito
+                // Botón de upgrade para usuarios con plan gratuito
                 <Button 
                   onClick={() => window.location.href = '/gestor/mi-plan'}
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Fazer Upgrade para Criar Administradoras
+                  Actualizar para Crear Administradoras
                 </Button>
               )}
             </>
@@ -225,8 +226,8 @@ const ManagerAdministradorasContent = () => {
 
       {isFreePlan && (
         <UpgradeBanner
-          title="Maximize o potencial do seu negócio"
-          description="Faça upgrade para um plano pago e tenha acesso completo a todas as funcionalidades de gestão."
+          title="Maximice el potencial de su negocio"
+          description="Actualice a un plan de pago y tenga acceso completo a todas las funcionalidades de gestión."
           variant="default"
         />
       )}
