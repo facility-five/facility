@@ -234,7 +234,7 @@ const ManagerUnidadesContent = () => {
       // Se não há administradora_id, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [activeAdministratorId, fetchCondos, fetchBlocks, fetchUnits]);
+  }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredUnits = useMemo(() => {
     return units.filter((unit) => {

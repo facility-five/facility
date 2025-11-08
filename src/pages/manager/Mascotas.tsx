@@ -278,7 +278,7 @@ const ManagerMascotasContent = () => {
       // Se não há administrator_id, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [activeAdministratorId, fetchCondos, fetchUnits, fetchResidents, fetchPets]);
+  }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredPets = useMemo(() => {
     return pets.filter((pet) => {

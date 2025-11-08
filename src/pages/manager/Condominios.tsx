@@ -90,7 +90,7 @@ const ManagerCondominios = () => {
       setCondos([]);
       setLoading(false);
     }
-  }, [activeAdministratorId, fetchCondos]);
+  }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listener em tempo real para sincronizar condomínios entre dispositivos
   useEffect(() => {
@@ -119,7 +119,7 @@ const ManagerCondominios = () => {
       console.log('🔕 Condominios: Removing real-time listener');
       supabase.removeChannel(channel);
     };
-  }, [activeAdministratorId, fetchCondos]);
+  }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fallback visual quando não há administradora selecionada
   if (!activeAdministratorId) {

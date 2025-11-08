@@ -175,7 +175,7 @@ const ManagerBlocosContent = () => {
       // Se não há administradora ativa, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [activeAdministratorId, fetchCondos, fetchBlocks]);
+  }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // SEMPRE chamar useMemo ANTES de qualquer return condicional
   const filteredBlocks = useMemo(() => {
