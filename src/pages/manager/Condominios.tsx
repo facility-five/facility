@@ -34,15 +34,27 @@ const ManagerCondominios = () => {
       return;
     }
     setLoading(true);
+    
+    // Buscar condomínios com contagem de blocos e unidades
     const { data, error } = await supabase
-      .from("condominiums") // Changed from "condos" to "condominiums"
-      .select("*")
+      .from("condominiums")
+      .select(`
+        *,
+        blocks:blocks(count),
+        units:units(count)
+      `)
       .eq('administrator_id', activeAdministratorId);
 
     if (error) {
-      showRadixError("Erro ao buscar condomínios.");
+      showRadixError("Error al buscar condominios.");
     } else {
-      setCondos(data || []);
+      // Mapear dados para incluir contagens
+      const mappedData = (data || []).map((condo: any) => ({
+        ...condo,
+        total_blocks: condo.blocks?.[0]?.count || 0,
+        total_units: condo.units?.[0]?.count || 0,
+      }));
+      setCondos(mappedData);
     }
     setLoading(false);
   };
@@ -105,7 +117,7 @@ const ManagerCondominios = () => {
   return (
     <ManagerLayout>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Condomínios</h1>
+        <h1 className="text-3xl font-bold">Condominios</h1>
         <div className="flex items-center gap-4">
           <Input
             placeholder="Buscar por nombre"
@@ -114,20 +126,20 @@ const ManagerCondominios = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
           {hasReachedLimit ? (
-            // Botão de upgrade quando atingir o limite
+            // Botón de upgrade cuando alcanza el límite
             <Button 
               onClick={() => window.location.href = '/gestor/mi-plan'}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
             >
-              Fazer Upgrade para Criar Mais Condomínios
+              Actualizar para Crear Más Condominios
             </Button>
           ) : (
-            // Botão normal quando ainda pode criar
+            // Botón normal cuando aún puede crear
             <Button
               className="bg-purple-600 hover:bg-purple-700"
               onClick={handleNewCondo}
             >
-              Novo Condomínio
+              Nuevo Condominio
             </Button>
           )}
         </div>
@@ -136,8 +148,8 @@ const ManagerCondominios = () => {
       {hasReachedLimit && currentPlan && (
         <div className="mb-6">
           <UpgradeBanner
-            title={`Limite de ${currentPlan.max_condos} condomínio${currentPlan.max_condos === 1 ? '' : 's'} atingido`}
-            description={`Você está usando ${condos.length} de ${currentPlan.max_condos} condomínio${currentPlan.max_condos === 1 ? '' : 's'} do seu plano. Faça upgrade para criar mais condomínios e expandir sua gestão.`}
+            title={`Límite de ${currentPlan.max_condos} condominio${currentPlan.max_condos === 1 ? '' : 's'} alcanzado`}
+            description={`Está usando ${condos.length} de ${currentPlan.max_condos} condominio${currentPlan.max_condos === 1 ? '' : 's'} de su plan. Actualice para crear más condominios y expandir su gestión.`}
             variant="default"
           />
         </div>
@@ -146,53 +158,61 @@ const ManagerCondominios = () => {
       <ManagerTable>
         <ManagerTableHeader>
           <ManagerTableRow>
-            <ManagerTableHead>Status</ManagerTableHead>
-            <ManagerTableHead>Nome</ManagerTableHead>
-            <ManagerTableHead>Unidades</ManagerTableHead>
-            <ManagerTableHead>Moradores</ManagerTableHead>
-            <ManagerTableHead>Administradora</ManagerTableHead>
-            <ManagerTableHead className="text-right">Ações</ManagerTableHead>
+            <ManagerTableHead>Nombre</ManagerTableHead>
+            <ManagerTableHead>NIF</ManagerTableHead>
+            <ManagerTableHead>Sitio Web</ManagerTableHead>
+            <ManagerTableHead>Área</ManagerTableHead>
+            <ManagerTableHead>Tipo</ManagerTableHead>
+            <ManagerTableHead>Total de Bloques</ManagerTableHead>
+            <ManagerTableHead>Total de Unidades</ManagerTableHead>
+            <ManagerTableHead className="text-right">Acciones</ManagerTableHead>
           </ManagerTableRow>
         </ManagerTableHeader>
           <ManagerTableBody>
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <ManagerTableRow key={i}>
-                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
                   <ManagerTableCell><Skeleton className="h-4 w-32" /></ManagerTableCell>
-                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
-                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
                   <ManagerTableCell><Skeleton className="h-4 w-24" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-40" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-20" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-24" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
                   <ManagerTableCell><Skeleton className="h-4 w-16" /></ManagerTableCell>
                 </ManagerTableRow>
               ))
             ) : filteredCondos.length === 0 ? (
               <ManagerTableRow>
-                <ManagerTableCell colSpan={6} className="text-center text-gray-500 py-8">
-                  {activeAdministratorId ? "Nenhum condomínio encontrado para sua administradora." : "Carregando informações da administradora..."}
+                <ManagerTableCell colSpan={8} className="text-center text-gray-500 py-8">
+                  {activeAdministratorId ? "No se encontraron condominios para su administradora." : "Cargando información de la administradora..."}
                 </ManagerTableCell>
               </ManagerTableRow>
             ) : (
-              filteredCondos.map((condo) => (
-                <ManagerTableRow key={condo.id} className="hover:bg-gray-50">
+              filteredCondos.map((condo: any) => (
+                <ManagerTableRow key={condo.id} className="hover:bg-purple-50">
+                  <ManagerTableCell className="font-medium">{condo.name}</ManagerTableCell>
+                  <ManagerTableCell>{condo.nif || "N/A"}</ManagerTableCell>
                   <ManagerTableCell>
-                    {condo.status === "active" ? (
-                      <Badge variant="default" className="bg-green-100 text-green-800">Ativo</Badge>
+                    {condo.website ? (
+                      <a href={condo.website} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">
+                        {condo.website}
+                      </a>
                     ) : (
-                      <Badge variant="destructive" className="capitalize">{condo.status}</Badge>
+                      "N/A"
                     )}
                   </ManagerTableCell>
-                  <ManagerTableCell className="font-medium">{condo.name}</ManagerTableCell>
-                  <ManagerTableCell>{condo.total_units || 0}</ManagerTableCell>
-                  <ManagerTableCell>124</ManagerTableCell>
-                  <ManagerTableCell>{condo.responsible_name || "N/A"}</ManagerTableCell>
+                  <ManagerTableCell>{condo.area ? `${condo.area} m²` : "N/A"}</ManagerTableCell>
+                  <ManagerTableCell className="capitalize">{condo.type || "N/A"}</ManagerTableCell>
+                  <ManagerTableCell className="text-center font-semibold">{condo.total_blocks || 0}</ManagerTableCell>
+                  <ManagerTableCell className="text-center font-semibold">{condo.total_units || 0}</ManagerTableCell>
                   <ManagerTableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEditCondo(condo)}
-                        className="h-8 w-8 text-gray-500 hover:text-blue-600"
+                        className="h-8 w-8 text-gray-500 hover:text-purple-600"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
