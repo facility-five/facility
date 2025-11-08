@@ -1,4 +1,4 @@
-Ôªøimport React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ManagerLayout } from '@/components/manager/ManagerLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,7 +69,7 @@ interface Reservation {
 }
 
 const Reservas = () => {
-  const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { currentPlan, isLoading: planLoading } = usePlan();
   const { activeAdministratorId } = useManagerAdministradoras();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,7 +107,7 @@ const Reservas = () => {
       `);
 
     // No plano gratuito, busca todas as reservas. No plano pago, filtra por administradora
-    if (!isFreePlan && activeAdministratorId) {
+    if (!currentPlan && activeAdministratorId) {
       query = query.eq("condominiums.administrator_id", activeAdministratorId);
     }
 
@@ -123,8 +123,8 @@ const Reservas = () => {
   };
 
   const fetchCondominiums = async () => {
-    // No plano gratuito, busca todos os condom√≠nios. No plano pago, filtra por administradora
-    if (!isFreePlan) {
+    // No plano gratuito, busca todos os condomÌnios. No plano pago, filtra por administradora
+    if (!currentPlan) {
       if (!activeAdministratorId) return;
     }
 
@@ -132,7 +132,7 @@ const Reservas = () => {
       .from("condominiums")
       .select("id, name");
 
-    if (!isFreePlan && activeAdministratorId) {
+    if (!currentPlan && activeAdministratorId) {
       query = query.eq("administrator_id", activeAdministratorId);
     }
 
@@ -146,14 +146,14 @@ const Reservas = () => {
   };
 
   useEffect(() => {
-    if (isFreePlan || activeAdministratorId) {
+    if (currentPlan || activeAdministratorId) {
       fetchReservations();
       fetchCondominiums();
     } else {
-      // Se n√£o h√° activeAdministratorId no plano pago, definir loading como false para mostrar a interface
+      // Se n„o h· activeAdministratorId no plano pago, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [activeAdministratorId, isFreePlan]);
+  }, [activeAdministratorId, currentPlan]);
 
   const stats = useMemo(() => {
     const total = reservations.length;
@@ -188,7 +188,7 @@ const Reservas = () => {
     setIsDeleteModalOpen(true);
   };
 
-  // A exclus√£o agora √© tratada dentro do modal
+  // A exclus„o agora È tratada dentro do modal
 
   const handleStatusChange = async (reservationId: string, newStatus: string) => {
     const { error } = await supabase
@@ -228,7 +228,7 @@ const Reservas = () => {
     return variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800';
   };
 
-  if (!isFreePlan && !activeAdministratorId) {
+  if (!currentPlan && !activeAdministratorId) {
     return (
       <ManagerLayout>
         <div className="flex flex-col items-center justify-center h-64">
@@ -237,7 +237,7 @@ const Reservas = () => {
               Selecione uma administradora
             </h2>
             <p className="text-gray-500">
-              Para visualizar as reservas, selecione uma administradora no cabe√ßalho.
+              Para visualizar as reservas, selecione uma administradora no cabeÁalho.
             </p>
           </div>
         </div>
@@ -252,13 +252,13 @@ const Reservas = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Reservas</h1>
             <p className="text-gray-600 mt-1">
-              Gestione las reservas de las √°reas comunes
+              Gestione las reservas de las ·reas comunes
             </p>
           </div>
           {!planLoading && (
             <>
-              {!isFreePlan ? (
-                // Bot√£o normal para usu√°rios com plano pago
+              {!currentPlan ? (
+                // Bot„o normal para usu·rios com plano pago
                 <Button 
                   className="bg-purple-600 hover:bg-purple-700"
                   onClick={() => setIsNewModalOpen(true)}
@@ -267,7 +267,7 @@ const Reservas = () => {
                   Novo Reservo
                 </Button>
               ) : (
-                // Bot√£o de upgrade para usu√°rios com plano gratuito
+                // Bot„o de upgrade para usu·rios com plano gratuito
                 <Button 
                   onClick={() => window.location.href = '/gestor/mi-plan'}
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
@@ -282,7 +282,7 @@ const Reservas = () => {
 
 
 
-        {/* Estat√≠sticas */}
+        {/* EstatÌsticas */}
         <div className="grid gap-6 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -330,7 +330,7 @@ const Reservas = () => {
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <Input
-                placeholder="Buscar por c√≥digo, √°rea, residente ou condom√≠nio..."
+                placeholder="Buscar por cÛdigo, ·rea, residente ou condomÌnio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1"
@@ -348,10 +348,10 @@ const Reservas = () => {
               </Select>
               <Select value={condoFilter} onValueChange={setCondoFilter}>
                 <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filtrar por condom√≠nio" />
+                  <SelectValue placeholder="Filtrar por condomÌnio" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os condom√≠nios</SelectItem>
+                  <SelectItem value="all">Todos os condomÌnios</SelectItem>
                   {condominiums.map((condo) => (
                     <SelectItem key={condo.id} value={condo.id}>
                       {condo.name}
@@ -364,10 +364,10 @@ const Reservas = () => {
             <ManagerTable>
               <ManagerTableHeader>
                 <ManagerTableRow>
-                  <ManagerTableHead>C√≥digo</ManagerTableHead>
+                  <ManagerTableHead>CÛdigo</ManagerTableHead>
                   <ManagerTableHead>Residente</ManagerTableHead>
-                  <ManagerTableHead>√Årea Com√∫n</ManagerTableHead>
-                  <ManagerTableHead>Condom√≠nio</ManagerTableHead>
+                  <ManagerTableHead>¡rea Com˙n</ManagerTableHead>
+                  <ManagerTableHead>CondomÌnio</ManagerTableHead>
                   <ManagerTableHead>Fecha</ManagerTableHead>
                   <ManagerTableHead>Horario</ManagerTableHead>
                   <ManagerTableHead>Status</ManagerTableHead>
@@ -447,8 +447,8 @@ const Reservas = () => {
                       <ManagerTableCell colSpan={9} className="text-center text-gray-500 py-8">
                         <div className="flex flex-col items-center">
                           <MapPin className="h-12 w-12 text-gray-300 mb-4" />
-                          <p className="text-lg font-medium">No hay nada registrado aqu√≠.</p>
-                          <p className="text-sm">Ainda n√£o h√° nenhum conte√∫do registrado nesta se√ß√£o.</p>
+                          <p className="text-lg font-medium">No hay nada registrado aquÌ.</p>
+                          <p className="text-sm">Ainda n„o h· nenhum conte˙do registrado nesta seÁ„o.</p>
                         </div>
                       </ManagerTableCell>
                     </ManagerTableRow>

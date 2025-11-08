@@ -363,7 +363,13 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
   const activeAdministrator = useMemo(() => {
     if (!activeAdministratorId) return null;
-    return administrators.find((admin) => admin.id === activeAdministratorId) ?? null;
+    const found = administrators.find((admin) => admin.id === activeAdministratorId) ?? null;
+    console.log("🎯 activeAdministrator recalculated:", {
+      id: activeAdministratorId,
+      name: found?.name,
+      totalAdmins: administrators.length
+    });
+    return found;
   }, [administrators, activeAdministratorId]);
 
   const updateActiveAdministratorId = useCallback(async (id: string | null) => {

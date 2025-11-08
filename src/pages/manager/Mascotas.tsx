@@ -100,7 +100,7 @@ const statusBadge = (status: string) => {
 
 const ManagerMascotasContent = () => {
   const { activeAdministratorId } = useManagerAdministradoras();
-  const { isFreePlan } = usePlan();
+  const { currentPlan } = usePlan();
   const [pets, setPets] = useState<PetRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
   const [units, setUnits] = useState<UnitSummary[]>([]);
@@ -439,7 +439,7 @@ const ManagerMascotasContent = () => {
             Gestione las mascotas de los residentes
           </p>
         </div>
-        {!isFreePlan ? (
+        {!currentPlan ? (
           // Botão normal para usuários com plano pago
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>

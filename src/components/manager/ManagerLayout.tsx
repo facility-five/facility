@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { ManagerSidebar } from "./ManagerSidebar";
 import { ManagerHeader } from "./ManagerHeader";
-import { ManagerAdministradorasProvider } from "@/contexts/ManagerAdministradorasContext";
 
 interface ManagerLayoutProps {
   children: React.ReactNode;
@@ -24,10 +23,8 @@ ManagerLayoutInternal.displayName = "ManagerLayoutInternal";
 
 export const ManagerLayout = ({ children }: ManagerLayoutProps) => {
   return (
-    <ManagerAdministradorasProvider>
-      <ManagerLayoutInternal>
-        {children}
-      </ManagerLayoutInternal>
-    </ManagerAdministradorasProvider>
+    <ManagerLayoutInternal>
+      {children}
+    </ManagerLayoutInternal>
   );
 };

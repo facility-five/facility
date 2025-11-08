@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ export type CommonArea = {
 
 const AreasComunsContent = () => {
   const { activeAdministratorId } = useManagerAdministradoras();
-  const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { currentPlan, isLoading: planLoading } = usePlan();
   const [areas, setAreas] = useState<CommonArea[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,14 +61,14 @@ const AreasComunsContent = () => {
       .order("created_at", { ascending: false });
 
     // No plano pago, filtra por administradora selecionada
-    if (!isFreePlan && activeAdministratorId) {
+    if (!currentPlan && activeAdministratorId) {
       query = query.eq("condominiums.administrator_id", activeAdministratorId);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      showRadixError("Erro ao buscar áreas comuns.");
+      showRadixError("Erro ao buscar �reas comuns.");
       console.error("Error fetching areas:", error);
     } else {
       setAreas(data as any[] || []);
@@ -77,15 +77,15 @@ const AreasComunsContent = () => {
   };
 
   useEffect(() => {
-    // No plano gratuito, sempre busca as áreas
-    // No plano pago, só busca se há administradora selecionada
-    if (isFreePlan || activeAdministratorId) {
+    // No plano gratuito, sempre busca as �reas
+    // No plano pago, s� busca se h� administradora selecionada
+    if (currentPlan || activeAdministratorId) {
       fetchAreas();
     } else {
-      // Se não há activeAdministratorId no plano pago, definir loading como false para mostrar a interface
+      // Se n�o h� activeAdministratorId no plano pago, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [activeAdministratorId, isFreePlan]);
+  }, [activeAdministratorId, currentPlan]);
 
   const handleNewArea = () => {
     setSelectedArea(null);
@@ -113,7 +113,7 @@ const AreasComunsContent = () => {
     if (error) {
       showRadixError(error.message);
     } else {
-      showRadixSuccess("Área comum excluída com sucesso!");
+      showRadixSuccess("�rea comum exclu�da com sucesso!");
       fetchAreas();
     }
     setIsDeleteModalOpen(false);
@@ -134,7 +134,7 @@ const AreasComunsContent = () => {
     area.condominiums?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!isFreePlan && !activeAdministratorId) {
+  if (!currentPlan && !activeAdministratorId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <div className="text-center">
@@ -142,7 +142,7 @@ const AreasComunsContent = () => {
             Selecione uma administradora
           </h2>
           <p className="text-gray-500">
-            Para visualizar as áreas comuns, selecione uma administradora no cabeçalho.
+            Para visualizar as �reas comuns, selecione uma administradora no cabe�alho.
           </p>
         </div>
       </div>
@@ -153,30 +153,29 @@ const AreasComunsContent = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Áreas Comuns</h1>
+          <h1 className="text-3xl font-bold text-gray-900">�reas Comuns</h1>
           <p className="text-gray-600 mt-1">
-            Gerencie as áreas comuns dos condomínios
+            Gerencie as �reas comuns dos condom�nios
           </p>
         </div>
         {!planLoading && (
           <>
-            {!isFreePlan ? (
-              // Botão normal para usuários com plano pago
+            {(currentPlan && currentPlan.max_common_areas !== null && areas.length >= currentPlan.max_common_areas) ? (
+              // Botão de upgrade quando alcança o limite
+              <Button 
+                onClick={() => window.location.href = '/gestor/mi-plan'}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              >
+                Actualizar para Crear Más Áreas
+              </Button>
+            ) : (
+              // Botão normal quando aún pode criar
               <Button
                 onClick={handleNewArea}
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Área Comum
-              </Button>
-            ) : (
-              // Botão de upgrade para usuários com plano gratuito
-              <Button 
-                onClick={() => window.location.href = '/gestor/mi-plan'}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Fazer Upgrade para Criar Áreas
               </Button>
             )}
           </>
@@ -187,7 +186,7 @@ const AreasComunsContent = () => {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Buscar por nome, código, descrição ou condomínio..."
+            placeholder="Buscar por nome, c�digo, descri��o ou condom�nio..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -200,14 +199,14 @@ const AreasComunsContent = () => {
         <ManagerTable>
           <ManagerTableHeader>
             <ManagerTableRow>
-              <ManagerTableHead>Código</ManagerTableHead>
+              <ManagerTableHead>C�digo</ManagerTableHead>
               <ManagerTableHead>Nome</ManagerTableHead>
-              <ManagerTableHead>Condomínio</ManagerTableHead>
+              <ManagerTableHead>Condom�nio</ManagerTableHead>
               <ManagerTableHead>Capacidade</ManagerTableHead>
-              <ManagerTableHead>Horário</ManagerTableHead>
+              <ManagerTableHead>Hor�rio</ManagerTableHead>
               <ManagerTableHead>Taxa</ManagerTableHead>
-              <ManagerTableHead>Aprovação</ManagerTableHead>
-              <ManagerTableHead className="text-right">Ações</ManagerTableHead>
+              <ManagerTableHead>Aprova��o</ManagerTableHead>
+              <ManagerTableHead className="text-right">A��es</ManagerTableHead>
             </ManagerTableRow>
           </ManagerTableHeader>
           <ManagerTableBody>
@@ -281,11 +280,11 @@ const AreasComunsContent = () => {
               <ManagerTableRow>
                 <ManagerTableCell colSpan={8} className="text-center py-12">
                   <div className="text-gray-500">
-                    <p className="text-lg font-medium">Nenhuma área comum encontrada</p>
+                    <p className="text-lg font-medium">Nenhuma �rea comum encontrada</p>
                     <p className="text-sm mt-1">
                       {searchTerm 
                         ? "Tente ajustar os filtros de busca" 
-                        : "Clique em 'Nova Área Comum' para começar"
+                        : "Clique em 'Nova �rea Comum' para come�ar"
                       }
                     </p>
                   </div>

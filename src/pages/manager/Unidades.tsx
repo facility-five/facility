@@ -89,7 +89,7 @@ const statusBadge = (status: string) => {
 
 const ManagerUnidadesContent = () => {
   const { activeAdministratorId } = useManagerAdministradoras();
-  const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { currentPlan, isLoading: planLoading } = usePlan();
   const [units, setUnits] = useState<UnitRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
   const [blocks, setBlocks] = useState<BlockSummary[]>([]);
@@ -117,7 +117,7 @@ const ManagerUnidadesContent = () => {
       const { data, error } = await supabase
         .from("condominiums")
         .select("id, name")
-        .eq("administradora_id", activeAdministratorId)
+        .eq("administrator_id", activeAdministratorId)
         .order("name");
 
       if (error) {
@@ -145,7 +145,7 @@ const ManagerUnidadesContent = () => {
       const { data, error } = await supabase
         .from("blocks")
         .select("id, name, condo_id")
-        .eq("administradora_id", activeAdministratorId)
+        .eq("administrator_id", activeAdministratorId)
         .order("name");
 
       if (error) {
@@ -176,7 +176,6 @@ const ManagerUnidadesContent = () => {
           id,
           number,
           floor,
-          type,
           area,
           bedrooms,
           bathrooms,
@@ -231,7 +230,7 @@ const ManagerUnidadesContent = () => {
     if (activeAdministratorId) {
       loadData();
     } else {
-      // Se não há administradora_id, definir loading como false para mostrar a interface
+      // Se não há administrator_id, definir loading como false para mostrar a interface
       setLoading(false);
     }
   }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -272,7 +271,7 @@ const ManagerUnidadesContent = () => {
         status: formData.get("status") as string,
         block_id: formData.get("block_id") as string,
         condo_id: formData.get("condo_id") as string,
-        administradora_id: activeAdministratorId,
+        administrator_id: activeAdministratorId,
       };
 
       if (editingUnit?.id) {
@@ -377,23 +376,22 @@ const ManagerUnidadesContent = () => {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           {!planLoading && (
             <>
-              {!isFreePlan ? (
-                // Botão normal para usuários com plano pago
+              {(currentPlan && currentPlan.max_units !== null && units.length >= currentPlan.max_units) ? (
+                // Botão de upgrade quando alcança o limite
+                <Button 
+                  onClick={() => window.location.href = '/gestor/mi-plan'}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                >
+                  Actualizar para Crear Más Unidades
+                </Button>
+              ) : (
+                // Botão normal quando aún pode criar
                 <DialogTrigger asChild>
                   <Button onClick={resetForm} className="bg-purple-600 hover:bg-purple-700">
                     <Plus className="mr-2 h-4 w-4" />
                     Nova Unidade
                   </Button>
                 </DialogTrigger>
-              ) : (
-                // Botão de upgrade para usuários com plano gratuito
-                <Button 
-                  onClick={() => window.location.href = '/gestor/mi-plan'}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Fazer Upgrade para Criar Unidades
-                </Button>
               )}
             </>
           )}

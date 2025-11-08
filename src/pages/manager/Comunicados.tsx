@@ -38,7 +38,7 @@ type Condominium = {
 
 const Communications = () => {
   const { t } = useTranslation();
-  const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { currentPlan, isLoading: planLoading } = usePlan();
   const { activeAdministratorId } = useManagerAdministradoras();
 
   const [communications, setCommunications] = useState<Communication[]>([]);
@@ -157,7 +157,7 @@ const Communications = () => {
         </h1>
         {!planLoading && (
           <>
-            {!isFreePlan ? (
+            {!currentPlan ? (
               // Botão normal para usuários com plano pago
               <Button
                 onClick={() => setIsNewModalOpen(true)}

@@ -72,7 +72,7 @@ const statusBadge = (status: string) => {
 
 const ManagerBlocosContent = () => {
   const { activeAdministratorId } = useManagerAdministradoras();
-  const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { currentPlan, isLoading: planLoading } = usePlan();
   const [blocks, setBlocks] = useState<BlockRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,27 +123,35 @@ const ManagerBlocosContent = () => {
 
     try {
       setLoading(true);
-      // // // console.log("🔍 fetchBlocks - Fazendo consulta ao Supabase");
+      
+      // Primeiro buscar os condomínios da administradora
+      const { data: condoData, error: condoError } = await supabase
+        .from("condominiums")
+        .select("id, name")
+        .eq("administrator_id", activeAdministratorId);
+      
+      if (condoError) {
+        console.error("Error fetching condominiums:", condoError);
+        showRadixError("Erro ao buscar condomínios");
+        setLoading(false);
+        return;
+      }
+      
+      const condoIds = condoData?.map(c => c.id) || [];
+      const condoMap = new Map(condoData?.map(c => [c.id, c.name]) || []);
+      
+      if (condoIds.length === 0) {
+        setBlocks([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Agora buscar blocos desses condomínios (SEM JOIN)
       const { data, error } = await supabase
         .from("blocks")
-        .select(`
-          id,
-          name,
-          description,
-          status,
-          condo_id,
-          created_at,
-          updated_at,
-          condominiums!inner(
-            id,
-            name,
-            administrator_id
-          )
-        `)
-        .eq("condominiums.administrator_id", activeAdministratorId)
+        .select("id, name, status, condo_id, created_at, updated_at")
+        .in("condo_id", condoIds)
         .order("name");
-
-      // // // console.log("🔍 fetchBlocks - Resposta do Supabase:", { data, error });
 
       if (error) throw error;
 
@@ -153,7 +161,7 @@ const ManagerBlocosContent = () => {
         description: block.description,
         status: block.status,
         condo_id: block.condo_id,
-        condo_name: block.condominios.name,
+        condo_name: condoMap.get(block.condo_id) || "N/A",
         created_at: block.created_at,
         updated_at: block.updated_at,
       }));
@@ -315,6 +323,12 @@ const ManagerBlocosContent = () => {
     );
   }
 
+  // Verificar se atingiu o limite de blocos
+  const hasReachedLimit = 
+    currentPlan && 
+    currentPlan.max_blocks !== null && 
+    blocks.length >= currentPlan.max_blocks;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -324,20 +338,19 @@ const ManagerBlocosContent = () => {
         </div>
         {!planLoading && (
           <>
-            {!isFreePlan ? (
-              // Botão normal para usuários com plano pago
-              <Button onClick={handleCreateBlock} disabled={condos.length === 0}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Bloco
-              </Button>
-            ) : (
-              // Botão de upgrade para usuários com plano gratuito
+            {hasReachedLimit ? (
+              // Botão de upgrade quando alcança o limite
               <Button 
                 onClick={() => window.location.href = '/gestor/mi-plan'}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
               >
+                Actualizar para Crear Más Blocos
+              </Button>
+            ) : (
+              // Botão normal quando aún pode criar
+              <Button onClick={handleCreateBlock} disabled={condos.length === 0}>
                 <Plus className="h-4 w-4 mr-2" />
-                Fazer Upgrade para Criar Blocos
+                Novo Bloco
               </Button>
             )}
           </>

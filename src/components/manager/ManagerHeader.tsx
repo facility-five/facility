@@ -73,9 +73,7 @@ export const ManagerHeader = () => {
                       ? "Sin administradoras"
                       : "Seleccione administradora"
                   }
-                >
-                  {activeAdministrator?.name}
-                </SelectValue>
+                />
               </SelectTrigger>
               <SelectContent className="bg-white">
                 {administrators.map((admin) => (

@@ -95,7 +95,7 @@ const App = () => (
           <AuthProvider>
             <AppLoader>
               <SystemTitle />
-
+              <ManagerAdministradorasProvider>
                 <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/landing-v2" element={<LandingPageV2 />} />
@@ -564,6 +564,7 @@ const App = () => (
               />
               <Route path="*" element={<NotFound />} />
                 </Routes>
+              </ManagerAdministradorasProvider>
 
             </AppLoader>
           </AuthProvider>
