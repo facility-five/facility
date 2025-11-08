@@ -22,13 +22,21 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-
-    if (error) {
-      throw error
+    // Primeiro invalidamos todas as sessões do usuário
+    const { error: signOutError } = await supabaseAdmin.auth.admin.signOut(userId);
+    
+    if (signOutError) {
+      throw signOutError;
     }
 
-    return new Response(JSON.stringify({ message: "User deleted successfully" }), {
+    // Depois excluímos o usuário
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    return new Response(JSON.stringify({ message: "User deleted and all sessions terminated successfully" }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
