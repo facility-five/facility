@@ -95,7 +95,8 @@ export const EditCondoModal = ({
         nif: condo.nif || "",
         website: condo.website || "",
         area: condo.area || "",
-        condo_type: condo.condo_type || "",
+        // Prefer the DB column `type` if present, otherwise fallback to `condo_type`
+        condo_type: (condo as any).type ?? condo.condo_type ?? "residencial",
         total_blocks: condo.total_blocks || 0,
         total_units: condo.total_units || 0,
         email: condo.email || "",
@@ -112,7 +113,7 @@ export const EditCondoModal = ({
         nif: "",
         website: "",
         area: "",
-        condo_type: "",
+        condo_type: "residencial",
         total_blocks: 0,
         total_units: 0,
         email: "",
@@ -127,9 +128,19 @@ export const EditCondoModal = ({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!condo) return; // Should only be called for editing existing condos
 
+    // Prepare payload: map `condo_type` -> `type` (DB column), and don't send empty strings
+    const payload: any = { ...values };
+    if (payload.condo_type === "" || payload.condo_type === undefined) {
+      // Ensure we don't send an empty string to the enum column
+      delete payload.condo_type;
+    } else {
+      payload.type = payload.condo_type;
+      delete payload.condo_type;
+    }
+
     const { error } = await supabase
       .from("condominiums") // Changed from "condos" to "condominiums"
-      .update(values)
+      .update(payload)
       .eq("id", condo.id);
 
     if (error) {

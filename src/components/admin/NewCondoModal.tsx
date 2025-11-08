@@ -105,9 +105,18 @@ export const NewCondoModal = ({
       return;
     }
 
+    // Map condo_type -> type (DB column) and avoid sending empty strings
+    const payload: any = { ...values };
+    if (payload.condo_type === "" || payload.condo_type === undefined) {
+      delete payload.condo_type;
+    } else {
+      payload.type = payload.condo_type;
+      delete payload.condo_type;
+    }
+
     const { error } = await supabase.from("condominiums").insert([ // Changed from "condos" to "condominiums"
       {
-        ...values,
+        ...payload,
         administrator_id: initialAdministratorId,
         code: generateCode(),
       },

@@ -53,7 +53,7 @@ const ManagerCondominios = () => {
       // Buscar condomínios usando contadores persistidos (evita joins aninhados)
       const { data: condosData, error: condosError } = await supabase
         .from("condominiums")
-        .select("id, name, nif, email, phone, website, area, total_blocks, total_units, status, created_at, updated_at, administrator_id")
+        .select("id, name, nif, email, phone, website, area, type, total_blocks, total_units, status, created_at, updated_at, administrator_id")
         .eq('administrator_id', activeAdministratorId);
 
       if (condosError) {
@@ -73,14 +73,16 @@ const ManagerCondominios = () => {
       }
 
       // Dados já possuem total_blocks e total_units pelo schema/trigger
-      const list = (condosData as any[]) || [];
+  const list = (condosData as any[]) || [];
+  // Normalize to include `condo_type` for components that expect that shape
+  const normalized = list.map((c) => ({ ...c, condo_type: (c as any).type ?? c.condo_type }));
       console.log('==========================================');
       console.log('✅ [Condomínios] RESPOSTA RECEBIDA');
       console.log('✅ Total de registros:', list.length);
       console.log('✅ Dados:', list.map(c => ({ id: c.id, name: c.name, administrator_id: c.administrator_id })));
       console.log('✅ Filtrado por administrator_id:', activeAdministratorId);
       console.log('==========================================');
-      setCondos(list);
+  setCondos(normalized);
     } catch (error) {
       console.error("❌ Unexpected error:", error);
       showRadixError("Erro inesperado ao carregar condomínios. Atualize a página.");
