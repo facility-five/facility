@@ -202,7 +202,7 @@
     "admin": {
       "header": {
         "authLoading": "Auth: Cargando...",
-        "email": "Email",
+        "email": "Correo electrónico",
         "role": "Rol",
         "status": "Estado",
         "loggedIn": "Conectado",
