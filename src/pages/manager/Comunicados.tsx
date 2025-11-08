@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 
 import { usePlan } from "@/hooks/usePlan";
 import { PlanGuard } from "@/components/PlanGuard";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 export type Communication = {
   id: string;
@@ -38,6 +39,7 @@ type Condominium = {
 const Communications = () => {
   const { t } = useTranslation();
   const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { activeAdministratorId } = useManagerAdministradoras();
 
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,17 +50,28 @@ const Communications = () => {
   const [selectedCondominium, setSelectedCondominium] = useState<string>("all");
 
   const fetchCommunications = async () => {
+    if (!activeAdministratorId) {
+      console.log('📋 Comunicados: Skip fetch - no administrator selected');
+      setLoading(false);
+      setCommunications([]);
+      return;
+    }
+
     try {
       setLoading(true);
+      console.log('[Comunicados] Fetching for administrator:', activeAdministratorId);
+      
       let query = supabase
         .from("communications")
         .select(`
           *,
-          condominiums (
+          condominiums!inner (
             id,
-            name
+            name,
+            administrator_id
           )
         `)
+        .eq("condominiums.administrator_id", activeAdministratorId)
         .order("created_at", { ascending: false });
 
       if (selectedCondominium !== "all") {
@@ -76,28 +89,31 @@ const Communications = () => {
       setCommunications(data || []);
     } catch (error) {
       console.error("Error:", error);
-      toast({
-        title: "Error",
-        description: t("manager.communications.errorFetching"),
-        variant: "destructive",
-      });
+      showRadixError(t("manager.communications.errorFetching"));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCommunications();
-  }, []);
+    console.log('🔄 Comunicados: activeAdministratorId mudou para:', activeAdministratorId);
+    if (activeAdministratorId) {
+      fetchCommunications();
+    } else {
+      console.log('🔄 Comunicados: Nenhuma administradora selecionada, limpando lista');
+      setCommunications([]);
+      setLoading(false);
+    }
+  }, [activeAdministratorId, selectedCondominium]);
 
   const handleNew = () => {
     setSelectedCommunication(null);
-    setIsFormModalOpen(true);
+    setIsNewModalOpen(true);
   };
 
   const handleEdit = (comm: Communication) => {
     setSelectedCommunication(comm);
-    setIsFormModalOpen(true);
+    setIsNewModalOpen(true);
   };
 
   const openDeleteModal = (comm: Communication) => {
@@ -123,11 +139,7 @@ const Communications = () => {
       setSelectedCommunication(null);
     } catch (error) {
       console.error("Error deleting communication:", error);
-      toast({
-        title: "Error",
-        description: t("manager.communications.errorFetching"),
-        variant: "destructive",
-      });
+      showRadixError(t("manager.communications.errorFetching"));
     }
   };
 

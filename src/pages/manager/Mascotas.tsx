@@ -129,7 +129,7 @@ const ManagerMascotasContent = () => {
       const { data, error } = await supabase
         .from("condominiums")
         .select("id, name")
-        .eq("administradora_id", activeAdministratorId)
+        .eq("administrator_id", activeAdministratorId)
         .order("name");
 
       if (error) {
@@ -156,7 +156,7 @@ const ManagerMascotasContent = () => {
       const { data, error } = await supabase
         .from("units")
         .select("id, number, condo_id")
-        .eq("administradora_id", activeAdministratorId)
+        .eq("administrator_id", activeAdministratorId)
         .order("number");
 
       if (error) {
@@ -183,7 +183,7 @@ const ManagerMascotasContent = () => {
       const { data, error } = await supabase
         .from("residents")
         .select("id, first_name, last_name, unit_id")
-        .eq("administradora_id", activeAdministratorId)
+        .eq("administrator_id", activeAdministratorId)
         .order("first_name");
 
       if (error) {
@@ -228,7 +228,7 @@ const ManagerMascotasContent = () => {
           condominiums!inner(name),
           residents!inner(first_name, last_name)
         `)
-        .eq("administradora_id", activeAdministratorId)
+        .eq("administrator_id", activeAdministratorId)
         .order("name");
 
       if (error) {
@@ -275,7 +275,7 @@ const ManagerMascotasContent = () => {
     if (activeAdministratorId) {
       loadData();
     } else {
-      // Se não há administradora_id, definir loading como false para mostrar a interface
+      // Se não há administrator_id, definir loading como false para mostrar a interface
       setLoading(false);
     }
   }, [activeAdministratorId, fetchCondos, fetchUnits, fetchResidents, fetchPets]);
@@ -307,7 +307,7 @@ const ManagerMascotasContent = () => {
 
   const handleSubmit = async (formData: FormData) => {
     if (!activeAdministratorId) {
-      showRadixError("Erro: administradora_id não encontrado");
+      showRadixError("Erro: administrator_id não encontrado");
       return;
     }
 
@@ -325,7 +325,7 @@ const ManagerMascotasContent = () => {
         unit_id: formData.get("unit_id") as string,
         resident_id: formData.get("resident_id") as string,
         condo_id: formData.get("condo_id") as string,
-        administradora_id: activeAdministratorId,
+        administrator_id: activeAdministratorId,
       };
 
       if (editingPet?.id) {
