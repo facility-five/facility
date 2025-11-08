@@ -38,6 +38,7 @@ import DesignSystem from "./pages/DesignSystem";
 import TestToast from "./pages/TestToast";
 import Login from "./pages/Login"; // Importar o componente Login
 import { AuthCallback } from "@/components/AuthCallback";
+import { BaseLayout } from "@/components/BaseLayout";
 
 import ResidentReservations from "./pages/resident/Reservations";
 import ResidentCommunications from "./pages/resident/Communications";

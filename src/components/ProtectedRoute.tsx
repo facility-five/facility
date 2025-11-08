@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { BaseLayout } from "./BaseLayout";
 
 const normalizeRole = (role?: string) =>
   (role || "")
@@ -57,7 +58,7 @@ const ProtectedRoute = ({ children, allowedRoles, allowWithoutProfile }: Protect
     return <Navigate to="/" replace />;
   }
 
-  return <>{children}</>;
+  return <BaseLayout>{children}</BaseLayout>;
 };
 
 export default ProtectedRoute;

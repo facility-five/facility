@@ -86,9 +86,8 @@ export function SignUpForm() {
       }
 
       if (session) {
-        // Se tivermos uma sessão, significa que o usuário foi auto-confirmado
-        // Redirecionar para o dashboard
-        navigate('/gestor-dashboard');
+        // Se tivermos uma sessão, redirecionar para seleção do plano gratuito
+        navigate('/registrar-administradora');
       } else {
         // Caso contrário, redirecionar para página de confirmação
         navigate('/email-confirmation', { 
