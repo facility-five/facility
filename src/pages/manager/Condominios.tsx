@@ -64,25 +64,44 @@ const ManagerCondominios = () => {
 
       let result = await attempt(preferredSelect);
 
-      // If PostgREST returns 400 (bad request) because a column doesn't exist
-      // we retry without `type`.
+      // If the server returned an error, we'll try two fallbacks:
+      // 1) same select without `type`
+      // 2) '*' (all columns) which should never reference a missing column by name
       if (result.error) {
         console.error("❌ Error fetching condominiums (first attempt):", result.error);
 
-        const msg = String(result.error.message || "").toLowerCase();
-        const looksLikeMissingColumn = msg.includes("does not exist") || msg.includes("column") || result.error.status === 400;
+        const msg = String((result.error && (result.error.message || result.error.msg)) || "").toLowerCase();
+        const status = (result.error && ((result.error as any).status || (result.error as any).statusCode || (result.error as any).status_code)) || null;
+        const looksLikeMissingColumn = msg.includes("does not exist") || msg.includes("column") || status === 400;
 
+        // First fallback: try without explicit `type` column
         if (looksLikeMissingColumn) {
-          console.log("⚠️ Condominios: retrying fetch without 'type' column due to server error");
-          const fallbackSelect = preferredSelect.replace(/,?type,?/, ",").replace(/(^,|,$)/g, "");
-          result = await attempt(fallbackSelect);
+          try {
+            console.log("⚠️ Condominios: retrying fetch without 'type' column due to server error");
+            const fallbackSelect = preferredSelect.replace(/,?type,?/, ",").replace(/(^,|,$)/g, "");
+            result = await attempt(fallbackSelect);
+          } catch (e) {
+            console.error("❌ Condominios: fallback attempt without 'type' threw:", e);
+          }
         }
+
+        // Second fallback: try selecting '*' (all columns) which should work even
+        // if a named column is missing.
+        if (result.error) {
+          try {
+            console.log("⚠️ Condominios: retrying fetch with '*' as final fallback");
+            result = await attempt("*");
+          } catch (e) {
+            console.error("❌ Condominios: final fallback '*' threw:", e);
+          }
+        }
+
       }
 
       if (result.error) {
-        // Still an error after fallback
+        // Still an error after fallbacks
         console.error("❌ Error fetching condominiums (final):", result.error);
-        if (result.error.code !== "PGRST116") {
+        if ((result.error as any).code !== "PGRST116") {
           showRadixError("Erro ao buscar condomínios. Tente novamente.");
         }
         setCondos([]);
