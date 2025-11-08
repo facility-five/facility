@@ -51,7 +51,7 @@ export const TaskModal = ({ isOpen, onClose, onSuccess, relatedSupportId }: Prop
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("admin_tasks").insert([
+    const { data: inserted, error } = await supabase.from("admin_tasks").insert([
       {
         title,
         description: description || null,
@@ -62,11 +62,41 @@ export const TaskModal = ({ isOpen, onClose, onSuccess, relatedSupportId }: Prop
         related_support_id: relatedSupportId || null,
         created_by: user.id,
       },
-    ]);
+    ]).select("id").limit(1);
     setLoading(false);
     if (error) {
       showRadixError("Error al crear tarea", error.message);
     } else {
+      // Fallback: criar notificações client-side para garantir visibilidade imediata
+      try {
+        const taskId = inserted?.[0]?.id;
+        const inserts: any[] = [];
+        inserts.push({
+          user_id: user.id,
+          title: "Tarea creada",
+          message: `Se creó la tarea: ${title}`,
+          entity_type: "admin_task",
+          entity_id: taskId ?? null,
+          type: "task.created",
+          is_read: false,
+        });
+        if (assignedTo) {
+          inserts.push({
+            user_id: assignedTo,
+            title: "Nueva tarea asignada",
+            message: `Has recibido la tarea: ${title}`,
+            entity_type: "admin_task",
+            entity_id: taskId ?? null,
+            type: "task.assigned",
+            is_read: false,
+          });
+        }
+        if (inserts.length > 0) {
+          await supabase.from("notifications").insert(inserts);
+        }
+      } catch (e) {
+        console.warn("Falha ao inserir notificação de tarefa (fallback)", e);
+      }
       showRadixSuccess("Tarea creada");
       onSuccess();
       onClose();
