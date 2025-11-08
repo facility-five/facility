@@ -95,32 +95,31 @@ const App = () => (
           <AuthProvider>
             <AppLoader>
               <SystemTitle />
-              <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/landing-v2" element={<LandingPageV2 />} />
-              <Route path="/contacto" element={<Contacto />} />
-              <Route path="/login" element={<Login />} /> {/* Nova rota para a pagina de login */}
-              <Route path="/registrarse" element={<SignUp />} />
-              <Route path="/registrarse/datos" element={<SignUpDetails />} />
-              <Route path="/recuperar-senha" element={<ForgotPassword />} />
-              <Route path="/nova-senha" element={<ResetPassword />} />
-              <Route path="/nueva-contrasena" element={<ResetPassword />} />
-              <Route path="/planes" element={<Plans />} />
-              <Route path="/email-confirmation" element={<EmailConfirmation />} />
-              <Route path="/acesso-morador" element={<ResidentAccess />} />
-              <Route path="/test-toast" element={<TestToast />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
+
+                <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/landing-v2" element={<LandingPageV2 />} />
+                <Route path="/contacto" element={<Contacto />} />
+                <Route path="/login" element={<Login />} /> {/* Nova rota para a pagina de login */}
+                <Route path="/registrarse" element={<SignUp />} />
+                <Route path="/registrarse/datos" element={<SignUpDetails />} />
+                <Route path="/recuperar-senha" element={<ForgotPassword />} />
+                <Route path="/nova-senha" element={<ResetPassword />} />
+                <Route path="/nueva-contrasena" element={<ResetPassword />} />
+                <Route path="/planes" element={<Plans />} />
+                <Route path="/email-confirmation" element={<EmailConfirmation />} />
+                <Route path="/acesso-morador" element={<ResidentAccess />} />
+                <Route path="/test-toast" element={<TestToast />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* Rotas do Gestor (protegidas) */}
               <Route
                 path="/gestor"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
-                      <Suspense fallback={<SuspenseFallback />}>
-                        <ManagerDashboard />
-                      </Suspense>
-                    </ManagerAdministradorasProvider>
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ManagerDashboard />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -128,11 +127,9 @@ const App = () => (
                 path="/gestor-dashboard"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
-                      <Suspense fallback={<SuspenseFallback />}>
-                        <ManagerDashboard />
-                      </Suspense>
-                    </ManagerAdministradorasProvider>
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ManagerDashboard />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -140,11 +137,11 @@ const App = () => (
                 path="/gestor/administradoras"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerAdministradoras />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -152,11 +149,11 @@ const App = () => (
                 path="/gestor/condominios"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerCondominios />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -164,11 +161,11 @@ const App = () => (
                 path="/gestor/residentes"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerResidentes />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -176,11 +173,11 @@ const App = () => (
                 path="/gestor/configuracoes"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerConfiguracoes />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -188,11 +185,11 @@ const App = () => (
                 path="/gestor/mi-plan"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <MiPlan />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -200,11 +197,11 @@ const App = () => (
                 path="/gestor/comunicados"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerComunicados />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -212,11 +209,11 @@ const App = () => (
                 path="/gestor/areas-comuns"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerAreasComuns />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -224,11 +221,11 @@ const App = () => (
                 path="/gestor/reservas"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerReservas />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -236,11 +233,11 @@ const App = () => (
                 path="/gestor/vehiculos"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerVehiculos />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -248,11 +245,11 @@ const App = () => (
                 path="/gestor/blocos"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerBlocos />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -260,11 +257,11 @@ const App = () => (
                 path="/gestor/unidades"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerUnidades />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -272,11 +269,11 @@ const App = () => (
                 path="/gestor/mascotas"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
-                    <ManagerAdministradorasProvider>
+
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerMascotas />
                       </Suspense>
-                    </ManagerAdministradorasProvider>
+
                   </ProtectedRoute>
                 }
               />
@@ -566,7 +563,8 @@ const App = () => (
                 }
               />
               <Route path="*" element={<NotFound />} />
-            </Routes>
+                </Routes>
+
             </AppLoader>
           </AuthProvider>
         </BrowserRouter>
