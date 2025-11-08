@@ -67,7 +67,85 @@ export const NotificationsDropdown = () => {
     }
 
     fetchNotifications();
+
+    // Subscribe to realtime changes for the current user's notifications
+    const subscribeRealtime = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const channel = supabase.channel(`notifications:${user.id}`);
+
+      channel
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        }, (payload: any) => {
+          const newNotif = payload.new as Notification;
+          setNotifications(prev => [newNotif, ...prev].slice(0, 5));
+          setUnreadCount(prev => prev + (newNotif.is_read ? 0 : 1));
+        })
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        }, (payload: any) => {
+          const updated = payload.new as Notification;
+          setNotifications(prev => prev.map(n => n.id === updated.id ? updated : n));
+          // Adjust unread count if read status changed
+          setUnreadCount(prev => {
+            const wasUnread = (payload.old?.is_read === false);
+            const isNowRead = updated.is_read === true;
+            if (wasUnread && isNowRead) return Math.max(prev - 1, 0);
+            if (!wasUnread && !updated.is_read) return prev + 1;
+            return prev;
+          });
+        })
+        .subscribe();
+
+      // Cleanup
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    const unsubPromise = subscribeRealtime();
+
+    return () => {
+      // ensure unsubscribe when effect unmounts
+      (async () => {
+        const unsub = await unsubPromise;
+        if (typeof unsub === 'function') {
+          unsub();
+        }
+      })();
+    };
   }, []);
+
+  const markAsRead = async (id: string) => {
+    try {
+      // optimistic update
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      setUnreadCount(prev => Math.max(prev - 1, 0));
+      await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    } catch (e) {
+      // revert on error by refetching
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (data) {
+        setNotifications(data);
+        setUnreadCount(data.filter(n => !n.is_read).length);
+      }
+    }
+  };
 
   return (
     <Popover>
@@ -86,7 +164,7 @@ export const NotificationsDropdown = () => {
         <div className="space-y-4 p-4 pt-0 max-h-80 overflow-y-auto">
           {notifications.length > 0 ? (
             notifications.map(n => (
-              <div key={n.id} className="flex gap-3">
+              <div key={n.id} className="flex gap-3 cursor-pointer" onClick={() => markAsRead(n.id)}>
                 {!n.is_read && <div className="h-2 w-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>}
                 <div className={n.is_read ? 'ml-5' : ''}>
                   <p className="font-semibold text-sm">{n.title}</p>
