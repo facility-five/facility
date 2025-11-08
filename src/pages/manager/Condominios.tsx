@@ -59,17 +59,25 @@ const ManagerCondominios = () => {
       // Para cada condomínio, buscar contagem de blocos e unidades
       const condosWithCounts = await Promise.all(
         (condosData || []).map(async (condo: any) => {
-          // Contar blocos
-          const { count: blocksCount } = await supabase
+          // Contar blocos - tentar ambas as colunas por compatibilidade
+          const { count: blocksCount, error: blocksError } = await supabase
             .from("blocks")
             .select("*", { count: 'exact', head: true })
-            .eq('condominium_id', condo.id);
+            .or(`condominium_id.eq.${condo.id},condo_id.eq.${condo.id}`);
 
-          // Contar unidades
-          const { count: unitsCount } = await supabase
+          if (blocksError) {
+            console.error('Erro ao contar blocos:', blocksError);
+          }
+
+          // Contar unidades - tentar ambas as colunas por compatibilidade
+          const { count: unitsCount, error: unitsError } = await supabase
             .from("units")
             .select("*", { count: 'exact', head: true })
-            .eq('condominium_id', condo.id);
+            .or(`condominium_id.eq.${condo.id},condo_id.eq.${condo.id}`);
+
+          if (unitsError) {
+            console.error('Erro ao contar unidades:', unitsError);
+          }
 
           return {
             ...condo,
