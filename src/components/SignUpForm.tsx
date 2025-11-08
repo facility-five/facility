@@ -86,8 +86,34 @@ export function SignUpForm() {
       }
 
       if (session) {
-        // Se tivermos uma sessão, redirecionar para seleção do plano gratuito
-        navigate('/registrar-administradora');
+        // Se tivermos uma sessão, redirecionar para o dashboard
+        // O sistema de planos irá tratar automaticamente se tem plano selecionado
+        navigate('/gestor-dashboard');
+        
+        // Limpar qualquer plano selecionado do sessionStorage após o registro
+        try {
+          const selectedPlan = sessionStorage.getItem('selected_plan');
+          if (selectedPlan) {
+            const planData = JSON.parse(selectedPlan);
+            // Se for plano gratuito, ativar automaticamente
+            const plan = planData?.price === 0 ? planData : null;
+            if (plan) {
+              // Ativar plano gratuito
+              await supabase.from('payments').insert({
+                user_id: session.user.id,
+                plan: plan.id,
+                amount: 0,
+                status: 'active'
+              });
+
+              await supabase.from('profiles').update({ 
+                subscription_status: 'active' 
+              }).eq('id', session.user.id);
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao processar plano:', error);
+        }
       } else {
         // Caso contrário, redirecionar para página de confirmação
         navigate('/email-confirmation', { 
