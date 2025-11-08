@@ -35,27 +35,51 @@ const ManagerCondominios = () => {
     }
     setLoading(true);
     
-    // Buscar condomínios com contagem de blocos e unidades
-    const { data, error } = await supabase
-      .from("condominiums")
-      .select(`
-        *,
-        blocks:blocks(count),
-        units:units(count)
-      `)
-      .eq('administrator_id', activeAdministratorId);
+    try {
+      // Buscar condomínios
+      const { data: condosData, error: condosError } = await supabase
+        .from("condominiums")
+        .select("*")
+        .eq('administrator_id', activeAdministratorId);
 
-    if (error) {
-      showRadixError("Error al buscar condominios.");
-    } else {
-      // Mapear dados para incluir contagens
-      const mappedData = (data || []).map((condo: any) => ({
-        ...condo,
-        total_blocks: condo.blocks?.[0]?.count || 0,
-        total_units: condo.units?.[0]?.count || 0,
-      }));
-      setCondos(mappedData);
+      if (condosError) {
+        console.error("Error fetching condominiums:", condosError);
+        showRadixError("Error al buscar condominios.");
+        setCondos([]);
+        setLoading(false);
+        return;
+      }
+
+      // Para cada condomínio, buscar contagem de blocos e unidades
+      const condosWithCounts = await Promise.all(
+        (condosData || []).map(async (condo: any) => {
+          // Contar blocos
+          const { count: blocksCount } = await supabase
+            .from("blocks")
+            .select("*", { count: 'exact', head: true })
+            .eq('condominium_id', condo.id);
+
+          // Contar unidades
+          const { count: unitsCount } = await supabase
+            .from("units")
+            .select("*", { count: 'exact', head: true })
+            .eq('condominium_id', condo.id);
+
+          return {
+            ...condo,
+            total_blocks: blocksCount || 0,
+            total_units: unitsCount || 0,
+          };
+        })
+      );
+
+      setCondos(condosWithCounts);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      showRadixError("Error inesperado al cargar condominios.");
+      setCondos([]);
     }
+    
     setLoading(false);
   };
 
