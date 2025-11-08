@@ -86,33 +86,37 @@ export function SignUpForm() {
       }
 
       if (session) {
-        // Se tivermos uma sessão, redirecionar para o dashboard
-        // O sistema de planos irá tratar automaticamente se tem plano selecionado
-        navigate('/gestor-dashboard');
-        
-        // Limpar qualquer plano selecionado do sessionStorage após o registro
         try {
           const selectedPlan = sessionStorage.getItem('selected_plan');
-          if (selectedPlan) {
-            const planData = JSON.parse(selectedPlan);
-            // Se for plano gratuito, ativar automaticamente
-            const plan = planData?.price === 0 ? planData : null;
-            if (plan) {
-              // Ativar plano gratuito
-              await supabase.from('payments').insert({
-                user_id: session.user.id,
-                plan: plan.id,
-                amount: 0,
-                status: 'active'
-              });
+          if (!selectedPlan) {
+            throw new Error("No hay plan seleccionado");
+          }
 
-              await supabase.from('profiles').update({ 
-                subscription_status: 'active' 
-              }).eq('id', session.user.id);
-            }
+          const planData = JSON.parse(selectedPlan);
+          
+          if (planData.price === 0) {
+            // Para plano gratuito
+            await supabase.from('payments').insert({
+              user_id: session.user.id,
+              plan_id: planData.id,
+              amount: 0,
+              status: 'active'
+            });
+
+            await supabase.from('profiles').update({ 
+              subscription_status: 'active' 
+            }).eq('id', session.user.id);
+
+            // Redireciona para o gestor para criar administradora
+            navigate('/gestor');
+          } else {
+            // Para plano pago, redireciona para o checkout do Stripe
+            navigate('/planes', { state: { fromSignup: true } });
           }
         } catch (error) {
-          console.error('Erro ao processar plano:', error);
+          console.error('Error al procesar el plan:', error);
+          showRadixError("Error al procesar el plan seleccionado. Por favor, inténtelo de nuevo.");
+          navigate('/planes');
         }
       } else {
         // Caso contrário, redirecionar para página de confirmação
