@@ -73,57 +73,28 @@ export const TaskModal = ({ isOpen, onClose, onSuccess, relatedSupportId }: Prop
     if (error) {
       showRadixError("Error al crear tarea", error.message);
     } else {
-      // Fallback: criar notificações client-side para garantir visibilidade imediata
+      // Try to fetch the latest notifications for the current user (DB triggers should have created them)
       try {
-        const taskId = inserted?.[0]?.id;
-        const inserts: any[] = [];
-        const isSelfAssigned = assignedTo && assignedTo === user.id;
-        inserts.push({
-          user_id: user.id,
-          title: isSelfAssigned ? "Nueva tarea asignada" : "Tarea creada",
-          message: isSelfAssigned
-            ? `La tarea ${title} fue creada y asignada a ti`
-            : `Se creó la tarea: ${title}`,
-          entity_type: "admin_task",
-          entity_id: taskId ?? null,
-          type: isSelfAssigned ? "task.assigned" : "task.created",
-          is_read: false,
-        });
-        if (assignedTo) {
-          if (!isSelfAssigned) {
-            inserts.push({
-              user_id: assignedTo,
-              title: "Nueva tarea asignada",
-              message: `Has recibido la tarea: ${title}`,
-              entity_type: "admin_task",
-              entity_id: taskId ?? null,
-              type: "task.assigned",
-              is_read: false,
-            });
-          }
-        }
+        const { data: notifData, error: notifError } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
 
-        if (inserts.length > 0) {
-          // Request the created rows back so we can update UI even if realtime isn't delivering
-          const { data: notifData, error: notifError } = await supabase.from("notifications").insert(inserts).select();
-          if (notifError) {
-            console.warn("Falha ao inserir notificação de tarefa (fallback)", notifError);
-            // notify user of failure to create notifications
-            showRadixError("No fue posible crear las notificaciones.");
-          } else {
-            // Dispatch a custom event so notification dropdown can update immediately
-            try {
-              if (notifData && notifData.length > 0) {
-                window.dispatchEvent(new CustomEvent('notification:created', { detail: notifData }));
-              }
-            } catch (e) {
-              // ignore if window not available
-            }
+        if (notifError) {
+          console.warn('Erro ao buscar notificações após criação de tarefa', notifError);
+          // show a non-blocking error for diagnostics
+          showRadixError('No fue posible crear las notificaciones.');
+        } else if (notifData && notifData.length > 0) {
+          try {
+            window.dispatchEvent(new CustomEvent('notification:created', { detail: notifData }));
+          } catch (e) {
+            // ignore
           }
         }
       } catch (e) {
-        console.warn("Falha ao inserir notificação de tarefa (fallback)", e);
-        showRadixError("No fue posible crear las notificaciones.");
+        console.warn('Erro inesperado ao buscar notificações', e);
       }
       showRadixSuccess("Tarea creada");
       onSuccess();
