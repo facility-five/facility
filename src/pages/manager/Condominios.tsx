@@ -52,7 +52,11 @@ const ManagerCondominios = () => {
 
       if (condosError) {
         console.error("Error fetching condominiums:", condosError);
-        showRadixError("Error al buscar condominios.");
+        showRadixError(
+          condosError.message === 'JWT expired'
+            ? "Sesión expirada. Por favor, vuelva a iniciar sesión."
+            : "Error al buscar condominios. Por favor, inténtelo de nuevo."
+        );
         setCondos([]);
         setLoading(false);
         return;
@@ -68,7 +72,7 @@ const ManagerCondominios = () => {
       setCondos(condosWithCounts);
     } catch (error) {
       console.error("Unexpected error:", error);
-      showRadixError("Error inesperado al cargar condominios.");
+      showRadixError("Error inesperado al cargar condominios. Por favor, actualice la página.");
       setCondos([]);
     }
     
