@@ -65,10 +65,10 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
         .from("payments")
         .select(`
           id,
-          plan,
+          plan_id,
           status,
           created_at,
-          plans:plan (
+          plan:plan_id (
             id,
             name,
             description,
@@ -99,14 +99,14 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
         setHasActivePlan(true);
 
         // Se a relação 'plans' não vier (por falta de FK), buscar pelo plan
-        if (payment.plans) {
-          setCurrentPlan(payment.plans as Plan);
-        } else if (payment.plan) {
-          console.log("usePlan: Relação 'plans' ausente; buscando plano por plan:", payment.plan);
+        if (payment.plan) {
+          setCurrentPlan(payment.plan as Plan);
+        } else if (payment.plan_id) {
+          console.log("usePlan: Relação 'plan' ausente; buscando plano por plan_id:", payment.plan_id);
           const { data: planById, error: planByIdError } = await supabase
             .from("plans")
             .select("id,name,description,price,features,max_condos,max_admins")
-            .eq("id", payment.plan)
+            .eq("id", payment.plan_id)
             .single();
 
           if (planByIdError) {
