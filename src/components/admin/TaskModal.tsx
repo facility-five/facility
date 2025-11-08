@@ -86,11 +86,14 @@ export const TaskModal = ({ isOpen, onClose, onSuccess, relatedSupportId }: Prop
           console.warn('Erro ao buscar notificações após criação de tarefa', notifError);
           // show a non-blocking error for diagnostics
           showRadixError('No fue posible crear las notificaciones.');
-        } else if (notifData && notifData.length > 0) {
-          try {
-            window.dispatchEvent(new CustomEvent('notification:created', { detail: notifData }));
-          } catch (e) {
-            // ignore
+        } else {
+          console.debug('TaskModal: fetched notifications after task insert', notifData);
+          if (notifData && notifData.length > 0) {
+            try {
+              window.dispatchEvent(new CustomEvent('notification:created', { detail: notifData }));
+            } catch (e) {
+              console.warn('TaskModal: failed to dispatch notification:created event', e);
+            }
           }
         }
       } catch (e) {

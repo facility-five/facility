@@ -26,12 +26,13 @@ export const NotificationsDropdown = () => {
     const onNotificationCreated = (e: any) => {
       try {
         const created = e?.detail as Notification[] | undefined;
+        console.debug('NotificationsDropdown: notification:created event received', created);
         if (created && created.length > 0) {
           setNotifications(prev => [...created, ...prev].slice(0,5));
           setUnreadCount(prev => prev + created.filter(n => !n.is_read).length);
         }
       } catch (err) {
-        // ignore
+        console.warn('NotificationsDropdown: error handling notification:created event', err);
       }
     };
     window.addEventListener('notification:created', onNotificationCreated as EventListener);
@@ -76,6 +77,7 @@ export const NotificationsDropdown = () => {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`
         }, (payload: any) => {
+          console.debug('NotificationsDropdown: realtime INSERT payload', payload);
           const newNotif = payload.new as Notification;
           setNotifications(prev => [newNotif, ...prev].slice(0, 5));
           setUnreadCount(prev => prev + (newNotif.is_read ? 0 : 1));
@@ -86,6 +88,7 @@ export const NotificationsDropdown = () => {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`
         }, (payload: any) => {
+          console.debug('NotificationsDropdown: realtime UPDATE payload', payload);
           const updated = payload.new as Notification;
           setNotifications(prev => prev.map(n => n.id === updated.id ? updated : n));
           // Adjust unread count if read status changed
