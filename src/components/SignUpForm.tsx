@@ -122,7 +122,7 @@ export function SignUpForm() {
       }
     } catch (error: any) {
       console.error("Erro no cadastro:", error);
-      showRadixError(error.message || "Erro ao criar conta. Tente novamente.");
+      showRadixError(error.message || t("auth.signup.errors.createAccount", "Error al crear la cuenta. Por favor, inténtelo de nuevo."));
     } finally {
       setIsLoading(false);
     }

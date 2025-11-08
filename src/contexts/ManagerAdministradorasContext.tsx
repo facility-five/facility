@@ -164,12 +164,53 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       
       if (error) {
         console.error("❌ ManagerAdministradorasContext: Erro na query", error);
-        // No plano pago, mostra erro. No free, funciona sem administradoras
-        if (!isFreePlan) {
-          showRadixError("Erro ao buscar administradoras.");
+        
+        if (isFreePlan) {
+          // No plano gratuito, criar uma administradora padrão se não existir
+          const { data: defaultAdmin, error: createError } = await supabase
+            .from("administrators")
+            .insert({
+              name: "Mi Administradora",
+              code: "ADM001",
+              user_id: user.id,
+              responsible_id: user.id,
+              status: 'active'
+            })
+            .select()
+            .single();
+
+          if (!createError && defaultAdmin) {
+            setAdministrators([{
+              id: defaultAdmin.id,
+              tenant_id: defaultAdmin.user_id,
+              name: defaultAdmin.name,
+              nif: null,
+              email: null,
+              phone: null,
+              logo: null,
+              address: null,
+              city: null,
+              state: null,
+              country: 'España',
+              postal_code: null,
+              created_at: defaultAdmin.created_at,
+              updated_at: defaultAdmin.updated_at,
+              deleted_at: null,
+              status: 'active',
+              owner_id: defaultAdmin.user_id,
+              responsible_id: defaultAdmin.responsible_id,
+              code: defaultAdmin.code,
+              condos: [{ count: 0 }],
+              profiles: null
+            }]);
+            setActiveAdministratorId(defaultAdmin.id);
+          }
+        } else {
+          // No plano pago, mostra erro
+          showRadixError("Error al buscar las administradoras.");
+          setAdministrators([]);
+          setActiveAdministratorId(null);
         }
-        setAdministrators([]);
-        setActiveAdministratorId(null);
         setLoading(false);
         return;
       }
@@ -276,7 +317,7 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
     if (paymentError && paymentError.code !== "PGRST116") {
       console.error("ManagerAdministradorasContext: erro ao buscar pagamento ativo", paymentError);
-      showRadixError("Erro ao buscar informações do plano.");
+      showRadixError("Error al buscar información del plan.");
       setPlanName(null);
       setPlanLimit(null);
       setPlanLoading(false);
