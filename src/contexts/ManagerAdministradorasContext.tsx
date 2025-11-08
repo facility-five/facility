@@ -6,18 +6,37 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { Administrator } from "@/components/admin/AdministratorCard";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showRadixError } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
+import { Administrator } from "@/types/entities";
 
-export type ManagerAdministrator = Administrator & {
-  email?: string | null;
-  phone?: string | null;
+// Estendendo o tipo Administrator com campos específicos do gerenciamento
+export type ManagerAdministrator = Omit<Administrator, 'document'> & {
   owner_id?: string | null;
   responsible_id?: string | null;
+  code?: string;
+  nif?: string | null; // Campo específico para Espanha, equivalente ao document
+  condos?: { count: number; }[];
+  profiles?: {
+    first_name: string | null;
+    last_name: string | null;
+  };
 };
+
+interface PaginationState {
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+interface FilterState {
+  search: string;
+  city: string;
+  state: string;
+  status: 'active' | 'inactive' | '';
+}
 
 interface ManagerAdministradorasContextValue {
   administrators: ManagerAdministrator[];
@@ -25,7 +44,7 @@ interface ManagerAdministradorasContextValue {
   activeAdministratorId: string | null;
   activeAdministrator: ManagerAdministrator | null;
   setActiveAdministratorId: (id: string | null) => void;
-  refetch: () => Promise<void>;
+  refetch: (filters?: FilterState) => Promise<void>;
   planLoading: boolean;
   planName: string | null;
   planLimit: number | null;
@@ -33,6 +52,10 @@ interface ManagerAdministradorasContextValue {
   remainingSlots: number | null;
   canCreateAdministrator: boolean;
   refreshPlan: () => Promise<void>;
+  pagination: PaginationState;
+  setPagination: (state: Partial<PaginationState>) => void;
+  filters: FilterState;
+  setFilters: (state: Partial<FilterState>) => void;
 }
 
 const ManagerAdministradorasContext = createContext<ManagerAdministradorasContextValue | undefined>(
@@ -48,8 +71,19 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
   const [planName, setPlanName] = useState<string | null>(null);
   const [planLimit, setPlanLimit] = useState<number | null>(null);
   const [planLoading, setPlanLoading] = useState(true);
+  const [pagination, setPaginationState] = useState<PaginationState>({
+    page: 1,
+    pageSize: 10,
+    total: 0
+  });
+  const [filters, setFiltersState] = useState<FilterState>({
+    search: '',
+    city: '',
+    state: '',
+    status: ''
+  });
 
-  const fetchAdministrators = useCallback(async () => {
+  const fetchAdministrators = useCallback(async (newFilters?: Partial<FilterState>) => {
     if (!user?.id) {
       console.log("🔍 ManagerAdministradorasContext: Usuário não autenticado", { user });
       setAdministrators([]);
@@ -61,6 +95,11 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     console.log("🔍 ManagerAdministradorasContext: Iniciando busca de administradoras para usuário", user.id, { isFreePlan });
     setLoading(true);
 
+    // Atualiza filtros se fornecidos
+    if (newFilters) {
+      setFiltersState(current => ({ ...current, ...newFilters }));
+    }
+
     try {
       // Buscar selected_administrator_id do perfil do usuário
       const { data: profileData, error: profileError } = await supabase
@@ -71,8 +110,8 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
       console.log("🔍 ManagerAdministradorasContext: Selected administrator do perfil", profileData);
 
-      // Busca administradoras (sem join com profiles por enquanto)
-      const { data, error } = await supabase
+      // Constrói a query base
+      let query = supabase
         .from("administrators")
         .select(`
           id,
@@ -82,9 +121,44 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
           user_id,
           responsible_id,
           email,
-          phone
-        `)
+          phone,
+          count:count()
+        `, { count: 'exact' })
         .or(`user_id.eq.${user.id},responsible_id.eq.${user.id}`);
+
+      // Aplica filtros
+      const activeFilters = newFilters || filters;
+      if (activeFilters.search) {
+        query = query.or(
+          `name.ilike.%${activeFilters.search}%,` +
+          `nif.ilike.%${activeFilters.search}%,` +
+          `email.ilike.%${activeFilters.search}%,` +
+          `code.ilike.%${activeFilters.search}%`
+        );
+      }
+
+      if (activeFilters.city) {
+        query = query.ilike('city', `%${activeFilters.city}%`);
+      }
+
+      if (activeFilters.state) {
+        query = query.ilike('state', activeFilters.state);
+      }
+
+      if (activeFilters.status) {
+        query = query.eq('status', activeFilters.status);
+      }
+
+      // Aplica paginação
+      query = query
+        .range(
+          (pagination.page - 1) * pagination.pageSize, 
+          pagination.page * pagination.pageSize - 1
+        )
+        .order('name', { ascending: true });
+
+      // Executa a query
+      const { data, error, count } = await query;
       
       console.log("🔍 ManagerAdministradorasContext: Resposta da query", { data, error });
       
@@ -100,18 +174,36 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
         return;
       }
 
+      // Atualiza contagem total
+      if (count !== null) {
+        setPaginationState(current => ({ ...current, total: count }));
+      }
+
       const mapped = (data || []).map((row: any) => ({
         id: row.id,
+        tenant_id: row.user_id,
+        name: row.name,
+        nif: row.nif ?? null,
+        email: row.email ?? null,
+        phone: row.phone ?? null,
+        website: null,
+        logo: null,
+        address: null,
+        city: null,
+        state: null,
+        country: 'España',
+        postal_code: null,
+        created_at: row.created_at ?? new Date().toISOString(),
+        updated_at: row.updated_at ?? new Date().toISOString(),
+        deleted_at: null,
+        status: 'active' as const,
+        // Campos específicos do ManagerAdministrator
         owner_id: row.user_id ?? null,
         responsible_id: row.responsible_id ?? null,
         code: row.code ?? "",
-        name: row.name ?? "Administradora",
-        nif: row.nif ?? "",
-        condos: [{ count: 0 }], // Contar depois se necessário
-        profiles: null, // Não temos profiles por enquanto
-        email: row.email ?? null,
-        phone: row.phone ?? null,
-      })) as ManagerAdministrator[];
+        condos: [{ count: row.count ?? 0 }],
+        profiles: null
+      } satisfies ManagerAdministrator));
 
       console.log("🔍 ManagerAdministradorasContext: Dados mapeados", mapped);
 
@@ -230,6 +322,24 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     planLimit == null ? null : Math.max(planLimit - totalAdministrators, 0);
   const canCreateAdministrator = remainingSlots === null ? true : remainingSlots > 0;
 
+  // Função para atualizar paginação
+  const setPagination = useCallback((newState: Partial<PaginationState>) => {
+    setPaginationState(current => ({ ...current, ...newState }));
+    // Recarrega os dados se necessário
+    if (newState.page || newState.pageSize) {
+      fetchAdministrators();
+    }
+  }, [fetchAdministrators]);
+
+  // Função para atualizar filtros
+  const setFilters = useCallback((newState: Partial<FilterState>) => {
+    setFiltersState(current => ({ ...current, ...newState }));
+    // Volta para a primeira página ao filtrar
+    setPaginationState(current => ({ ...current, page: 1 }));
+    // Recarrega os dados com novos filtros
+    fetchAdministrators(newState);
+  }, [fetchAdministrators]);
+
   const value = useMemo<ManagerAdministradorasContextValue>(
     () => ({
       administrators,
@@ -245,6 +355,10 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       remainingSlots,
       canCreateAdministrator,
       refreshPlan: fetchPlanInfo,
+      pagination,
+      setPagination,
+      filters,
+      setFilters
     }),
     [
       administrators,
@@ -260,6 +374,10 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       remainingSlots,
       canCreateAdministrator,
       fetchPlanInfo,
+      pagination,
+      setPagination,
+      filters,
+      setFilters
     ],
   );
 
