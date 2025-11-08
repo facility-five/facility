@@ -1,7 +1,6 @@
 import { ManagerSidebar } from "./ManagerSidebar";
 import { ManagerHeader } from "./ManagerHeader";
 import { ManagerAdministradorasProvider } from "@/contexts/ManagerAdministradorasContext";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
 
 interface ManagerLayoutProps {
   children: React.ReactNode;
