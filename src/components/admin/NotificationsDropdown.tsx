@@ -11,6 +11,7 @@ type Notification = {
   id: string;
   title: string;
   message: string;
+import { useNavigate } from 'react-router-dom';
   is_read: boolean;
   created_at: string;
 };
@@ -18,11 +19,14 @@ type Notification = {
 export const NotificationsDropdown = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  entity_type?: string | null;
+  entity_id?: string | null;
 
   useEffect(() => {
     const fetchNotifications = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+  const navigate = useNavigate();
 
       const { count } = await supabase
         .from('notifications')
@@ -148,6 +152,20 @@ export const NotificationsDropdown = () => {
                 {!n.is_read && <div className="h-2 w-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>}
                 <div className={n.is_read ? 'ml-5' : ''}>
                   <p className="font-semibold text-sm">{n.title}</p>
+            notifications.map(n => (
+              <div key={n.id} className="flex gap-3 cursor-pointer" onClick={async () => {
+                await markAsRead(n.id);
+                // If the notification references an admin task, navigate to tasks list with query param
+                if (n.entity_type === 'admin_task' && n.entity_id) {
+                  navigate(`/admin/tareas?task=${n.entity_id}`);
+                } else {
+                  // default: open full notifications page
+                  navigate('/admin/notificacoes');
+                }
+              }}>
+                {!n.is_read && <div className="h-2 w-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>}
+                <div className={n.is_read ? 'ml-5' : ''}>
+                  <p className="font-semibold text-sm">{n.title}</p>
                   <p className="text-xs text-admin-foreground-muted">{n.message}</p>
                   <p className="text-xs text-admin-foreground-muted mt-1">
                     {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ptBR })}
@@ -155,11 +173,6 @@ export const NotificationsDropdown = () => {
                 </div>
               </div>
             ))
-          ) : (
-            <p className="text-sm text-admin-foreground-muted text-center py-4">Nenhuma notificação nova.</p>
-          )}
-        </div>
-        <div className="p-2 border-t border-admin-border">
           <Link to="/admin/notificacoes" className="text-sm text-purple-400 hover:underline text-center block w-full">
             Ver todas as notificações
           </Link>
