@@ -41,6 +41,12 @@ export const TaskModal = ({ isOpen, onClose, onSuccess, relatedSupportId }: Prop
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    if (user?.id) {
+      setAssignedTo((prev) => prev || user.id);
+    }
+  }, [user]);
+
   const handleSubmit = async () => {
     if (!user?.id) {
       showRadixError("Sessão expirada");
@@ -71,25 +77,30 @@ export const TaskModal = ({ isOpen, onClose, onSuccess, relatedSupportId }: Prop
       try {
         const taskId = inserted?.[0]?.id;
         const inserts: any[] = [];
+        const isSelfAssigned = assignedTo && assignedTo === user.id;
         inserts.push({
           user_id: user.id,
-          title: "Tarea creada",
-          message: `Se creó la tarea: ${title}`,
+          title: isSelfAssigned ? "Nueva tarea asignada" : "Tarea creada",
+          message: isSelfAssigned
+            ? `La tarea ${title} fue creada y asignada a ti`
+            : `Se creó la tarea: ${title}`,
           entity_type: "admin_task",
           entity_id: taskId ?? null,
-          type: "task.created",
+          type: isSelfAssigned ? "task.assigned" : "task.created",
           is_read: false,
         });
         if (assignedTo) {
-          inserts.push({
-            user_id: assignedTo,
-            title: "Nueva tarea asignada",
-            message: `Has recibido la tarea: ${title}`,
-            entity_type: "admin_task",
-            entity_id: taskId ?? null,
-            type: "task.assigned",
-            is_read: false,
-          });
+          if (!isSelfAssigned) {
+            inserts.push({
+              user_id: assignedTo,
+              title: "Nueva tarea asignada",
+              message: `Has recibido la tarea: ${title}`,
+              entity_type: "admin_task",
+              entity_id: taskId ?? null,
+              type: "task.assigned",
+              is_read: false,
+            });
+          }
         }
         if (inserts.length > 0) {
           await supabase.from("notifications").insert(inserts);
