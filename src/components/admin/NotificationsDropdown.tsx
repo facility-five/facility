@@ -23,6 +23,19 @@ export const NotificationsDropdown = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const onNotificationCreated = (e: any) => {
+      try {
+        const created = e?.detail as Notification[] | undefined;
+        if (created && created.length > 0) {
+          setNotifications(prev => [...created, ...prev].slice(0,5));
+          setUnreadCount(prev => prev + created.filter(n => !n.is_read).length);
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+    window.addEventListener('notification:created', onNotificationCreated as EventListener);
+
     const fetchNotifications = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -102,6 +115,7 @@ export const NotificationsDropdown = () => {
           unsub();
         }
       })();
+      window.removeEventListener('notification:created', onNotificationCreated as EventListener);
     };
   }, []);
 

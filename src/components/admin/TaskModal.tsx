@@ -102,11 +102,28 @@ export const TaskModal = ({ isOpen, onClose, onSuccess, relatedSupportId }: Prop
             });
           }
         }
+
         if (inserts.length > 0) {
-          await supabase.from("notifications").insert(inserts);
+          // Request the created rows back so we can update UI even if realtime isn't delivering
+          const { data: notifData, error: notifError } = await supabase.from("notifications").insert(inserts).select();
+          if (notifError) {
+            console.warn("Falha ao inserir notificação de tarefa (fallback)", notifError);
+            // notify user of failure to create notifications
+            showRadixError("No fue posible crear las notificaciones.");
+          } else {
+            // Dispatch a custom event so notification dropdown can update immediately
+            try {
+              if (notifData && notifData.length > 0) {
+                window.dispatchEvent(new CustomEvent('notification:created', { detail: notifData }));
+              }
+            } catch (e) {
+              // ignore if window not available
+            }
+          }
         }
       } catch (e) {
         console.warn("Falha ao inserir notificação de tarefa (fallback)", e);
+        showRadixError("No fue posible crear las notificaciones.");
       }
       showRadixSuccess("Tarea creada");
       onSuccess();
