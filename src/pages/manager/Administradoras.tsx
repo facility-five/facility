@@ -64,25 +64,40 @@ const ManagerAdministradorasContent = () => {
   }, [filteredAdministrators, activeAdministratorId]);
 
   const formatSpanishPhone = (phone: string | null | undefined) => {
-    if (!phone) return "N/A";
+    console.log('📱 formatSpanishPhone input:', phone);
+    
+    if (!phone) {
+      console.log('📱 formatSpanishPhone output: N/A (empty)');
+      return "N/A";
+    }
     
     // Remove todos os caracteres não numéricos
     const cleaned = phone.replace(/\D/g, '');
+    console.log('📱 formatSpanishPhone cleaned:', cleaned);
     
     // Se não tem números, retorna N/A
-    if (cleaned.length === 0) return "N/A";
+    if (cleaned.length === 0) {
+      console.log('📱 formatSpanishPhone output: N/A (no digits)');
+      return "N/A";
+    }
+    
+    let result = '';
     
     // Formato com código internacional +34 (11 ou 12 dígitos)
     if (cleaned.length >= 11 && cleaned.startsWith('34')) {
       const number = cleaned.slice(2); // Remove o 34
       if (number.length === 9) {
-        return `+34 ${number.slice(0, 3)} ${number.slice(3, 5)} ${number.slice(5, 7)} ${number.slice(7)}`;
+        result = `+34 ${number.slice(0, 3)} ${number.slice(3, 5)} ${number.slice(5, 7)} ${number.slice(7)}`;
+        console.log('📱 formatSpanishPhone output (international):', result);
+        return result;
       }
     }
     
     // Formato nacional (9 dígitos)
     if (cleaned.length === 9) {
-      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7)}`;
+      result = `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7)}`;
+      console.log('📱 formatSpanishPhone output (national):', result);
+      return result;
     }
     
     // Se tiver menos de 9 dígitos, formata o que tem
@@ -91,10 +106,12 @@ const ManagerAdministradorasContent = () => {
       if (cleaned.length > 3) formatted += ` ${cleaned.slice(3, 5)}`;
       if (cleaned.length > 5) formatted += ` ${cleaned.slice(5, 7)}`;
       if (cleaned.length > 7) formatted += ` ${cleaned.slice(7)}`;
+      console.log('📱 formatSpanishPhone output (partial):', formatted);
       return formatted;
     }
     
     // Retorna o número original se não se encaixar em nenhum formato
+    console.log('📱 formatSpanishPhone output (fallback):', cleaned);
     return cleaned;
   };
 
