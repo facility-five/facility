@@ -28,6 +28,11 @@ const ManagerCondominios = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCondo, setSelectedCondo] = useState<Condo | null>(null);
 
+  // Log opcional para debug
+  useEffect(() => {
+    console.log("[ACTIVE ADMIN]", activeAdministrator?.name);
+  }, [activeAdministrator?.name]);
+
   const fetchCondos = useCallback(async () => {
     if (!activeAdministratorId) {
       console.log('📋 Condominios: Skip fetch - no administrator selected');
@@ -37,42 +42,35 @@ const ManagerCondominios = () => {
     }
     
     setLoading(true);
-    console.log('📋 Condominios: Fetching for administrator', activeAdministratorId);
+    console.log('[Condomínios] Fetching for administrator:', activeAdministratorId);
+    console.log('[QUERY PARAMS]', { administrator_id: activeAdministratorId });
     
     try {
-      // Buscar condomínios e contagens em uma única query
+      // Buscar condomínios usando contadores persistidos (evita joins aninhados)
       const { data: condosData, error: condosError } = await supabase
         .from("condominiums")
-        .select(`
-          *,
-          blocks:blocks(count),
-          units:units(count)
-        `)
+        .select("id, name, nif, email, phone, website, area, type, total_blocks, total_units, status, created_at, updated_at")
         .eq('administrator_id', activeAdministratorId);
 
       if (condosError) {
         console.error("Error fetching condominiums:", condosError);
         showRadixError(
           condosError.message === 'JWT expired'
-            ? "Sesión expirada. Por favor, vuelva a iniciar sesión."
-            : "Error al buscar condominios. Por favor, inténtelo de nuevo."
+            ? "Sessão expirada. Por favor, faça login novamente."
+            : "Erro ao buscar condomínios. Tente novamente."
         );
         setCondos([]);
         setLoading(false);
         return;
       }
 
-      // Mapear resultados com contagens
-      const condosWithCounts = (condosData || []).map((condo: any) => ({
-        ...condo,
-        total_blocks: (condo.blocks || []).length || 0,
-        total_units: (condo.units || []).length || 0,
-      }));
-
-      setCondos(condosWithCounts);
+      // Dados já possuem total_blocks e total_units pelo schema/trigger
+      const list = (condosData as any[]) || [];
+      console.log('Supabase response: 200 OK (' + list.length + ' results)');
+      setCondos(list);
     } catch (error) {
       console.error("Unexpected error:", error);
-      showRadixError("Error inesperado al cargar condominios. Por favor, actualice la página.");
+      showRadixError("Erro inesperado ao carregar condomínios. Atualize a página.");
       setCondos([]);
     }
     
@@ -89,6 +87,17 @@ const ManagerCondominios = () => {
       setLoading(false);
     }
   }, [activeAdministratorId, fetchCondos]);
+
+  // Fallback visual quando não há administradora selecionada
+  if (!activeAdministratorId) {
+    return (
+      <ManagerLayout>
+        <div className="p-6 text-center text-gray-500">
+          Selecione uma administradora para visualizar os condomínios.
+        </div>
+      </ManagerLayout>
+    );
+  }
 
   const handleNewCondo = () => {
     if (!activeAdministratorId) {

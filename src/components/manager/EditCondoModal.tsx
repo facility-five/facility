@@ -41,7 +41,7 @@ const formSchema = z.object({
   nif: z.string().optional(),
   website: z.string().optional(),
   area: z.string().optional(),
-  condo_type: z.string().optional(),
+  condo_type: z.enum(['residencial', 'comercial', 'mixto']).optional(),
   total_blocks: z.coerce.number().optional(),
   total_units: z.coerce.number().optional(),
   email: z.string().email("E-mail inválido.").optional().or(z.literal('')),
@@ -231,14 +231,23 @@ export const EditCondoModal = ({
                   </FormItem>
                 )}
               />
-              <FormField
+            <FormField
                 control={form.control}
                 name="condo_type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ingrese el tipo de condominio" {...field} className="bg-admin-background border-admin-border" />
+                      <Select onValueChange={field.onChange} value={field.value || "residencial"}>
+                        <SelectTrigger className="bg-admin-background border-admin-border">
+                          <SelectValue placeholder="Seleccione el tipo" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
+                          <SelectItem value="residencial">Residencial</SelectItem>
+                          <SelectItem value="comercial">Comercial</SelectItem>
+                          <SelectItem value="mixto">Mixto</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

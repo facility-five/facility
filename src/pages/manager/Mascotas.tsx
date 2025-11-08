@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, PawPrint } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 import { usePlan } from "@/hooks/usePlan";
 
@@ -99,7 +99,7 @@ const statusBadge = (status: string) => {
 };
 
 const ManagerMascotasContent = () => {
-  const { profile } = useAuth();
+  const { activeAdministratorId } = useManagerAdministradoras();
   const { isFreePlan } = usePlan();
   const [pets, setPets] = useState<PetRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
@@ -116,11 +116,11 @@ const ManagerMascotasContent = () => {
   const [editingPet, setEditingPet] = useState<PetForEdit | null>(null);
 
   // Debug logs
-  console.log("🔍 Mascotas - Profile administradora_id:", profile?.administradora_id);
+  console.log("🔍 Mascotas - activeAdministratorId:", activeAdministratorId);
 
   const fetchCondos = useCallback(async () => {
-    if (!profile?.administradora_id) {
-      console.log("🔍 Mascotas - Sem administradora_id, pulando fetchCondos");
+    if (!activeAdministratorId) {
+      console.log("🔍 Mascotas - Sem administradora ativa, pulando fetchCondos");
       return;
     }
 
@@ -129,7 +129,7 @@ const ManagerMascotasContent = () => {
       const { data, error } = await supabase
         .from("condominiums")
         .select("id, name")
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .order("name");
 
       if (error) {
@@ -143,11 +143,11 @@ const ManagerMascotasContent = () => {
       console.error("❌ Mascotas - Erro na fetchCondos:", error);
       showRadixError("Erro ao carregar condomínios");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   const fetchUnits = useCallback(async () => {
-    if (!profile?.administradora_id) {
-      console.log("🔍 Mascotas - Sem administradora_id, pulando fetchUnits");
+    if (!activeAdministratorId) {
+      console.log("🔍 Mascotas - Sem administradora ativa, pulando fetchUnits");
       return;
     }
 
@@ -156,7 +156,7 @@ const ManagerMascotasContent = () => {
       const { data, error } = await supabase
         .from("units")
         .select("id, number, condo_id")
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .order("number");
 
       if (error) {
@@ -170,11 +170,11 @@ const ManagerMascotasContent = () => {
       console.error("❌ Mascotas - Erro na fetchUnits:", error);
       showRadixError("Erro ao carregar unidades");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   const fetchResidents = useCallback(async () => {
-    if (!profile?.administradora_id) {
-      console.log("🔍 Mascotas - Sem administradora_id, pulando fetchResidents");
+    if (!activeAdministratorId) {
+      console.log("🔍 Mascotas - Sem administradora ativa, pulando fetchResidents");
       return;
     }
 
@@ -183,7 +183,7 @@ const ManagerMascotasContent = () => {
       const { data, error } = await supabase
         .from("residents")
         .select("id, first_name, last_name, unit_id")
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .order("first_name");
 
       if (error) {
@@ -197,11 +197,11 @@ const ManagerMascotasContent = () => {
       console.error("❌ Mascotas - Erro na fetchResidents:", error);
       showRadixError("Erro ao carregar residentes");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   const fetchPets = useCallback(async () => {
-    if (!profile?.administradora_id) {
-      console.log("🔍 Mascotas - Sem administradora_id, pulando fetchPets");
+    if (!activeAdministratorId) {
+      console.log("🔍 Mascotas - Sem administradora ativa, pulando fetchPets");
       return;
     }
 
@@ -228,7 +228,7 @@ const ManagerMascotasContent = () => {
           condominiums!inner(name),
           residents!inner(first_name, last_name)
         `)
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .order("name");
 
       if (error) {
@@ -263,7 +263,7 @@ const ManagerMascotasContent = () => {
       console.error("❌ Mascotas - Erro na fetchPets:", error);
       showRadixError("Erro ao carregar mascotas");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -272,13 +272,13 @@ const ManagerMascotasContent = () => {
       setLoading(false);
     };
 
-    if (profile?.administradora_id) {
+    if (activeAdministratorId) {
       loadData();
     } else {
       // Se não há administradora_id, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [profile?.administradora_id, fetchCondos, fetchUnits, fetchResidents, fetchPets]);
+  }, [activeAdministratorId, fetchCondos, fetchUnits, fetchResidents, fetchPets]);
 
   const filteredPets = useMemo(() => {
     return pets.filter((pet) => {
@@ -306,7 +306,7 @@ const ManagerMascotasContent = () => {
   }, [residents, editingPet?.unit_id]);
 
   const handleSubmit = async (formData: FormData) => {
-    if (!profile?.administradora_id) {
+    if (!activeAdministratorId) {
       showRadixError("Erro: administradora_id não encontrado");
       return;
     }
@@ -325,7 +325,7 @@ const ManagerMascotasContent = () => {
         unit_id: formData.get("unit_id") as string,
         resident_id: formData.get("resident_id") as string,
         condo_id: formData.get("condo_id") as string,
-        administradora_id: profile.administradora_id,
+        administradora_id: activeAdministratorId,
       };
 
       if (editingPet?.id) {
@@ -409,6 +409,20 @@ const ManagerMascotasContent = () => {
             <Skeleton key={i} className="h-16 w-full" />
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (!activeAdministratorId) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <PawPrint className="h-6 w-6 text-purple-600" />
+          <h1 className="text-3xl font-bold text-gray-900">Mascotas</h1>
+        </div>
+        <p className="text-gray-600">
+          Selecione uma administradora no cabeçalho para filtrar os dados.
+        </p>
       </div>
     );
   }

@@ -3,14 +3,12 @@ import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { BadgeCheck, Plus, Pencil } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Building, Plus, Pencil } from "lucide-react";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 import { NewManagerAdministratorModal } from "@/components/manager/NewManagerAdministratorModal";
 import { EditManagerAdministratorModal } from "@/components/manager/EditManagerAdministratorModal";
 import type { ManagerAdministrator } from "@/contexts/ManagerAdministradorasContext";
-import { PlanGuard } from "@/components/PlanGuard";
-
 import { usePlan } from "@/hooks/usePlan";
 import {
   ManagerTable,
@@ -22,21 +20,32 @@ import {
 } from "@/components/manager/ManagerTable";
 
 const ManagerAdministradorasContent = () => {
-  const { isFreePlan, isLoading: planLoading } = usePlan();
+  const { isLoading: planLoading } = usePlan();
   const {
     administrators,
     loading,
     activeAdministratorId,
     activeAdministrator,
-    setActiveAdministratorId,
     refetch,
     canCreateAdministrator,
-    remainingSlots,
+    usageLimit,
   } = useManagerAdministradoras();
+
   const [search, setSearch] = useState("");
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedAdministrator, setSelectedAdministrator] = useState<ManagerAdministrator | null>(null);
+  const [selectedAdministrator, setSelectedAdministrator] =
+    useState<ManagerAdministrator | null>(null);
+
+  // 📊 Consumo dinâmico baseado no array real e limite atual
+  const used = administrators.length;
+  const limit = usageLimit ?? 1;
+  const remaining = Math.max(limit - used, 0);
+  const hasSlots = remaining > 0;
+  const hitLimit = used >= limit;
+
+  // 🧪 Logs temporários de depuração (removíveis após QA)
+  console.log("[ADMIN USAGE]", { used, limit, remaining, planLoading, canCreateAdministrator });
 
   const filteredAdministrators = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -64,54 +73,15 @@ const ManagerAdministradorasContent = () => {
   }, [filteredAdministrators, activeAdministratorId]);
 
   const formatSpanishPhone = (phone: string | null | undefined) => {
-    console.log('📱 formatSpanishPhone input:', phone);
-    
-    if (!phone) {
-      console.log('📱 formatSpanishPhone output: N/A (empty)');
-      return "N/A";
+    if (!phone) return "N/A";
+    const cleaned = phone.replace(/\D/g, "");
+    if (cleaned.length === 0) return "N/A";
+    if (cleaned.startsWith("34") && cleaned.length === 11) {
+      const n = cleaned.slice(2);
+      return `+34 ${n.slice(0, 3)} ${n.slice(3, 5)} ${n.slice(5, 7)} ${n.slice(7)}`;
     }
-    
-    // Remove todos os caracteres não numéricos
-    const cleaned = phone.replace(/\D/g, '');
-    console.log('📱 formatSpanishPhone cleaned:', cleaned);
-    
-    // Se não tem números, retorna N/A
-    if (cleaned.length === 0) {
-      console.log('📱 formatSpanishPhone output: N/A (no digits)');
-      return "N/A";
-    }
-    
-    let result = '';
-    
-    // Formato com código internacional +34 (11 ou 12 dígitos)
-    if (cleaned.length >= 11 && cleaned.startsWith('34')) {
-      const number = cleaned.slice(2); // Remove o 34
-      if (number.length === 9) {
-        result = `+34 ${number.slice(0, 3)} ${number.slice(3, 5)} ${number.slice(5, 7)} ${number.slice(7)}`;
-        console.log('📱 formatSpanishPhone output (international):', result);
-        return result;
-      }
-    }
-    
-    // Formato nacional (9 dígitos)
-    if (cleaned.length === 9) {
-      result = `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7)}`;
-      console.log('📱 formatSpanishPhone output (national):', result);
-      return result;
-    }
-    
-    // Se tiver menos de 9 dígitos, formata o que tem
-    if (cleaned.length < 9 && cleaned.length >= 3) {
-      let formatted = cleaned.slice(0, 3);
-      if (cleaned.length > 3) formatted += ` ${cleaned.slice(3, 5)}`;
-      if (cleaned.length > 5) formatted += ` ${cleaned.slice(5, 7)}`;
-      if (cleaned.length > 7) formatted += ` ${cleaned.slice(7)}`;
-      console.log('📱 formatSpanishPhone output (partial):', formatted);
-      return formatted;
-    }
-    
-    // Retorna o número original se não se encaixar em nenhum formato
-    console.log('📱 formatSpanishPhone output (fallback):', cleaned);
+    if (cleaned.length === 9)
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7)}`;
     return cleaned;
   };
 
@@ -181,10 +151,7 @@ const ManagerAdministradorasContent = () => {
           };
 
           return (
-            <ManagerTableRow
-              key={admin.id}
-              className="transition-colors hover:bg-purple-50"
-            >
+            <ManagerTableRow key={admin.id} className="transition-colors hover:bg-purple-50">
               <ManagerTableCell className="font-medium">{admin.name}</ManagerTableCell>
               <ManagerTableCell>{admin.nif || "N/A"}</ManagerTableCell>
               <ManagerTableCell>{admin.email || "N/A"}</ManagerTableCell>
@@ -209,61 +176,84 @@ const ManagerAdministradorasContent = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Administradoras</h1>
-          <p className="text-gray-600">
-            Consulte la lista de administradoras registradas en la plataforma y active la que desea gestionar.
-          </p>
-          {activeAdministrator && (
-              <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-700">
-                <BadgeCheck className="h-4 w-4 text-purple-600" />
-                <span>Administradora seleccionada desde el encabezado:</span>
-                <span className="text-purple-800">{activeAdministrator.name}</span>
-              </div>
-          )}
+      {/* Header sem fundo e sem padding lateral/superior, alinhado ao de Condomínios */}
+      <div className="flex flex-col gap-4">
+        {/* Linha 1: Título/descrição à esquerda, busca + ações + uso à direita */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold">Administradoras</h1>
+            <p className="text-sm text-gray-600">Lista de administradoras registradas</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Input
+              placeholder="Buscar por nombre, NIF o email"
+              className="w-64 bg-white"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+
+            {/* Botão de ação (criar ou atualizar), mostrado quando dados do plano carregados */}
+            {!planLoading && (
+              <>
+                {hasSlots && canCreateAdministrator && (
+                  <Button
+                    className="bg-purple-600 hover:bg-purple-700 transition-all duration-300"
+                    onClick={() => setIsNewModalOpen(true)}
+                    title={`Vagas restantes: ${remaining}`}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nueva Administradora
+                  </Button>
+                )}
+
+                {hitLimit && (
+                  <Button
+                    onClick={() => (window.location.href = "/gestor/mi-plan")}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all duration-300"
+                    title="Has alcanzado el límite de administradoras de tu plan"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Actualizar para Crear Administradoras
+                  </Button>
+                )}
+
+                {/* Badge de uso */}
+                <Badge
+                  variant="secondary"
+                  className={`text-xs font-semibold ${hitLimit ? "bg-red-100 text-red-700" : "bg-purple-100 text-purple-700"}`}
+                >
+                  {used}/{limit} usadas
+                </Badge>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Linha 2: Aviso quando ativa não está visível nos filtros */}
+        <div>
           {!activeVisible && filteredAdministrators.length > 0 && activeAdministrator && (
             <p className="text-xs font-medium text-purple-600">
               La administradora activa no está en los resultados actuales. Limpie la búsqueda para visualizarla.
             </p>
           )}
         </div>
-        <div className="flex items-center gap-4">
-          <Input
-            placeholder="Buscar por nombre, NIF o email"
-            className="w-full bg-white md:w-72"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          {!planLoading && (
-            <>
-              {!isFreePlan ? (
-                // Botón normal para usuarios con plan pago
-                <Button
-                  className="bg-purple-600 hover:bg-purple-700"
-                  onClick={() => setIsNewModalOpen(true)}
-                  disabled={!canCreateAdministrator}
-                  title={!canCreateAdministrator ? `Límite del plan alcanzado (${remainingSlots === 0 ? 'máximo alcanzado' : 'sin espacios disponibles'})` : undefined}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nueva Administradora
-                </Button>
-              ) : (
-                // Botón de upgrade para usuarios con plan gratuito
-                <Button 
-                  onClick={() => window.location.href = '/gestor/mi-plan'}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Actualizar para Crear Administradoras
-                </Button>
-              )}
-            </>
-          )}
-        </div>
+
+        {/* Linha 3 removida: ações e uso integrados na linha 1 */}
       </div>
 
-
+      {/* Badge flutuante no rodapé com margem de 32px (bottom-8) */}
+      {activeAdministrator && (
+        <div className="fixed bottom-8 right-8 z-40">
+          <div
+            className="inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700 shadow-sm"
+            title="Clique para trocar"
+          >
+            <Building className="h-4 w-4 text-purple-600" />
+            <span>Administradora selecionada:</span>
+            <span className="text-purple-800">{activeAdministrator.name}</span>
+          </div>
+        </div>
+      )}
 
       {loading
         ? renderSkeleton()

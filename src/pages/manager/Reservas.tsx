@@ -51,6 +51,8 @@ interface Reservation {
   total_value: number;
   observations?: string;
   created_at: string;
+  resident_id: string;
+  common_area_id: string;
   common_areas: {
     id: string;
     name: string;
@@ -186,23 +188,7 @@ const Reservas = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!selectedReservation) return;
-
-    const { error } = await supabase
-      .from("reservas")
-      .delete()
-      .eq("id", selectedReservation.id);
-
-    if (error) {
-      showRadixError("Erro ao excluir reserva.");
-    } else {
-      showRadixSuccess("Reserva excluída com sucesso!");
-      fetchReservations();
-    }
-    setIsDeleteModalOpen(false);
-    setSelectedReservation(null);
-  };
+  // A exclusão agora é tratada dentro do modal
 
   const handleStatusChange = async (reservationId: string, newStatus: string) => {
     const { error } = await supabase
@@ -489,8 +475,8 @@ const Reservas = () => {
       <DeleteManagerReservationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        reservationCode={selectedReservation?.code}
+        onSuccess={fetchReservations}
+        reservation={selectedReservation}
       />
     </ManagerLayout>
   );

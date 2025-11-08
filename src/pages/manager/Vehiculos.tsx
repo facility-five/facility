@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, Car, Search } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 import { usePlan } from "@/hooks/usePlan";
 
@@ -120,7 +120,7 @@ const vehicleTypeBadge = (type: string) => {
 };
 
 const ManagerVehiculosContent = () => {
-  const { profile } = useAuth();
+  const { activeAdministratorId } = useManagerAdministradoras();
   const { isFreePlan } = usePlan();
   const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
@@ -148,10 +148,10 @@ const ManagerVehiculosContent = () => {
 
   const fetchCondos = useCallback(async () => {
     console.log("🚗 fetchCondos - Iniciando busca de condomínios");
-    console.log("🚗 profile?.administradora_id:", profile?.administradora_id);
+    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     
-    if (!profile?.administradora_id) {
-      console.log("❌ fetchCondos - Sem administradora_id, retornando");
+    if (!activeAdministratorId) {
+      console.log("❌ fetchCondos - Sem administradora ativa, retornando");
       return;
     }
 
@@ -160,7 +160,7 @@ const ManagerVehiculosContent = () => {
       const { data, error } = await supabase
         .from("condominios")
         .select("id, name")
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .eq("status", "active")
         .order("name");
 
@@ -173,14 +173,14 @@ const ManagerVehiculosContent = () => {
       console.error("❌ fetchCondos - Erro:", error);
       showRadixError("Erro ao carregar condomínios");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   const fetchVehicles = useCallback(async () => {
     console.log("🚗 fetchVehicles - Iniciando busca de veículos");
-    console.log("🚗 profile?.administradora_id:", profile?.administradora_id);
+    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     
-    if (!profile?.administradora_id) {
-      console.log("❌ fetchVehicles - Sem administradora_id, retornando");
+    if (!activeAdministratorId) {
+      console.log("❌ fetchVehicles - Sem administradora ativa, retornando");
       return;
     }
 
@@ -206,7 +206,7 @@ const ManagerVehiculosContent = () => {
             administradora_id
           )
         `)
-        .eq("condominios.administradora_id", profile.administradora_id)
+        .eq("condominios.administradora_id", activeAdministratorId)
         .order("license_plate");
 
       console.log("🚗 fetchVehicles - Resposta do Supabase:", { data, error });
@@ -239,10 +239,10 @@ const ManagerVehiculosContent = () => {
     } finally {
       setLoading(false);
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   const fetchUnits = useCallback(async () => {
-    if (!profile?.administradora_id) return;
+    if (!activeAdministratorId) return;
 
     try {
       const { data, error } = await supabase
@@ -258,7 +258,7 @@ const ManagerVehiculosContent = () => {
             )
           )
         `)
-        .eq("blocks.condominios.administradora_id", profile.administradora_id)
+        .eq("blocks.condominios.administradora_id", activeAdministratorId)
         .order("number");
 
       if (error) throw error;
@@ -274,10 +274,10 @@ const ManagerVehiculosContent = () => {
     } catch (error) {
       console.error("Erro ao buscar unidades:", error);
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   useEffect(() => {
-    if (profile?.administradora_id) {
+    if (activeAdministratorId) {
       fetchVehicles();
       fetchCondos();
       fetchUnits();
@@ -285,7 +285,16 @@ const ManagerVehiculosContent = () => {
       // Se não há administradora_id, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [fetchVehicles, fetchCondos, fetchUnits, profile?.administradora_id]);
+  }, [fetchVehicles, fetchCondos, fetchUnits, activeAdministratorId]);
+
+  // Fallback visual quando não há administradora selecionada
+  if (!activeAdministratorId) {
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Selecione uma administradora para visualizar os veículos.
+      </div>
+    );
+  }
 
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((vehicle) => {

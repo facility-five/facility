@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, Building2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 import { PlanGuard } from "@/components/PlanGuard";
 
 import { usePlan } from "@/hooks/usePlan";
@@ -71,7 +71,7 @@ const statusBadge = (status: string) => {
 };
 
 const ManagerBlocosContent = () => {
-  const { profile } = useAuth();
+  const { activeAdministratorId } = useManagerAdministradoras();
   const { isFreePlan, isLoading: planLoading } = usePlan();
   const [blocks, setBlocks] = useState<BlockRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
@@ -84,11 +84,11 @@ const ManagerBlocosContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchCondos = useCallback(async () => {
-    console.log("🔍 fetchCondos - Iniciando busca de condomínios");
-    console.log("🔍 profile?.administradora_id:", profile?.administradora_id);
+    console.log("🔍 Blocos - Iniciando busca de condomínios");
+    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     
-    if (!profile?.administradora_id) {
-      console.log("❌ fetchCondos - Sem administradora_id, retornando");
+    if (!activeAdministratorId) {
+      console.log("❌ Blocos - Sem administradora ativa, retornando");
       return;
     }
 
@@ -97,7 +97,7 @@ const ManagerBlocosContent = () => {
       const { data, error } = await supabase
         .from("condominios")
         .select("id, name")
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .eq("status", "active")
         .order("name");
 
@@ -110,14 +110,14 @@ const ManagerBlocosContent = () => {
       console.error("❌ fetchCondos - Erro:", error);
       showRadixError("Erro ao carregar condomínios");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   const fetchBlocks = useCallback(async () => {
-    console.log("🔍 fetchBlocks - Iniciando busca de blocos");
-    console.log("🔍 profile?.administradora_id:", profile?.administradora_id);
+    console.log("🔍 Blocos - Iniciando busca de blocos");
+    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     
-    if (!profile?.administradora_id) {
-      console.log("❌ fetchBlocks - Sem administradora_id, retornando");
+    if (!activeAdministratorId) {
+      console.log("❌ Blocos - Sem administradora ativa, retornando");
       return;
     }
 
@@ -140,7 +140,7 @@ const ManagerBlocosContent = () => {
             administradora_id
           )
         `)
-        .eq("condominios.administradora_id", profile.administradora_id)
+        .eq("condominios.administradora_id", activeAdministratorId)
         .order("name");
 
       console.log("🔍 fetchBlocks - Resposta do Supabase:", { data, error });
@@ -165,17 +165,28 @@ const ManagerBlocosContent = () => {
     } finally {
       setLoading(false);
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   useEffect(() => {
-    if (profile?.administradora_id) {
+    if (activeAdministratorId) {
       fetchCondos();
       fetchBlocks();
     } else {
-      // Se não há administradora_id, definir loading como false para mostrar a interface
+      // Se não há administradora ativa, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [profile?.administradora_id, fetchCondos, fetchBlocks]);
+  }, [activeAdministratorId, fetchCondos, fetchBlocks]);
+
+  // Fallback visual quando não há administradora selecionada
+  if (!activeAdministratorId) {
+    return (
+      <ManagerLayout>
+        <div className="p-6 text-center text-gray-500">
+          Selecione uma administradora para visualizar os blocos.
+        </div>
+      </ManagerLayout>
+    );
+  }
 
   const filteredBlocks = useMemo(() => {
     return blocks.filter((block) => {

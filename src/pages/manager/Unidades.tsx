@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, DoorOpen } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 import { PlanGuard } from "@/components/PlanGuard";
 
 import { usePlan } from "@/hooks/usePlan";
@@ -88,7 +88,7 @@ const statusBadge = (status: string) => {
 };
 
 const ManagerUnidadesContent = () => {
-  const { profile } = useAuth();
+  const { activeAdministratorId } = useManagerAdministradoras();
   const { isFreePlan, isLoading: planLoading } = usePlan();
   const [units, setUnits] = useState<UnitRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
@@ -103,20 +103,21 @@ const ManagerUnidadesContent = () => {
   const [editingUnit, setEditingUnit] = useState<UnitForEdit | null>(null);
 
   // Debug logs
-  console.log("🔍 Unidades - Profile administradora_id:", profile?.administradora_id);
+  console.log("🔍 Unidades - Administradora ativa:", activeAdministratorId);
 
   const fetchCondos = useCallback(async () => {
-    if (!profile?.administradora_id) {
-      console.log("🔍 Unidades - Sem administradora_id, pulando fetchCondos");
+    if (!activeAdministratorId) {
+      console.log("🔍 Unidades - Sem administradora ativa, pulando fetchCondos");
       return;
     }
 
     console.log("🔍 Unidades - Buscando condomínios...");
+    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     try {
       const { data, error } = await supabase
         .from("condominiums")
         .select("id, name")
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .order("name");
 
       if (error) {
@@ -130,20 +131,21 @@ const ManagerUnidadesContent = () => {
       console.error("❌ Unidades - Erro na fetchCondos:", error);
       showRadixError("Erro ao carregar condomínios");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   const fetchBlocks = useCallback(async () => {
-    if (!profile?.administradora_id) {
-      console.log("🔍 Unidades - Sem administradora_id, pulando fetchBlocks");
+    if (!activeAdministratorId) {
+      console.log("🔍 Unidades - Sem administradora ativa, pulando fetchBlocks");
       return;
     }
 
     console.log("🔍 Unidades - Buscando blocos...");
+    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     try {
       const { data, error } = await supabase
         .from("blocks")
         .select("id, name, condo_id")
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .order("name");
 
       if (error) {
@@ -157,15 +159,16 @@ const ManagerUnidadesContent = () => {
       console.error("❌ Unidades - Erro na fetchBlocks:", error);
       showRadixError("Erro ao carregar blocos");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   const fetchUnits = useCallback(async () => {
-    if (!profile?.administradora_id) {
-      console.log("🔍 Unidades - Sem administradora_id, pulando fetchUnits");
+    if (!activeAdministratorId) {
+      console.log("🔍 Unidades - Sem administradora ativa, pulando fetchUnits");
       return;
     }
 
     console.log("🔍 Unidades - Buscando unidades...");
+    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     try {
       const { data, error } = await supabase
         .from("units")
@@ -185,7 +188,7 @@ const ManagerUnidadesContent = () => {
           blocks!inner(name),
           condominiums!inner(name)
         `)
-        .eq("administradora_id", profile.administradora_id)
+        .eq("administradora_id", activeAdministratorId)
         .order("number");
 
       if (error) {
@@ -217,7 +220,7 @@ const ManagerUnidadesContent = () => {
       console.error("❌ Unidades - Erro na fetchUnits:", error);
       showRadixError("Erro ao carregar unidades");
     }
-  }, [profile?.administradora_id]);
+  }, [activeAdministratorId]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -225,14 +228,13 @@ const ManagerUnidadesContent = () => {
       await Promise.all([fetchCondos(), fetchBlocks(), fetchUnits()]);
       setLoading(false);
     };
-
-    if (profile?.administradora_id) {
+    if (activeAdministratorId) {
       loadData();
     } else {
       // Se não há administradora_id, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [profile?.administradora_id, fetchCondos, fetchBlocks, fetchUnits]);
+  }, [activeAdministratorId, fetchCondos, fetchBlocks, fetchUnits]);
 
   const filteredUnits = useMemo(() => {
     return units.filter((unit) => {
@@ -253,8 +255,8 @@ const ManagerUnidadesContent = () => {
   }, [blocks, selectedCondo]);
 
   const handleSubmit = async (formData: FormData) => {
-    if (!profile?.administradora_id) {
-      showRadixError("Erro: administradora_id não encontrado");
+    if (!activeAdministratorId) {
+      showRadixError("Selecione uma administradora antes de criar/editar unidades.");
       return;
     }
 
@@ -270,7 +272,7 @@ const ManagerUnidadesContent = () => {
         status: formData.get("status") as string,
         block_id: formData.get("block_id") as string,
         condo_id: formData.get("condo_id") as string,
-        administradora_id: profile.administradora_id,
+        administradora_id: activeAdministratorId,
       };
 
       if (editingUnit?.id) {
@@ -339,6 +341,15 @@ const ManagerUnidadesContent = () => {
     setEditingUnit(null);
     setIsDialogOpen(false);
   };
+
+  // Fallback visual quando não há administradora selecionada
+  if (!activeAdministratorId) {
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Selecione uma administradora para visualizar as unidades.
+      </div>
+    );
+  }
 
   if (loading) {
     return (

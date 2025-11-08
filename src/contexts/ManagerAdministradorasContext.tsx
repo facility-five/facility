@@ -44,10 +44,16 @@ interface ManagerAdministradorasContextValue {
   activeAdministratorId: string | null;
   activeAdministrator: ManagerAdministrator | null;
   setActiveAdministratorId: (id: string | null) => void;
+  setActiveAdministrator: (admin: ManagerAdministrator | null) => void;
+  // Novo: método para seleção por id (compatível com cabeçalho)
+  handleSelect: (id: string) => void;
+  selectAdministrator: (admin: ManagerAdministrator) => void;
   refetch: (filters?: FilterState) => Promise<void>;
+  refetchAdministrators: () => Promise<void>;
   planLoading: boolean;
   planName: string | null;
   planLimit: number | null;
+  usageLimit: number; // Limite efetivo para uso das administradoras
   totalAdministrators: number;
   remainingSlots: number | null;
   canCreateAdministrator: boolean;
@@ -111,19 +117,13 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       console.log("🔍 ManagerAdministradorasContext: Selected administrator do perfil", profileData);
 
       // Constrói a query base
+      // Construir query sem o uso de alias count:count() inline, que pode causar erros 400
       let query = supabase
         .from("administrators")
-        .select(`
-          id,
-          code,
-          name,
-          nif,
-          user_id,
-          responsible_id,
-          email,
-          phone,
-          count:count()
-        `, { count: 'exact' })
+        .select(
+          `id, code, name, nif, user_id, responsible_id, email, phone`,
+          { count: 'exact' }
+        )
         .or(`user_id.eq.${user.id},responsible_id.eq.${user.id}`);
 
       // Aplica filtros
@@ -160,10 +160,17 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       // Executa a query
       const { data, error, count } = await query;
       
-      console.log("🔍 ManagerAdministradorasContext: Resposta da query", { data, error });
-      
+      // Log mais detalhado para facilitar debugging de erros PostgREST
+      console.log("🔍 ManagerAdministradorasContext: Resposta da query", { data, error, count });
+
       if (error) {
-        console.error("❌ ManagerAdministradorasContext: Erro na query", error);
+        console.error("❌ ManagerAdministradorasContext: Erro na query", {
+          message: error.message,
+          details: (error as any)?.details,
+          hint: (error as any)?.hint,
+          code: (error as any)?.code,
+        });
+
         setAdministrators([]);
         setActiveAdministratorId(null);
         setLoading(false);
@@ -197,7 +204,8 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
         owner_id: row.user_id ?? null,
         responsible_id: row.responsible_id ?? null,
         code: row.code ?? "",
-        condos: [{ count: row.count ?? 0 }],
+        // Não confiamos em row.count (removido do select). Use 0 como fallback.
+        condos: [{ count: 0 }],
         profiles: null
       } satisfies ManagerAdministrator));
 
@@ -222,19 +230,27 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
       setAdministrators(filtered);
       
-      // Usar selected_administrator_id do perfil, ou a primeira disponível
-      const selectedId = profileData?.selected_administrator_id;
-      const validSelectedId = selectedId && filtered.some((admin) => admin.id === selectedId) 
-        ? selectedId 
-        : filtered[0]?.id ?? null;
-      
-      setActiveAdministratorId(validSelectedId);
-      
-      // Se não tinha selected_administrator_id ou mudou, atualizar no perfil
-      if (validSelectedId && validSelectedId !== selectedId) {
+      // Determinar administradora ativa considerando localStorage e perfil
+      const savedId = typeof window !== 'undefined' ? localStorage.getItem("activeAdministratorId") : null;
+      const selectedId = profileData?.selected_administrator_id ?? null;
+      const hasSaved = savedId && filtered.some((admin) => admin.id === savedId);
+      const hasSelected = selectedId && filtered.some((admin) => admin.id === selectedId);
+      const preferredId = (hasSaved ? savedId : (hasSelected ? selectedId : null)) ?? filtered[0]?.id ?? null;
+
+      setActiveAdministratorId(preferredId);
+
+      // Persistir localmente a escolha
+      if (preferredId) {
+        try { localStorage.setItem("activeAdministratorId", preferredId); } catch {}
+      } else {
+        try { localStorage.removeItem("activeAdministratorId"); } catch {}
+      }
+
+      // Atualizar no perfil do usuário se necessário
+      if (preferredId && preferredId !== selectedId) {
         await supabase
           .from("profiles")
-          .update({ selected_administrator_id: validSelectedId })
+          .update({ selected_administrator_id: preferredId })
           .eq("id", user.id);
       }
       
@@ -311,12 +327,44 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       
       console.log("🔍 ManagerAdministradorasContext: Administradora selecionada atualizada no perfil", id);
     }
+
+    // Persistir em localStorage
+    try {
+      if (id) {
+        localStorage.setItem("activeAdministratorId", id);
+      } else {
+        localStorage.removeItem("activeAdministratorId");
+      }
+    } catch {}
   }, [user?.id]);
 
+  // Expor função que aceita o objeto diretamente
+  const setActiveAdministrator = useCallback((admin: ManagerAdministrator | null) => {
+    const id = admin?.id ?? null;
+    updateActiveAdministratorId(id);
+  }, [updateActiveAdministratorId]);
+
+  const selectAdministrator = useCallback((admin: ManagerAdministrator) => {
+    setActiveAdministrator(admin);
+  }, [setActiveAdministrator]);
+
+  // Alias: seleção recebendo apenas o id (usado pelo header)
+  const handleSelect = useCallback((id: string) => {
+    if (!id) {
+      updateActiveAdministratorId(null);
+      return;
+    }
+    // Persistência e atualização reativa via updateActiveAdministratorId
+    updateActiveAdministratorId(id);
+    console.log("[ACTIVE ADMIN SELECT]", { id });
+  }, [updateActiveAdministratorId]);
+
   const totalAdministrators = administrators.length;
+  const usageLimit = (planLimit ?? 1);
   const remainingSlots =
-    planLimit == null ? null : Math.max(planLimit - totalAdministrators, 0);
-  const canCreateAdministrator = remainingSlots === null ? true : remainingSlots > 0;
+    planLimit == null ? null : Math.max(usageLimit - totalAdministrators, 0);
+  // Ajuste: criação permitida apenas quando used < usageLimit
+  const canCreateAdministrator = totalAdministrators < usageLimit;
 
   // Função para atualizar paginação
   const setPagination = useCallback((newState: Partial<PaginationState>) => {
@@ -343,10 +391,15 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       activeAdministratorId,
       activeAdministrator,
       setActiveAdministratorId: updateActiveAdministratorId,
+      setActiveAdministrator,
+      handleSelect,
+      selectAdministrator,
       refetch: fetchAdministrators,
+      refetchAdministrators: () => fetchAdministrators(),
       planLoading,
       planName,
       planLimit,
+      usageLimit,
       totalAdministrators,
       remainingSlots,
       canCreateAdministrator,
@@ -362,10 +415,14 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       activeAdministratorId,
       activeAdministrator,
       updateActiveAdministratorId,
+      setActiveAdministrator,
+      handleSelect,
+      selectAdministrator,
       fetchAdministrators,
       planLoading,
       planName,
       planLimit,
+      usageLimit,
       totalAdministrators,
       remainingSlots,
       canCreateAdministrator,
@@ -376,6 +433,21 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       setFilters
     ],
   );
+
+  // Log opcional para debug
+  useEffect(() => {
+    console.log("[ADMIN SELECTOR]", { activeAdministrator, administrators });
+  }, [activeAdministrator, administrators]);
+
+  // Restaurar administradora salva quando a lista for carregada/alterada
+  useEffect(() => {
+    try {
+      const savedId = localStorage.getItem("activeAdministratorId");
+      if (savedId && administrators.some(a => a.id === savedId) && savedId !== activeAdministratorId) {
+        setActiveAdministratorId(savedId);
+      }
+    } catch {}
+  }, [administrators]);
 
   return (
     <ManagerAdministradorasContext.Provider value={value}>

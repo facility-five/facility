@@ -28,7 +28,7 @@ export const ManagerHeader = () => {
     administrators,
     activeAdministrator,
     activeAdministratorId,
-    setActiveAdministratorId,
+    selectAdministrator,
     loading,
   } = useManagerAdministradoras();
 
@@ -58,7 +58,12 @@ export const ManagerHeader = () => {
           ) : (
             <Select
               value={activeAdministratorId ?? undefined}
-              onValueChange={(value) => setActiveAdministratorId(value)}
+              onValueChange={(value) => {
+                const admin = administrators.find(a => a.id === value);
+                if (admin) {
+                  selectAdministrator(admin);
+                }
+              }}
               disabled={administrators.length === 0}
             >
               <SelectTrigger className="mt-1 h-9 w-60 border border-purple-200 bg-purple-50/80 text-left text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-100 focus:ring-purple-500">

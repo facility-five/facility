@@ -40,6 +40,21 @@ export const NewManagerAdministratorModal = ({
   onClose,
   onSuccess,
 }: NewManagerAdministratorModalProps) => {
+  const formatSpanishPhoneInput = (raw: string) => {
+    const hasPlus34 = raw.trim().startsWith("+34");
+    let digits = raw.replace(/\D/g, "");
+    if (hasPlus34 && digits.startsWith("34")) {
+      digits = digits.slice(2);
+    }
+    digits = digits.slice(0, 9);
+    const parts: string[] = [];
+    if (digits.length > 0) parts.push(digits.slice(0, Math.min(3, digits.length)));
+    if (digits.length > 3) parts.push(digits.slice(3, Math.min(5, digits.length)));
+    if (digits.length > 5) parts.push(digits.slice(5, Math.min(7, digits.length)));
+    if (digits.length > 7) parts.push(digits.slice(7, Math.min(9, digits.length)));
+    const formattedCore = parts.join(" ");
+    return hasPlus34 ? `+34 ${formattedCore}`.trim() : formattedCore;
+  };
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -135,7 +150,13 @@ export const NewManagerAdministratorModal = ({
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Telefone" {...field} className="bg-white border-gray-300" />
+                    <Input
+                      placeholder="+34 612 34 56 78"
+                      inputMode="tel"
+                      value={field.value}
+                      onChange={(e) => field.onChange(formatSpanishPhoneInput(e.target.value))}
+                      className="bg-white border-gray-300"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
