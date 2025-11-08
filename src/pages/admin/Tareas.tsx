@@ -148,8 +148,10 @@ const Tareas = () => {
                 <TableCell className="text-xs">{task.related_support_id ?? '-'}</TableCell>
                 <TableCell>{new Date(task.created_at).toLocaleString()}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => openDeleteModal(task)} className="text-red-500"><Trash2 className="h-4 w-4" /></Button>
+                  <div className="flex items-center justify-end gap-2">
+                    <Button variant="ghost" size="icon" aria-label={`edit-${task.id}`}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => openDeleteModal(task)} aria-label={`delete-${task.id}`} className="text-red-500"><Trash2 className="h-4 w-4" /></Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -157,7 +159,8 @@ const Tareas = () => {
         </Table>
       </div>
 
-      <TaskModal isOpen={isNewOpen} onClose={() => setIsNewOpen(false)} onSuccess={fetchItems} />
+  <TaskModal isOpen={isNewOpen} onClose={() => setIsNewOpen(false)} onSuccess={fetchItems} />
+  <DeleteTaskModal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} onConfirm={handleDelete} taskTitle={selectedTask?.title ?? null} />
     </AdminLayout>
   );
 };

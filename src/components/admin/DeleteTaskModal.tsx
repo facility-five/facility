@@ -13,9 +13,10 @@ interface DeleteTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  taskTitle?: string | null;
 }
 
-export const DeleteTaskModal = ({ isOpen, onClose, onConfirm }: DeleteTaskModalProps) => {
+export const DeleteTaskModal = ({ isOpen, onClose, onConfirm, taskTitle }: DeleteTaskModalProps) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
@@ -24,6 +25,11 @@ export const DeleteTaskModal = ({ isOpen, onClose, onConfirm }: DeleteTaskModalP
           <AlertDialogDescription>
             ¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer.
           </AlertDialogDescription>
+          {taskTitle && (
+            <div className="mt-2 px-2 py-1 bg-admin-background rounded">
+              <strong>Tarea:</strong> {taskTitle}
+            </div>
+          )}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Volver</AlertDialogCancel>
