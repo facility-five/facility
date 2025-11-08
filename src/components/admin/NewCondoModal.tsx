@@ -39,7 +39,7 @@ const formSchema = z.object({
   nif: z.string().optional(),
   website: z.string().optional(),
   area: z.string().optional(),
-  condo_type: z.enum(['residencial', 'comercial', 'mixto']).optional(),
+  type: z.enum(['residencial', 'comercial', 'mixto']).optional(),
   total_blocks: z.coerce.number().optional(),
   total_units: z.coerce.number().optional(),
   email: z.string().email("E-mail inválido.").optional().or(z.literal('')),
@@ -69,7 +69,7 @@ export const NewCondoModal = ({
       nif: "",
       website: "",
       area: "",
-      condo_type: "residencial",
+      type: "residencial",
       total_blocks: 0,
       total_units: 0,
       email: "",
@@ -86,7 +86,7 @@ export const NewCondoModal = ({
         nif: "",
         website: "",
         area: "",
-        condo_type: "residencial",
+        type: "residencial",
         total_blocks: 0,
         total_units: 0,
         email: "",
@@ -105,16 +105,13 @@ export const NewCondoModal = ({
       return;
     }
 
-    // Map condo_type -> type (DB column) and avoid sending empty strings
+    // Ensure we don't send empty string to enum column `type`
     const payload: any = { ...values };
-    if (payload.condo_type === "" || payload.condo_type === undefined) {
-      delete payload.condo_type;
-    } else {
-      payload.type = payload.condo_type;
-      delete payload.condo_type;
+    if (payload.type === "" || payload.type === undefined) {
+      delete payload.type;
     }
 
-    const { error } = await supabase.from("condominiums").insert([ // Changed from "condos" to "condominiums"
+    const { error } = await supabase.from("condominiums").insert([
       {
         ...payload,
         administrator_id: initialAdministratorId,

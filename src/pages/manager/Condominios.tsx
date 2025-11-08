@@ -50,60 +50,64 @@ const ManagerCondominios = () => {
     console.log('==========================================');
     
     try {
-      // Buscar condomínios usando contadores persistidos (evita joins aninhados)
-      const { data: condosData, error: condosError } = await supabase
-        .from("condominiums")
-        .select("id, name, nif, email, phone, website, area, type, total_blocks, total_units, status, created_at, updated_at, administrator_id")
-        .eq('administrator_id', activeAdministratorId);
+      // Preferred select includes `type` (DB column). We'll try this first and
+      // fall back to a select without `type` if the server returns an error
+      // (helps when schema differs / older migrations use a different name).
+      const preferredSelect =
+        "id,name,nif,email,phone,website,area,type,total_blocks,total_units,status,created_at,updated_at,administrator_id";
 
-      if (condosError) {
-        console.error("❌ Error fetching condominiums:", {
-          message: condosError.message,
-          details: condosError.details,
-          hint: condosError.hint,
-          code: condosError.code
-        });
-        // Não mostrar erro se for vazio (sem dados)
-        if (condosError.code !== 'PGRST116') {
+      const attempt = async (selectStr: string) =>
+        supabase
+          .from("condominiums")
+          .select(selectStr)
+          .eq("administrator_id", activeAdministratorId);
+
+      let result = await attempt(preferredSelect);
+
+      // If PostgREST returns 400 (bad request) because a column doesn't exist
+      // we retry without `type`.
+      if (result.error) {
+        console.error("❌ Error fetching condominiums (first attempt):", result.error);
+
+        const msg = String(result.error.message || "").toLowerCase();
+        const looksLikeMissingColumn = msg.includes("does not exist") || msg.includes("column") || result.error.status === 400;
+
+        if (looksLikeMissingColumn) {
+          console.log("⚠️ Condominios: retrying fetch without 'type' column due to server error");
+          const fallbackSelect = preferredSelect.replace(/,?type,?/, ",").replace(/(^,|,$)/g, "");
+          result = await attempt(fallbackSelect);
+        }
+      }
+
+      if (result.error) {
+        // Still an error after fallback
+        console.error("❌ Error fetching condominiums (final):", result.error);
+        if (result.error.code !== "PGRST116") {
           showRadixError("Erro ao buscar condomínios. Tente novamente.");
         }
         setCondos([]);
-        setLoading(false);
         return;
       }
 
-      // Dados já possuem total_blocks e total_units pelo schema/trigger
-  const list = (condosData as any[]) || [];
-  // Normalize to include `condo_type` for components that expect that shape
-  const normalized = list.map((c) => ({ ...c, condo_type: (c as any).type ?? c.condo_type }));
+      const condosData = result.data as any[] | null;
+      const list = condosData || [];
+      // Normalize: ensure older code that expects `condo_type` still works and
+      // expose `type` when available.
+      const normalized = list.map((c) => ({ ...c, condo_type: (c as any).type ?? (c as any).condo_type }));
+
       console.log('==========================================');
       console.log('✅ [Condomínios] RESPOSTA RECEBIDA');
-      console.log('✅ Total de registros:', list.length);
-      console.log('✅ Dados:', list.map(c => ({ id: c.id, name: c.name, administrator_id: c.administrator_id })));
+      console.log('✅ Total de registros:', normalized.length);
+      console.log('✅ Dados sample:', normalized.slice(0, 5).map((c) => ({ id: c.id, name: c.name, type: (c as any).type ?? null })));
       console.log('✅ Filtrado por administrator_id:', activeAdministratorId);
       console.log('==========================================');
-  setCondos(normalized);
+
+      setCondos(normalized);
     } catch (error) {
       console.error("❌ Unexpected error:", error);
       showRadixError("Erro inesperado ao carregar condomínios. Atualize a página.");
       setCondos([]);
-    }
-    
-    setLoading(false);
-  }, [activeAdministratorId]);
-
-  useEffect(() => {
-    console.log('==========================================');
-    console.log('🔄 [useEffect] TRIGGERED');
-    console.log('🔄 activeAdministratorId:', activeAdministratorId);
-    console.log('🔄 activeAdministrator:', activeAdministrator);
-    console.log('==========================================');
-    
-    if (activeAdministratorId) {
-      fetchCondos();
-    } else {
-      console.log('⚠️ Condominios: Nenhuma administradora selecionada, limpando lista');
-      setCondos([]);
+    } finally {
       setLoading(false);
     }
   }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps

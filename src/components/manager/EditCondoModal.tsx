@@ -41,7 +41,7 @@ const formSchema = z.object({
   nif: z.string().optional(),
   website: z.string().optional(),
   area: z.string().optional(),
-  condo_type: z.enum(['residencial', 'comercial', 'mixto']).optional(),
+  type: z.enum(['residencial', 'comercial', 'mixto']).optional(),
   total_blocks: z.coerce.number().optional(),
   total_units: z.coerce.number().optional(),
   email: z.string().email("E-mail inválido.").optional().or(z.literal('')),
@@ -95,8 +95,8 @@ export const EditCondoModal = ({
         nif: condo.nif || "",
         website: condo.website || "",
         area: condo.area || "",
-        // Prefer the DB column `type` if present, otherwise fallback to `condo_type`
-        condo_type: (condo as any).type ?? condo.condo_type ?? "residencial",
+        // Use DB column `type` when available
+        type: (condo as any).type ?? (condo as any).condo_type ?? "residencial",
         total_blocks: condo.total_blocks || 0,
         total_units: condo.total_units || 0,
         email: condo.email || "",
@@ -113,7 +113,7 @@ export const EditCondoModal = ({
         nif: "",
         website: "",
         area: "",
-        condo_type: "residencial",
+        type: "residencial",
         total_blocks: 0,
         total_units: 0,
         email: "",
@@ -130,12 +130,11 @@ export const EditCondoModal = ({
 
     // Prepare payload: map `condo_type` -> `type` (DB column), and don't send empty strings
     const payload: any = { ...values };
-    if (payload.condo_type === "" || payload.condo_type === undefined) {
+    if (payload.type === "" || payload.type === undefined) {
       // Ensure we don't send an empty string to the enum column
-      delete payload.condo_type;
+      delete payload.type;
     } else {
-      payload.type = payload.condo_type;
-      delete payload.condo_type;
+      delete payload.condo_type; // Remove old field if it exists
     }
 
     const { error } = await supabase
