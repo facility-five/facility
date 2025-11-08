@@ -42,14 +42,18 @@ const ManagerCondominios = () => {
     }
     
     setLoading(true);
-    console.log('[Condomínios] Fetching for administrator:', activeAdministratorId);
-    console.log('[QUERY PARAMS]', { administrator_id: activeAdministratorId });
+    console.log('==========================================');
+    console.log('📋 [Condomínios] INICIANDO FETCH');
+    console.log('📋 Administrator ID:', activeAdministratorId);
+    console.log('📋 Administrator Name:', activeAdministrator?.name);
+    console.log('📋 Timestamp:', new Date().toISOString());
+    console.log('==========================================');
     
     try {
       // Buscar condomínios usando contadores persistidos (evita joins aninhados)
       const { data: condosData, error: condosError } = await supabase
         .from("condominiums")
-        .select("id, name, nif, email, phone, website, area, total_blocks, total_units, status, created_at, updated_at")
+        .select("id, name, nif, email, phone, website, area, total_blocks, total_units, status, created_at, updated_at, administrator_id")
         .eq('administrator_id', activeAdministratorId);
 
       if (condosError) {
@@ -70,7 +74,12 @@ const ManagerCondominios = () => {
 
       // Dados já possuem total_blocks e total_units pelo schema/trigger
       const list = (condosData as any[]) || [];
-      console.log('✅ Supabase response: 200 OK (' + list.length + ' results)');
+      console.log('==========================================');
+      console.log('✅ [Condomínios] RESPOSTA RECEBIDA');
+      console.log('✅ Total de registros:', list.length);
+      console.log('✅ Dados:', list.map(c => ({ id: c.id, name: c.name, administrator_id: c.administrator_id })));
+      console.log('✅ Filtrado por administrator_id:', activeAdministratorId);
+      console.log('==========================================');
       setCondos(list);
     } catch (error) {
       console.error("❌ Unexpected error:", error);
@@ -82,11 +91,16 @@ const ManagerCondominios = () => {
   }, [activeAdministratorId]);
 
   useEffect(() => {
-    console.log('🔄 Condominios: activeAdministratorId mudou para:', activeAdministratorId);
+    console.log('==========================================');
+    console.log('🔄 [useEffect] TRIGGERED');
+    console.log('🔄 activeAdministratorId:', activeAdministratorId);
+    console.log('🔄 activeAdministrator:', activeAdministrator);
+    console.log('==========================================');
+    
     if (activeAdministratorId) {
       fetchCondos();
     } else {
-      console.log('🔄 Condominios: Nenhuma administradora selecionada, limpando lista');
+      console.log('⚠️ Condominios: Nenhuma administradora selecionada, limpando lista');
       setCondos([]);
       setLoading(false);
     }
