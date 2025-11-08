@@ -67,7 +67,8 @@ export function SignUpForm() {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Login automático desativado (necessário confirmar email)
+      const { error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
@@ -76,57 +77,23 @@ export function SignUpForm() {
             last_name: values.lastName,
             role: 'Administradora', // Define role padrão para ativar plano gratuito
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         },
       });
 
       if (error) {
         showRadixError(error.message);
-        setIsLoading(false);
         return;
       }
-      
-      // Limpar qualquer plano selecionado no sessionStorage
-      sessionStorage.removeItem('selected_plan');
-      
-      // Verificar se o usuário foi criado e tem sessão
-      if (data.session) {
-        // Login automático funcionou
-        console.log("Sessão criada após signup:", data.session);
-        
-        // Aguardar trigger criar profile e plano
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // Fazer logout e login novamente para sincronizar profile
-        console.log("Fazendo logout e login para sincronizar profile...");
-        await supabase.auth.signOut();
-        
-        // Fazer login novamente
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password,
-        });
-        
-        if (loginError) {
-          console.error("Erro ao fazer login após signup:", loginError);
-          showRadixError("Conta criada! Por favor, faça login.");
-          setIsLoading(false);
-          navigate("/login");
-        } else {
-          // Aguardar mais um pouco para garantir que o AuthContext carregou
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          console.log("Login bem-sucedido, redirecionando para /gestor");
-          navigate("/gestor");
-        }
-      } else {
-        // Confirmação de email necessária
-        console.log("Sem sessão após signup, redirecionando para login");
-        showRadixSuccess("Por favor, confirme seu email para continuar.");
-        setIsLoading(false);
-        navigate("/login");
-      }
+
+      // Redirecionar para página de confirmação
+      navigate('/email-confirmation', { 
+        state: { email: values.email }
+      });
     } catch (error: any) {
       console.error("Erro no cadastro:", error);
       showRadixError(error.message || "Erro ao criar conta. Tente novamente.");
+    } finally {
       setIsLoading(false);
     }
   }

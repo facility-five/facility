@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import SignUp from "./pages/SignUp";
 import SignUpDetails from "./pages/SignUpDetails";
 import ForgotPassword from "./pages/ForgotPassword";
+import EmailConfirmation from "./pages/EmailConfirmation";
 import Plans from "./pages/Plans";
 import Dashboard from "./pages/admin/Dashboard";
 import MyAccount from "./pages/admin/MyAccount";
@@ -95,6 +96,7 @@ const App = () => (
               <Route path="/nova-senha" element={<ResetPassword />} />
               <Route path="/nueva-contrasena" element={<ResetPassword />} />
               <Route path="/planes" element={<Plans />} />
+              <Route path="/email-confirmation" element={<EmailConfirmation />} />
               <Route path="/acesso-morador" element={<ResidentAccess />} />
               <Route path="/test-toast" element={<TestToast />} />
               

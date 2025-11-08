@@ -1,21 +1,41 @@
 import { toast as sonnerToast } from "sonner";
 import { toast as radixToast } from "@/hooks/use-toast";
 
-// Funções do Sonner (mantidas para compatibilidade)
-export const showSuccess = (message: string) => {
-  sonnerToast.success(message);
-};
+interface ToastOptions {
+  duration?: number;
+  position?: 'top-right' | 'top-center' | 'top-left' | 'bottom-right' | 'bottom-center' | 'bottom-left';
+  description?: string;
+}
 
-export const showError = (message: string) => {
-  sonnerToast.error(message);
-};
+// Objeto toast unificado
+export const toast = {
+  success: (message: string, options?: ToastOptions) => {
+    if (options?.description) {
+      sonnerToast.success(message, { description: options.description });
+    } else {
+      sonnerToast.success(message);
+    }
+  },
 
-export const showLoading = (message: string) => {
-  return sonnerToast.loading(message);
-};
+  error: (message: string, options?: ToastOptions) => {
+    if (options?.description) {
+      sonnerToast.error(message, { description: options.description });
+    } else {
+      sonnerToast.error(message);
+    }
+  },
 
-export const dismissToast = (toastId: string | number) => {
-  sonnerToast.dismiss(toastId);
+  loading: (message: string, options?: ToastOptions) => {
+    if (options?.description) {
+      return sonnerToast.loading(message, { description: options.description });
+    } else {
+      return sonnerToast.loading(message);
+    }
+  },
+
+  dismiss: (toastId: string | number) => {
+    sonnerToast.dismiss(toastId);
+  }
 };
 
 // Toast com título e descrição
