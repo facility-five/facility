@@ -109,6 +109,7 @@ CREATE TRIGGER trg_support_requests_notify_status
 CREATE OR REPLACE FUNCTION public.notify_task_insert()
 RETURNS TRIGGER AS $$
 BEGIN
+  -- Notify assignee if present
   IF NEW.assigned_to IS NOT NULL THEN
     PERFORM public.create_notification(
       NEW.assigned_to,
@@ -119,8 +120,9 @@ BEGIN
       NEW.id
     );
   END IF;
-  -- Optional: notify creator to confirm creation
-  IF NEW.created_by IS NOT NULL THEN
+
+  -- Notify creator only if different from assignee to avoid duplicate notifications
+  IF NEW.created_by IS NOT NULL AND (NEW.created_by IS DISTINCT FROM NEW.assigned_to) THEN
     PERFORM public.create_notification(
       NEW.created_by,
       'Tarea creada',
@@ -130,6 +132,7 @@ BEGIN
       NEW.id
     );
   END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
