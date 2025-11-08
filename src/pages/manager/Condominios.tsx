@@ -30,10 +30,14 @@ const ManagerCondominios = () => {
 
   const fetchCondos = async () => {
     if (!activeAdministratorId) {
+      console.log('🏢 Condominios: Nenhuma administradora selecionada');
       setLoading(false);
       return;
     }
     setLoading(true);
+    
+    console.log('🏢 Condominios: Buscando condomínios da administradora:', activeAdministratorId);
+    console.log('🏢 Condominios: Administradora ativa:', activeAdministrator);
     
     try {
       // Buscar condomínios
@@ -41,6 +45,8 @@ const ManagerCondominios = () => {
         .from("condominiums")
         .select("*")
         .eq('administrator_id', activeAdministratorId);
+      
+      console.log('🏢 Condominios: Resultado da query:', { condosData, condosError });
 
       if (condosError) {
         console.error("Error fetching condominiums:", condosError);
