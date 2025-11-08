@@ -37,7 +37,7 @@ import { NewManagerReservationModal } from '@/components/manager/NewManagerReser
 import { EditManagerReservationModal } from '@/components/manager/EditManagerReservationModal';
 import { DeleteManagerReservationModal } from '@/components/manager/DeleteManagerReservationModal';
 import { PlanGuard } from '@/components/PlanGuard';
-import { UpgradeBanner } from '@/components/UpgradeBanner';
+
 import { usePlan } from '@/hooks/usePlan';
 import { useManagerAdministradoras } from '@/contexts/ManagerAdministradorasContext';
 
@@ -294,13 +294,7 @@ const Reservas = () => {
           )}
         </div>
 
-        {isFreePlan && (
-          <UpgradeBanner 
-            title="Gerencie reservas ilimitadas"
-            description="Faça upgrade para um plano pago e tenha acesso completo ao gerenciamento de reservas."
-            variant="default"
-          />
-        )}
+
 
         {/* Estatísticas */}
         <div className="grid gap-6 md:grid-cols-4">

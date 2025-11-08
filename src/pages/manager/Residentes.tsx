@@ -24,7 +24,7 @@ import { showRadixSuccess } from "@/utils/toast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { NewResidentModal, ResidentForEdit } from "@/components/manager/NewResidentModal";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
@@ -406,12 +406,7 @@ const ManagerResidentesContent = () => {
         </div>
       </div>
 
-      {isFreePlan && (
-        <UpgradeBanner
-          title="Gerencie residentes ilimitados"
-          description="Faça upgrade para um plano pago e tenha acesso completo ao gerenciamento de residentes."
-        />
-      )}
+
 
       {loadingResidents ? (
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">

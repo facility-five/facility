@@ -18,7 +18,7 @@ import { NewManagerCommonAreaModal } from "@/components/manager/NewManagerCommon
 import { DeleteManagerCommonAreaModal } from "@/components/manager/DeleteManagerCommonAreaModal";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 import { PlanGuard } from "@/components/PlanGuard";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 
 export type CommonArea = {
@@ -195,13 +195,6 @@ const AreasComunsContent = () => {
         </div>
       </div>
 
-      {isFreePlan && (
-        <UpgradeBanner 
-          title="Gerencie áreas comuns ilimitadas"
-          description="Faça upgrade para um plano pago e tenha acesso completo ao gerenciamento de áreas comuns."
-          variant="default"
-        />
-      )}
 
       <div className="mt-6">
         <ManagerTable>

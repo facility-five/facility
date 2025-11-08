@@ -34,7 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, Car, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 
 type VehicleRow = {
@@ -456,12 +456,7 @@ const ManagerVehiculosContent = () => {
         </Button>
       </div>
 
-      {isFreePlan && (
-        <UpgradeBanner
-          title="Gerencie veículos ilimitados"
-          description="Faça upgrade para um plano pago e tenha acesso completo ao gerenciamento de veículos."
-        />
-      )}
+
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">

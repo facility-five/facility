@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlanGuard } from "@/components/PlanGuard";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
@@ -174,15 +174,7 @@ const ManagerCondominios = () => {
         </div>
       </div>
 
-      {hasReachedLimit && currentPlan && (
-        <div className="mb-6">
-          <UpgradeBanner
-            title={`Límite de ${currentPlan.max_condos} condominio${currentPlan.max_condos === 1 ? '' : 's'} alcanzado`}
-            description={`Está usando ${condos.length} de ${currentPlan.max_condos} condominio${currentPlan.max_condos === 1 ? '' : 's'} de su plan. Actualice para crear más condominios y expandir su gestión.`}
-            variant="default"
-          />
-        </div>
-      )}
+
 
       <ManagerTable>
         <ManagerTableHeader>

@@ -10,7 +10,7 @@ import { NewManagerAdministratorModal } from "@/components/manager/NewManagerAdm
 import { EditManagerAdministratorModal } from "@/components/manager/EditManagerAdministratorModal";
 import type { ManagerAdministrator } from "@/contexts/ManagerAdministradorasContext";
 import { PlanGuard } from "@/components/PlanGuard";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 import {
   ManagerTable,
@@ -263,13 +263,7 @@ const ManagerAdministradorasContent = () => {
         </div>
       </div>
 
-      {isFreePlan && (
-        <UpgradeBanner
-          title="Maximice el potencial de su negocio"
-          description="Actualice a un plan de pago y tenga acceso completo a todas las funcionalidades de gestión."
-          variant="default"
-        />
-      )}
+
 
       {loading
         ? renderSkeleton()

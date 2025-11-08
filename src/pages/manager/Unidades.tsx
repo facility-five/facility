@@ -35,7 +35,7 @@ import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, DoorOpen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PlanGuard } from "@/components/PlanGuard";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 
 const CONDO_PLACEHOLDER_VALUE = "__no_condo_available__";
@@ -624,12 +624,7 @@ const ManagerUnidadesContent = () => {
         </Select>
       </div>
 
-      {isFreePlan && (
-        <UpgradeBanner
-          title="Gerencie unidades ilimitadas"
-          description="Faça upgrade para um plano pago e tenha acesso completo ao gerenciamento de unidades."
-        />
-      )}
+
 
       <div className="rounded-md border">
         <ManagerTable>

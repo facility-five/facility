@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { usePlan } from "@/hooks/usePlan";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -76,11 +76,14 @@ export const PlanGuard = ({
     case "banner":
     default:
       return (
-        <UpgradeBanner
-          title={customMessage || `Upgrade para acessar ${feature}`}
-          description="Faça upgrade para um plano pago e desbloqueie todas as funcionalidades."
-          variant={bannerVariant}
-        />
+        <div className="flex items-center gap-2 p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg">
+          <Lock className="w-6 h-6" />
+          <div className="flex-1">
+            <p className="font-semibold">{customMessage || `Upgrade para acessar ${feature}`}</p>
+            <p className="text-sm opacity-90">Faça upgrade para um plano pago e desbloqueie todas as funcionalidades.</p>
+          </div>
+          <Button onClick={() => navigate("/gestor/mi-plan")} variant="secondary">Ver Planos</Button>
+        </div>
       );
   }
 };

@@ -35,7 +35,7 @@ import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PlanGuard } from "@/components/PlanGuard";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 
 const CONDO_PLACEHOLDER_VALUE = "__no_condo_available__";
@@ -334,15 +334,7 @@ const ManagerBlocosContent = () => {
         )}
       </div>
 
-      {isFreePlan && (
-        <div className="mb-6">
-          <UpgradeBanner
-            title="Organize seus blocos sem limites"
-            description="Faça upgrade para um plano pago e tenha acesso completo ao sistema de gestão de blocos."
-            variant="default"
-          />
-        </div>
-      )}
+
 
       <div className="flex gap-4 flex-wrap mb-6">
         <Input

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ManagerLayout } from "@/components/manager/ManagerLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ManagerTable,
@@ -16,7 +16,7 @@ import { Pencil, Trash2, Plus } from "lucide-react";
 import { NewCommunicationModal } from "@/components/manager/NewCommunicationModal";
 import { DeleteCommunicationModal } from "@/components/manager/DeleteCommunicationModal";
 import { useTranslation } from "react-i18next";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 import { PlanGuard } from "@/components/PlanGuard";
 
@@ -69,11 +69,7 @@ const Communications = () => {
 
       if (error) {
         console.error("Error fetching communications:", error);
-        toast({
-          title: "Error",
-          description: t("manager.communications.errorFetching"),
-          variant: "destructive",
-        });
+        showRadixError(t("manager.communications.errorFetching"));
         return;
       }
 
@@ -120,10 +116,7 @@ const Communications = () => {
 
       if (error) throw error;
 
-      toast({
-        title: t("common.success"),
-        description: t("manager.communications.deleteSuccess"),
-      });
+      showRadixSuccess(t("manager.communications.deleteSuccess"));
 
       fetchCommunications();
       setIsDeleteModalOpen(false);
@@ -175,13 +168,7 @@ const Communications = () => {
         )}
       </div>
 
-      {isFreePlan && (
-        <UpgradeBanner
-          title="Comunique-se sem limites"
-          description="Faça upgrade para um plano pago e tenha acesso completo ao sistema de comunicados."
-          variant="default"
-        />
-      )}
+
 
       <div className="mt-6">
         <ManagerTable>

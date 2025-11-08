@@ -34,7 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, PawPrint } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+
 import { usePlan } from "@/hooks/usePlan";
 
 const CONDO_PLACEHOLDER_VALUE = "__no_condo_available__";
@@ -652,12 +652,7 @@ const ManagerMascotasContent = () => {
         )}
       </div>
 
-      {isFreePlan && (
-        <UpgradeBanner
-          title="Gerencie mascotas ilimitadas"
-          description="Faça upgrade para um plano pago e tenha acesso completo ao gerenciamento de mascotas."
-        />
-      )}
+
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <Input
