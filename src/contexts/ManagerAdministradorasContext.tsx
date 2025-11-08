@@ -267,6 +267,48 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     };
   }, [user?.id]); // Só recarrega se o usuário mudar
 
+  // Listener em tempo real para mudanças nas administradoras
+  useEffect(() => {
+    if (!user?.id) return;
+
+    console.log('🔔 Setting up real-time listener for administrators');
+
+    const channel = supabase
+      .channel('administrators-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'administrators',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('🔔 Administrator change detected:', payload);
+          fetchAdministrators();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'administrators',
+          filter: `responsible_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('🔔 Administrator change detected (as responsible):', payload);
+          fetchAdministrators();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔕 Removing real-time listener for administrators');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, fetchAdministrators]);
+
   const fetchPlanInfo = useCallback(async () => {
     if (!user?.id) {
       setPlanName(null);
@@ -325,16 +367,22 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
   }, [administrators, activeAdministratorId]);
 
   const updateActiveAdministratorId = useCallback(async (id: string | null) => {
+    console.log("🔄 Changing active administrator to:", id);
+    const oldId = activeAdministratorId;
     setActiveAdministratorId(id);
     
     // Salvar no perfil do usuário
     if (user?.id && id) {
-      await supabase
+      const { error } = await supabase
         .from("profiles")
         .update({ selected_administrator_id: id })
         .eq("id", user.id);
       
-      // console.log("🔍 ManagerAdministradorasContext: Administradora selecionada atualizada no perfil", id);
+      if (error) {
+        console.error("❌ Error updating profile with selected administrator:", error);
+      } else {
+        console.log("✅ Administrator changed from", oldId, "to", id);
+      }
     }
 
     // Persistir em localStorage
@@ -345,7 +393,7 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
         localStorage.removeItem("activeAdministratorId");
       }
     } catch {}
-  }, [user?.id]);
+  }, [user?.id, activeAdministratorId]);
 
   // Expor função que aceita o objeto diretamente
   const setActiveAdministrator = useCallback((admin: ManagerAdministrator | null) => {

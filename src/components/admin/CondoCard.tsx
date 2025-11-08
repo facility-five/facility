@@ -11,6 +11,8 @@ export type Condo = {
   responsible_name: string | null;
   total_units: number | null;
   administrator_id: string | null;
+  administrator_name?: string;
+  address?: string | null;
   nif: string | null;
   website: string | null;
   area: string | null;

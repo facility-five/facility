@@ -92,6 +92,35 @@ const ManagerCondominios = () => {
     }
   }, [activeAdministratorId, fetchCondos]);
 
+  // Listener em tempo real para sincronizar condomínios entre dispositivos
+  useEffect(() => {
+    if (!activeAdministratorId) return;
+
+    console.log('🔔 Condominios: Setting up real-time listener for condominiums');
+
+    const channel = supabase
+      .channel(`condominiums-${activeAdministratorId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'condominiums',
+          filter: `administrator_id=eq.${activeAdministratorId}`,
+        },
+        (payload) => {
+          console.log('🔔 Condominium change detected:', payload);
+          fetchCondos();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔕 Condominios: Removing real-time listener');
+      supabase.removeChannel(channel);
+    };
+  }, [activeAdministratorId, fetchCondos]);
+
   // Fallback visual quando não há administradora selecionada
   if (!activeAdministratorId) {
     return (
@@ -206,6 +235,7 @@ const ManagerCondominios = () => {
         <ManagerTableHeader>
           <ManagerTableRow>
             <ManagerTableHead>Nombre</ManagerTableHead>
+            <ManagerTableHead>Administradora</ManagerTableHead>
             <ManagerTableHead>NIF</ManagerTableHead>
             <ManagerTableHead>Sitio Web</ManagerTableHead>
             <ManagerTableHead>Área</ManagerTableHead>
@@ -220,6 +250,7 @@ const ManagerCondominios = () => {
               Array.from({ length: 3 }).map((_, i) => (
                 <ManagerTableRow key={i}>
                   <ManagerTableCell><Skeleton className="h-4 w-32" /></ManagerTableCell>
+                  <ManagerTableCell><Skeleton className="h-4 w-32" /></ManagerTableCell>
                   <ManagerTableCell><Skeleton className="h-4 w-24" /></ManagerTableCell>
                   <ManagerTableCell><Skeleton className="h-4 w-40" /></ManagerTableCell>
                   <ManagerTableCell><Skeleton className="h-4 w-20" /></ManagerTableCell>
@@ -231,7 +262,7 @@ const ManagerCondominios = () => {
               ))
             ) : filteredCondos.length === 0 ? (
               <ManagerTableRow>
-                <ManagerTableCell colSpan={8} className="text-center py-8">
+                <ManagerTableCell colSpan={9} className="text-center py-8">
                   {!activeAdministratorId ? (
                     <div className="flex flex-col items-center gap-2 text-gray-500">
                       <p className="text-lg">Selecione uma administradora primeiro</p>
@@ -248,6 +279,11 @@ const ManagerCondominios = () => {
               filteredCondos.map((condo: any) => (
                 <ManagerTableRow key={condo.id} className="hover:bg-purple-50">
                   <ManagerTableCell className="font-medium">{condo.name}</ManagerTableCell>
+                  <ManagerTableCell>
+                    <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                      {activeAdministrator?.name || "N/A"}
+                    </Badge>
+                  </ManagerTableCell>
                   <ManagerTableCell>{condo.nif || "N/A"}</ManagerTableCell>
                   <ManagerTableCell>
                     {condo.website ? (

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditCondoModal } from "@/components/manager/EditCondoModal"; // Reusing EditCondoModal
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -31,13 +32,25 @@ const Condominios = () => {
   const fetchCondos = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("condominiums") // Changed from "condos" to "condominiums"
-      .select("*");
+      .from("condominiums")
+      .select(`
+        *,
+        administrators (
+          id,
+          name
+        )
+      `);
 
     if (error) {
       showRadixError("Erro ao buscar condomínios.");
+      console.error("Error fetching condos:", error);
     } else {
-      setCondos(data || []);
+      // Map data to include administrator name
+      const condosWithAdmin = (data || []).map((condo: any) => ({
+        ...condo,
+        administrator_name: condo.administrators?.name || 'Sem administradora'
+      }));
+      setCondos(condosWithAdmin);
     }
     setLoading(false);
   };
@@ -123,7 +136,11 @@ const Condominios = () => {
                   <TableCell className="font-medium text-purple-400">{condo.code}</TableCell>
                   <TableCell className="font-medium">{condo.name}</TableCell>
                   <TableCell>{condo.address || 'N/A'}</TableCell>
-                  <TableCell>{condo.administrator_name || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                      {condo.administrator_name || 'Sem administradora'}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleEditCondo(condo)}>
                       <Pencil className="h-4 w-4" />
