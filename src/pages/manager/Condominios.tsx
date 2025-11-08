@@ -30,23 +30,17 @@ const ManagerCondominios = () => {
 
   const fetchCondos = async () => {
     if (!activeAdministratorId) {
-      console.log('🏢 Condominios: Nenhuma administradora selecionada');
       setLoading(false);
       return;
     }
     setLoading(true);
     
-    console.log('🏢 Condominios: Buscando condomínios da administradora:', activeAdministratorId);
-    console.log('🏢 Condominios: Administradora ativa:', activeAdministrator);
-    
     try {
-      // Buscar condomínios
+      // Buscar condomínios da administradora selecionada
       const { data: condosData, error: condosError } = await supabase
         .from("condominiums")
         .select("*")
         .eq('administrator_id', activeAdministratorId);
-      
-      console.log('🏢 Condominios: Resultado da query:', { condosData, condosError });
 
       if (condosError) {
         console.error("Error fetching condominiums:", condosError);
@@ -59,25 +53,17 @@ const ManagerCondominios = () => {
       // Para cada condomínio, buscar contagem de blocos e unidades
       const condosWithCounts = await Promise.all(
         (condosData || []).map(async (condo: any) => {
-          // Contar blocos - tentar ambas as colunas por compatibilidade
-          const { count: blocksCount, error: blocksError } = await supabase
+          // Contar blocos
+          const { count: blocksCount } = await supabase
             .from("blocks")
             .select("*", { count: 'exact', head: true })
             .or(`condominium_id.eq.${condo.id},condo_id.eq.${condo.id}`);
 
-          if (blocksError) {
-            console.error('Erro ao contar blocos:', blocksError);
-          }
-
-          // Contar unidades - tentar ambas as colunas por compatibilidade
-          const { count: unitsCount, error: unitsError } = await supabase
+          // Contar unidades
+          const { count: unitsCount } = await supabase
             .from("units")
             .select("*", { count: 'exact', head: true })
-            .or(`condominium_id.eq.${condo.id},condo_id.eq.${condo.id}`);
-
-          if (unitsError) {
-            console.error('Erro ao contar unidades:', unitsError);
-          }
+            .eq('condo_id', condo.id);
 
           return {
             ...condo,
