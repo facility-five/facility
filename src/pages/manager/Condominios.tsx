@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Condo } from "@/components/admin/CondoCard"; // Reusing Condo type
 import { ManagerTable, ManagerTableBody, ManagerTableCell, ManagerTableHead, ManagerTableHeader, ManagerTableRow } from "@/components/manager/ManagerTable";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Building2 } from "lucide-react";
 import { NewCondoModal } from "@/components/admin/NewCondoModal"; // Reusing NewCondoModal
 import { EditCondoModal } from "@/components/manager/EditCondoModal"; // New EditCondoModal
 import { DeleteCondoModal } from "@/components/admin/DeleteCondoModal"; // Reusing DeleteCondoModal
@@ -30,7 +30,7 @@ const ManagerCondominios = () => {
 
   // Log opcional para debug
   useEffect(() => {
-    console.log("[ACTIVE ADMIN]", activeAdministrator?.name);
+    // // console.log("[ACTIVE ADMIN]", activeAdministrator?.name);
   }, [activeAdministrator?.name]);
 
   const fetchCondos = useCallback(async () => {
@@ -49,16 +49,20 @@ const ManagerCondominios = () => {
       // Buscar condomínios usando contadores persistidos (evita joins aninhados)
       const { data: condosData, error: condosError } = await supabase
         .from("condominiums")
-        .select("id, name, nif, email, phone, website, area, type, total_blocks, total_units, status, created_at, updated_at")
+        .select("id, name, nif, email, phone, website, area, total_blocks, total_units, status, created_at, updated_at")
         .eq('administrator_id', activeAdministratorId);
 
       if (condosError) {
-        console.error("Error fetching condominiums:", condosError);
-        showRadixError(
-          condosError.message === 'JWT expired'
-            ? "Sessão expirada. Por favor, faça login novamente."
-            : "Erro ao buscar condomínios. Tente novamente."
-        );
+        console.error("❌ Error fetching condominiums:", {
+          message: condosError.message,
+          details: condosError.details,
+          hint: condosError.hint,
+          code: condosError.code
+        });
+        // Não mostrar erro se for vazio (sem dados)
+        if (condosError.code !== 'PGRST116') {
+          showRadixError("Erro ao buscar condomínios. Tente novamente.");
+        }
         setCondos([]);
         setLoading(false);
         return;
@@ -66,10 +70,10 @@ const ManagerCondominios = () => {
 
       // Dados já possuem total_blocks e total_units pelo schema/trigger
       const list = (condosData as any[]) || [];
-      console.log('Supabase response: 200 OK (' + list.length + ' results)');
+      console.log('✅ Supabase response: 200 OK (' + list.length + ' results)');
       setCondos(list);
     } catch (error) {
-      console.error("Unexpected error:", error);
+      console.error("❌ Unexpected error:", error);
       showRadixError("Erro inesperado ao carregar condomínios. Atualize a página.");
       setCondos([]);
     }
@@ -92,8 +96,21 @@ const ManagerCondominios = () => {
   if (!activeAdministratorId) {
     return (
       <ManagerLayout>
-        <div className="p-6 text-center text-gray-500">
-          Selecione uma administradora para visualizar os condomínios.
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
+          <Building2 className="h-16 w-16 text-purple-300 mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            Nenhuma administradora selecionada
+          </h3>
+          <p className="text-gray-500 text-center mb-6 max-w-md">
+            Para gestionar condomínios, primero necesitas crear o seleccionar una administradora.
+          </p>
+          <Button
+            onClick={() => window.location.href = '/gestor/administradoras'}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            <Building2 className="h-4 w-4 mr-2" />
+            Ir a Administradoras
+          </Button>
         </div>
       </ManagerLayout>
     );

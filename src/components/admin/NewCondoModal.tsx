@@ -86,7 +86,7 @@ export const NewCondoModal = ({
         nif: "",
         website: "",
         area: "",
-        condo_type: "",
+        condo_type: "residencial",
         total_blocks: 0,
         total_units: 0,
         email: "",

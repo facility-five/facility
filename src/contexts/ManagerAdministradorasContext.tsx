@@ -91,14 +91,14 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
   const fetchAdministrators = useCallback(async (newFilters?: Partial<FilterState>) => {
     if (!user?.id) {
-      console.log("🔍 ManagerAdministradorasContext: Usuário não autenticado", { user });
+      // console.log("🔍 ManagerAdministradorasContext: Usuário não autenticado", { user });
       setAdministrators([]);
       setActiveAdministratorId(null);
       setLoading(false);
       return;
     }
 
-    console.log("🔍 ManagerAdministradorasContext: Iniciando busca de administradoras para usuário", user.id, { isFreePlan });
+    // console.log("🔍 ManagerAdministradorasContext: Iniciando busca de administradoras para usuário", user.id, { isFreePlan });
     setLoading(true);
 
     // Atualiza filtros se fornecidos
@@ -114,7 +114,7 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
         .eq("id", user.id)
         .single();
 
-      console.log("🔍 ManagerAdministradorasContext: Selected administrator do perfil", profileData);
+      // console.log("🔍 ManagerAdministradorasContext: Selected administrator do perfil", profileData);
 
       // Constrói a query base
       // Construir query sem o uso de alias count:count() inline, que pode causar erros 400
@@ -161,7 +161,7 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       const { data, error, count } = await query;
       
       // Log mais detalhado para facilitar debugging de erros PostgREST
-      console.log("🔍 ManagerAdministradorasContext: Resposta da query", { data, error, count });
+      // console.log("🔍 ManagerAdministradorasContext: Resposta da query", { data, error, count });
 
       if (error) {
         console.error("❌ ManagerAdministradorasContext: Erro na query", {
@@ -209,24 +209,12 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
         profiles: null
       } satisfies ManagerAdministrator));
 
-      console.log("🔍 ManagerAdministradorasContext: Dados mapeados", mapped);
+      // console.log("🔍 ManagerAdministradorasContext: Dados mapeados", mapped);
 
-      const currentUserId = user.id;
-      const filtered = mapped.filter((admin) => {
-        const ownerMatches = admin.owner_id ? admin.owner_id === currentUserId : false;
-        const responsibleMatches = admin.responsible_id ? admin.responsible_id === currentUserId : false;
-        console.log(`🔍 Admin ${admin.name} (${admin.id}):`, {
-          owner_id: admin.owner_id,
-          responsible_id: admin.responsible_id,
-          currentUserId,
-          ownerMatches,
-          responsibleMatches,
-          willBeIncluded: ownerMatches || responsibleMatches
-        });
-        return ownerMatches || responsibleMatches;
-      });
+      // Já está filtrado pela query com OR, então não precisa filtrar novamente
+      const filtered = mapped;
 
-      console.log("🔍 ManagerAdministradorasContext: Administradoras filtradas", filtered);
+      // console.log("🔍 ManagerAdministradorasContext: Administradoras filtradas", filtered);
 
       setAdministrators(filtered);
       
@@ -263,9 +251,21 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     }
   }, [user?.id, isFreePlan]);
 
+  // Carregar apenas uma vez na montagem
   useEffect(() => {
-    fetchAdministrators();
-  }, [fetchAdministrators]);
+    let mounted = true;
+    
+    const init = async () => {
+      if (!mounted) return;
+      await fetchAdministrators();
+    };
+    
+    init();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]); // Só recarrega se o usuário mudar
 
   const fetchPlanInfo = useCallback(async () => {
     if (!user?.id) {
@@ -288,7 +288,6 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
     if (paymentError && paymentError.code !== "PGRST116") {
       console.error("ManagerAdministradorasContext: erro ao buscar pagamento ativo", paymentError);
-      showRadixError("Error al buscar información del plan.");
       setPlanName(null);
       setPlanLimit(null);
       setPlanLoading(false);
@@ -299,16 +298,26 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     const latestPlanName = planData?.name ?? null;
     const maxAdmins = planData?.max_admins ?? null;
     
-    console.log("🔍 ManagerAdministradorasContext: Plan info", { latestPlanName, maxAdmins, paymentData });
-    
     setPlanName(latestPlanName);
     setPlanLimit(maxAdmins);
     setPlanLoading(false);
   }, [user?.id]);
 
+  // Carregar plano apenas uma vez na montagem
   useEffect(() => {
-    fetchPlanInfo();
-  }, [fetchPlanInfo]);
+    let mounted = true;
+    
+    const init = async () => {
+      if (!mounted) return;
+      await fetchPlanInfo();
+    };
+    
+    init();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]); // Só recarrega se o usuário mudar
 
   const activeAdministrator = useMemo(() => {
     if (!activeAdministratorId) return null;
@@ -325,7 +334,7 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
         .update({ selected_administrator_id: id })
         .eq("id", user.id);
       
-      console.log("🔍 ManagerAdministradorasContext: Administradora selecionada atualizada no perfil", id);
+      // console.log("🔍 ManagerAdministradorasContext: Administradora selecionada atualizada no perfil", id);
     }
 
     // Persistir em localStorage
@@ -356,7 +365,7 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     }
     // Persistência e atualização reativa via updateActiveAdministratorId
     updateActiveAdministratorId(id);
-    console.log("[ACTIVE ADMIN SELECT]", { id });
+    // console.log("[ACTIVE ADMIN SELECT]", { id });
   }, [updateActiveAdministratorId]);
 
   const totalAdministrators = administrators.length;
@@ -434,20 +443,10 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
     ],
   );
 
-  // Log opcional para debug
-  useEffect(() => {
-    console.log("[ADMIN SELECTOR]", { activeAdministrator, administrators });
-  }, [activeAdministrator, administrators]);
-
-  // Restaurar administradora salva quando a lista for carregada/alterada
-  useEffect(() => {
-    try {
-      const savedId = localStorage.getItem("activeAdministratorId");
-      if (savedId && administrators.some(a => a.id === savedId) && savedId !== activeAdministratorId) {
-        setActiveAdministratorId(savedId);
-      }
-    } catch {}
-  }, [administrators]);
+  // Comentado para evitar re-renders desnecessários
+  // useEffect(() => {
+  //   console.log("[ADMIN SELECTOR]", { activeAdministrator, administrators });
+  // }, [activeAdministrator, administrators]);
 
   return (
     <ManagerAdministradorasContext.Provider value={value}>

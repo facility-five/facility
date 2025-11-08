@@ -28,24 +28,28 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
 
   const checkPlanStatus = useCallback(async (forceRefresh = false) => {
     if (!session?.user?.id) {
-      console.log("usePlan: Nenhum usuário logado");
+      // console.log("usePlan: Nenhum usuário logado");
       setHasActivePlan(false);
       setCurrentPlan(null);
       setIsLoading(false);
       return;
     }
 
-    // Evitar verificações muito frequentes (mínimo 2 segundos entre verificações)
+    // Evitar verificações muito frequentes (mínimo 5 segundos entre verificações)
     const now = Date.now();
-    if (!forceRefresh && now - lastCheck < 2000) {
-      console.log("usePlan: Verificação muito recente, pulando...");
+    if (!forceRefresh && now - lastCheck < 5000) {
+      // console.log("usePlan: Verificação muito recente, pulando...");
       return;
     }
 
     setLastCheck(now);
-    setIsLoading(true);
+    
+    // Só mostra loading se for a primeira verificação
+    if (lastCheck === 0) {
+      setIsLoading(true);
+    }
 
-    console.log("usePlan: Verificando plano para usuário:", session.user.id);
+    // console.log("usePlan: Verificando plano para usuário:", session.user.id);
 
     try {
       // Primeiro, vamos verificar se existem pagamentos para este usuário
@@ -54,7 +58,7 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
         .select("*")
         .eq("user_id", session.user.id);
 
-      console.log("usePlan: Todos os pagamentos do usuário:", allPayments);
+      // console.log("usePlan: Todos os pagamentos do usuário:", allPayments);
 
       if (allPaymentsError) {
         console.error("usePlan: Erro ao buscar todos os pagamentos:", allPaymentsError);
@@ -83,26 +87,26 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
         .order("created_at", { ascending: false })
         .limit(1);
 
-      console.log("usePlan: Pagamentos ativos encontrados:", payments);
-      console.log("usePlan: Erro na consulta:", error);
+      // console.log("usePlan: Pagamentos ativos encontrados:", payments);
+      // console.log("usePlan: Erro na consulta:", error);
 
       if (error) throw error;
 
-      console.log("usePlan: Verificando payments array:", payments);
-      console.log("usePlan: Payments length:", payments?.length);
+      // console.log("usePlan: Verificando payments array:", payments);
+      // console.log("usePlan: Payments length:", payments?.length);
       
       if (payments && payments.length > 0) {
         const payment = payments[0] as any;
-        console.log("usePlan: Pagamento ativo encontrado:", payment);
-        console.log("usePlan: payment.plans:", payment.plans);
-        console.log("usePlan: payment.plan:", payment.plan);
+        // console.log("usePlan: Pagamento ativo encontrado:", payment);
+        // console.log("usePlan: payment.plans:", payment.plans);
+        // console.log("usePlan: payment.plan:", payment.plan);
         setHasActivePlan(true);
 
         // Se a relação 'plans' não vier (por falta de FK), buscar pelo plan
         if (payment.plan) {
           setCurrentPlan(payment.plan as Plan);
         } else if (payment.plan_id) {
-          console.log("usePlan: Relação 'plan' ausente; buscando plano por plan_id:", payment.plan_id);
+          // console.log("usePlan: Relação 'plan' ausente; buscando plano por plan_id:", payment.plan_id);
           const { data: planById, error: planByIdError } = await supabase
             .from("plans")
             .select("id,name,description,price,features,max_condos,max_admins")
@@ -136,7 +140,7 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
           console.warn("usePlan: Pagamento ativo sem plan; mantendo acesso via subscription_status");
         }
       } else {
-        console.log("usePlan: Nenhum plano ativo encontrado");
+        // console.log("usePlan: Nenhum plano ativo encontrado");
         
         // Fallback: Se não encontrou pagamentos ativos, vamos verificar se há algum plano padrão
         // ou se o usuário deveria ter acesso completo por algum outro motivo
@@ -148,7 +152,7 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
           .eq("id", session.user.id)
           .single();
 
-        console.log("usePlan: Profile do usuário:", profile);
+        // console.log("usePlan: Profile do usuário:", profile);
 
         if (profileError) {
           console.error("usePlan: Erro ao buscar profile:", profileError);
@@ -156,7 +160,7 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
 
         // Se o usuário tem subscription_status ativo ou é admin, considerar como tendo plano
         if (profile && (profile.subscription_status === "active" || profile.role === "admin")) {
-          console.log("usePlan: Usuário tem acesso via profile/subscription_status");
+          // console.log("usePlan: Usuário tem acesso via profile/subscription_status");
           setHasActivePlan(true);
           // Criar um plano padrão para usuários com acesso
           setCurrentPlan({
@@ -184,38 +188,44 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
 
   // Função para forçar atualização (útil após pagamentos)
   const refreshPlanStatus = useCallback(() => {
-    console.log("usePlan: Forçando atualização do status do plano");
+    // console.log("usePlan: Forçando atualização do status do plano");
     return checkPlanStatus(true);
   }, [checkPlanStatus]);
 
-  // Verificação inicial e quando o usuário muda
+  // Verificação inicial apenas uma vez na montagem
   useEffect(() => {
-    checkPlanStatus();
-  }, [session?.user?.id, checkPlanStatus]);
-
-  // Polling inteligente - mais frequente se não tem plano ativo
-  useEffect(() => {
-    if (!session?.user?.id) return;
-
-    // Se não tem plano ativo, verificar a cada 10 segundos
-    // Se tem plano ativo, verificar a cada 60 segundos
-    const interval = hasActivePlan ? 60000 : 10000;
+    let mounted = true;
     
-    const timer = setInterval(() => {
-      checkPlanStatus();
-    }, interval);
+    const init = async () => {
+      if (!mounted) return;
+      await checkPlanStatus();
+    };
+    
+    init();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [session?.user?.id]); // Só recarrega se o usuário mudar
 
-    return () => clearInterval(timer);
-  }, [session?.user?.id, hasActivePlan, checkPlanStatus]);
+  // Polling DESABILITADO - usamos apenas listeners em tempo real
+  // useEffect(() => {
+  //   if (!session?.user?.id) return;
+  //   const interval = hasActivePlan ? 60000 : 10000;
+  //   const timer = setInterval(() => {
+  //     checkPlanStatus();
+  //   }, interval);
+  //   return () => clearInterval(timer);
+  // }, [session?.user?.id, hasActivePlan, checkPlanStatus]);
 
-  // Escutar mudanças em tempo real na tabela payments
+  // Listener em tempo real unificado (apenas payments - profiles desnecessário)
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    console.log("usePlan: Configurando listener em tempo real para pagamentos");
-
+    let debounceTimer: NodeJS.Timeout;
+    
     const channel = supabase
-      .channel("payments-changes")
+      .channel("plan-status-changes")
       .on(
         "postgres_changes",
         {
@@ -225,49 +235,20 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
           filter: `user_id=eq.${session.user.id}`
         },
         (payload) => {
-          console.log("usePlan: Mudança detectada na tabela payments:", payload);
-          // Aguardar um pouco para o webhook processar completamente
-          setTimeout(() => {
+          // Debounce para evitar múltiplas atualizações rápidas
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
             refreshPlanStatus();
-          }, 2000);
+          }, 3000);
         }
       )
       .subscribe();
 
     return () => {
-      console.log("usePlan: Removendo listener em tempo real");
+      clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
-  }, [session?.user?.id, refreshPlanStatus]);
-
-  // Escutar mudanças em tempo real na tabela profiles
-  useEffect(() => {
-    if (!session?.user?.id) return;
-
-    console.log("usePlan: Configurando listener em tempo real para profiles");
-
-    const channel = supabase
-      .channel("profiles-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "profiles",
-          filter: `id=eq.${session.user.id}`
-        },
-        (payload) => {
-          console.log("usePlan: Mudança detectada na tabela profiles:", payload);
-          refreshPlanStatus();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log("usePlan: Removendo listener de profiles");
-      supabase.removeChannel(channel);
-    };
-  }, [session?.user?.id, refreshPlanStatus]);
+  }, [session?.user?.id]); // Removido refreshPlanStatus da dependência
 
   // isFreePlan deve verificar se o plano atual tem preço 0, não se não tem plano
   const isFreePlan = hasActivePlan && currentPlan?.price === 0;

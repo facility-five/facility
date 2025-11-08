@@ -52,6 +52,7 @@ type Profile = {
   id: string;
   first_name: string;
   last_name: string;
+  email: string;
 };
 
 export const EditAdministratorModal = ({
@@ -75,9 +76,15 @@ export const EditAdministratorModal = ({
 
   useEffect(() => {
     const fetchProfiles = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name");
+        .select("id, first_name, last_name, email")
+        .eq("role", "manager");
+      
+      if (error) {
+        console.error("Erro ao buscar profiles:", error);
+      }
+      
       setProfiles(data || []);
     };
     if (isOpen) {
@@ -204,11 +211,15 @@ export const EditAdministratorModal = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
-                      {profiles.map((profile) => (
-                        <SelectItem key={profile.id} value={profile.id}>
-                          {`${profile.first_name || ''} ${profile.last_name || ''}`.trim()}
-                        </SelectItem>
-                      ))}
+                      {profiles.map((profile) => {
+                        const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+                        const displayName = fullName || profile.email;
+                        return (
+                          <SelectItem key={profile.id} value={profile.id}>
+                            {displayName}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                   <FormMessage />

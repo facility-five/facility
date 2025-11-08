@@ -158,9 +158,9 @@ const ManagerVehiculosContent = () => {
     try {
       console.log("🚗 fetchCondos - Fazendo consulta ao Supabase");
       const { data, error } = await supabase
-        .from("condominios")
+        .from("condominiums")
         .select("id, name")
-        .eq("administradora_id", activeAdministratorId)
+        .eq("administrator_id", activeAdministratorId)
         .eq("status", "active")
         .order("name");
 
@@ -200,13 +200,13 @@ const ManagerVehiculosContent = () => {
           condo_id,
           created_at,
           updated_at,
-          condominios!inner(
+          condominiums!inner(
             id,
             name,
-            administradora_id
+            administrator_id
           )
         `)
-        .eq("condominios.administradora_id", activeAdministratorId)
+        .eq("condominiums.administrator_id", activeAdministratorId)
         .order("license_plate");
 
       console.log("🚗 fetchVehicles - Resposta do Supabase:", { data, error });
@@ -252,13 +252,13 @@ const ManagerVehiculosContent = () => {
           number,
           blocks!inner(
             name,
-            condominios!inner(
+            condominiums!inner(
               id,
-              administradora_id
+              administrator_id
             )
           )
         `)
-        .eq("blocks.condominios.administradora_id", activeAdministratorId)
+        .eq("blocks.condominiums.administrator_id", activeAdministratorId)
         .order("number");
 
       if (error) throw error;
@@ -267,7 +267,7 @@ const ManagerVehiculosContent = () => {
         id: unit.id,
         number: unit.number,
         block_name: unit.blocks?.name,
-        condo_id: unit.blocks?.condominios?.id,
+        condo_id: unit.blocks?.condominiums?.id,
       })) || [];
 
       setUnits(formattedUnits);

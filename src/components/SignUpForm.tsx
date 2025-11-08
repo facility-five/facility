@@ -88,26 +88,55 @@ export function SignUpForm() {
       if (session) {
         try {
           const selectedPlan = sessionStorage.getItem('selected_plan');
+          
           if (!selectedPlan) {
-            throw new Error("No hay plan seleccionado");
+            // Se não há plano selecionado, buscar o plano gratuito
+            const { data: freePlan, error: freePlanError } = await supabase
+              .from('plans')
+              .select('*')
+              .eq('price', 0)
+              .order('created_at', { ascending: true })
+              .limit(1)
+              .single();
+
+            if (freePlanError || !freePlan) {
+              console.error('Error al buscar plan gratuito:', freePlanError);
+              throw new Error("No se pudo encontrar el plan gratuito");
+            }
+
+            // Criar pagamento ativo para o plano gratuito
+            const { error: paymentError } = await supabase.from('payments').insert({
+              user_id: session.user.id,
+              plan_id: freePlan.id,
+              amount: 0,
+              status: 'active'
+            });
+
+            if (paymentError) {
+              console.error('Error al crear payment:', paymentError);
+            }
+
+            showRadixSuccess("Cuenta creada con éxito. Plan gratuito activado.");
+            navigate('/gestor');
+            return;
           }
 
           const planData = JSON.parse(selectedPlan);
           
           if (planData.price === 0) {
             // Para plano gratuito
-            await supabase.from('payments').insert({
+            const { error: paymentError } = await supabase.from('payments').insert({
               user_id: session.user.id,
               plan_id: planData.id,
               amount: 0,
               status: 'active'
             });
 
-            await supabase.from('profiles').update({ 
-              subscription_status: 'active' 
-            }).eq('id', session.user.id);
+            if (paymentError) {
+              console.error('Error al crear payment:', paymentError);
+            }
 
-            // Redireciona para o gestor para criar administradora
+            showRadixSuccess("Cuenta creada con éxito. Plan gratuito activado.");
             navigate('/gestor');
           } else {
             // Para plano pago, redireciona para o checkout do Stripe

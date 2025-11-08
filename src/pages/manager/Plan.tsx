@@ -89,9 +89,9 @@ const ManagerPlan = () => {
             .select("id", { count: "exact" })
             .eq("administradora_id", profile.administradora_id),
           supabase
-            .from("condominios")
+            .from("condominiums")
             .select("id", { count: "exact" })
-            .eq("administradora_id", profile.administradora_id)
+            .eq("administrator_id", profile.administrator_id)
         ]);
 
         console.log("Plan.tsx: Usage stats responses:", { adminsResponse, condosResponse });

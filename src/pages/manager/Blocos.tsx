@@ -84,28 +84,28 @@ const ManagerBlocosContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchCondos = useCallback(async () => {
-    console.log("🔍 Blocos - Iniciando busca de condomínios");
-    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
+    // // // console.log("🔍 Blocos - Iniciando busca de condomínios");
+    // // // console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     
     if (!activeAdministratorId) {
-      console.log("❌ Blocos - Sem administradora ativa, retornando");
+      // // // console.log("❌ Blocos - Sem administradora ativa, retornando");
       return;
     }
 
     try {
-      console.log("🔍 fetchCondos - Fazendo consulta ao Supabase");
+      // // // console.log("🔍 fetchCondos - Fazendo consulta ao Supabase");
       const { data, error } = await supabase
-        .from("condominios")
+        .from("condominiums")
         .select("id, name")
-        .eq("administradora_id", activeAdministratorId)
+        .eq("administrator_id", activeAdministratorId)
         .eq("status", "active")
         .order("name");
 
-      console.log("🔍 fetchCondos - Resposta do Supabase:", { data, error });
+      // // // console.log("🔍 fetchCondos - Resposta do Supabase:", { data, error });
 
       if (error) throw error;
       setCondos(data || []);
-      console.log("✅ fetchCondos - Condomínios carregados:", data?.length || 0);
+      // // // console.log("✅ fetchCondos - Condomínios carregados:", data?.length || 0);
     } catch (error) {
       console.error("❌ fetchCondos - Erro:", error);
       showRadixError("Erro ao carregar condomínios");
@@ -113,17 +113,17 @@ const ManagerBlocosContent = () => {
   }, [activeAdministratorId]);
 
   const fetchBlocks = useCallback(async () => {
-    console.log("🔍 Blocos - Iniciando busca de blocos");
-    console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
+    // // // console.log("🔍 Blocos - Iniciando busca de blocos");
+    // // // console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     
     if (!activeAdministratorId) {
-      console.log("❌ Blocos - Sem administradora ativa, retornando");
+      // // // console.log("❌ Blocos - Sem administradora ativa, retornando");
       return;
     }
 
     try {
       setLoading(true);
-      console.log("🔍 fetchBlocks - Fazendo consulta ao Supabase");
+      // // // console.log("🔍 fetchBlocks - Fazendo consulta ao Supabase");
       const { data, error } = await supabase
         .from("blocks")
         .select(`
@@ -134,16 +134,16 @@ const ManagerBlocosContent = () => {
           condo_id,
           created_at,
           updated_at,
-          condominios!inner(
+          condominiums!inner(
             id,
             name,
-            administradora_id
+            administrator_id
           )
         `)
-        .eq("condominios.administradora_id", activeAdministratorId)
+        .eq("condominiums.administrator_id", activeAdministratorId)
         .order("name");
 
-      console.log("🔍 fetchBlocks - Resposta do Supabase:", { data, error });
+      // // // console.log("🔍 fetchBlocks - Resposta do Supabase:", { data, error });
 
       if (error) throw error;
 
@@ -177,17 +177,7 @@ const ManagerBlocosContent = () => {
     }
   }, [activeAdministratorId, fetchCondos, fetchBlocks]);
 
-  // Fallback visual quando não há administradora selecionada
-  if (!activeAdministratorId) {
-    return (
-      <ManagerLayout>
-        <div className="p-6 text-center text-gray-500">
-          Selecione uma administradora para visualizar os blocos.
-        </div>
-      </ManagerLayout>
-    );
-  }
-
+  // SEMPRE chamar useMemo ANTES de qualquer return condicional
   const filteredBlocks = useMemo(() => {
     return blocks.filter((block) => {
       const matchesSearch = block.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -294,6 +284,15 @@ const ManagerBlocosContent = () => {
     setIsModalOpen(false);
     setEditingBlock(null);
   };
+
+  // Early return DEPOIS de todos os hooks e callbacks
+  if (!activeAdministratorId) {
+    return (
+      <div className="p-6 text-center text-gray-500">
+        Selecione uma administradora para visualizar os blocos.
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -545,3 +544,4 @@ const ManagerBlocos = () => (
 );
 
 export default ManagerBlocos;
+

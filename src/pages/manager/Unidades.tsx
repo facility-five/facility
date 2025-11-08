@@ -186,9 +186,9 @@ const ManagerUnidadesContent = () => {
           created_at,
           updated_at,
           blocks!inner(name),
-          condominiums!inner(name)
+          condominiums!inner(name, administrator_id)
         `)
-        .eq("administradora_id", activeAdministratorId)
+        .eq("condominiums.administrator_id", activeAdministratorId)
         .order("number");
 
       if (error) {

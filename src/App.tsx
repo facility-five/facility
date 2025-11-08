@@ -6,9 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ManagerAdministradorasProvider } from "@/contexts/ManagerAdministradorasContext";
 import SystemTitle from "./components/SystemTitle";
-import { ThemeProvider } from "@/components/theme-provider"; // Importar ThemeProvider
+import { ThemeProvider } from "@/components/theme-provider";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Suspense, lazy } from "react";
+import { AppLoader } from "./components/AppLoader";
+import { SuspenseFallback } from "./components/SuspenseFallback";
 
+// Imports críticos (sempre carregados)
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SignUp from "./pages/SignUp";
@@ -16,59 +20,62 @@ import SignUpDetails from "./pages/SignUpDetails";
 import ForgotPassword from "./pages/ForgotPassword";
 import EmailConfirmation from "./pages/EmailConfirmation";
 import Plans from "./pages/Plans";
-import Dashboard from "./pages/admin/Dashboard";
-import MyAccount from "./pages/admin/MyAccount";
-import Administrators from "./pages/admin/Administrators";
-import Condominios from "./pages/admin/Condominios";
-import Blocks from "./pages/admin/Blocks";
-import Units from "./pages/admin/Units";
-import CommonAreas from "./pages/admin/CommonAreas";
-import Users from "./pages/admin/Users";
-import AdminPlans from "./pages/admin/Plans";
-import Payments from "./pages/admin/Payments";
-import Settings from "./pages/admin/Settings";
-import Notifications from "./pages/admin/Notifications";
-import ManagerDashboard from "./pages/ManagerDashboard";
-import ResidentDashboard from "./pages/ResidentDashboard";
-import ResidentAccess from "./pages/ResidentAccess";
-
 import ResetPassword from "./pages/ResetPassword";
-import RegisterAdministrator from "./pages/RegisterAdministrator";
-import DesignSystem from "./pages/DesignSystem";
-import TestToast from "./pages/TestToast";
-import Login from "./pages/Login"; // Importar o componente Login
+import Login from "./pages/Login";
 import { AuthCallback } from "@/components/AuthCallback";
-import { BaseLayout } from "@/components/BaseLayout";
-
-import ResidentReservations from "./pages/resident/Reservations";
-import ResidentCommunications from "./pages/resident/Communications";
-import ResidentRequests from "./pages/resident/Requests";
-import ResidentUnit from "./pages/resident/Unit";
-import ResidentDocuments from "./pages/resident/Documents";
-import ResidentProfile from "./pages/resident/Profile";
-import ResidentSettings from "./pages/resident/Settings";
-
-import ManagerAdministradoras from "./pages/manager/Administradoras";
-import ManagerCondominios from "./pages/manager/Condominios";
-import ManagerConfiguracoes from "./pages/manager/Configuracoes";
-import ManagerResidentes from "./pages/manager/Residentes";
-import ManagerPlan from "./pages/manager/Plan";
-import MiPlan from "./pages/manager/MiPlan";
-import ManagerComunicados from "./pages/manager/Comunicados";
-import ManagerAreasComuns from "./pages/manager/AreasComuns";
-import ManagerReservas from "./pages/manager/Reservas";
-import ManagerVehiculos from "./pages/manager/Vehiculos";
-import ManagerBlocos from "./pages/manager/Blocos";
-import ManagerUnidades from "./pages/manager/Unidades";
-import ManagerMascotas from "./pages/manager/Mascotas";
-import SyndicDashboard from "./pages/sindico/Dashboard";
-import LandingPageSettings from "./pages/admin/LandingPageSettings";
+import ResidentAccess from "./pages/ResidentAccess";
+import TestToast from "./pages/TestToast";
 import LandingPageV2 from "./pages/LandingPageV2";
 import Contacto from "./pages/Contacto";
-import Leads from "./pages/admin/Leads";
-import ResidentsManagement from "./pages/admin/ResidentsManagement";
-import Soporte from "./pages/admin/Soporte";
-import Tareas from "./pages/admin/Tareas";
+
+// Lazy imports - Gestor
+const ManagerDashboard = lazy(() => import("./pages/ManagerDashboard"));
+const ManagerAdministradoras = lazy(() => import("./pages/manager/Administradoras"));
+const ManagerCondominios = lazy(() => import("./pages/manager/Condominios"));
+const ManagerConfiguracoes = lazy(() => import("./pages/manager/Configuracoes"));
+const ManagerResidentes = lazy(() => import("./pages/manager/Residentes"));
+const MiPlan = lazy(() => import("./pages/manager/MiPlan"));
+const ManagerComunicados = lazy(() => import("./pages/manager/Comunicados"));
+const ManagerAreasComuns = lazy(() => import("./pages/manager/AreasComuns"));
+const ManagerReservas = lazy(() => import("./pages/manager/Reservas"));
+const ManagerVehiculos = lazy(() => import("./pages/manager/Vehiculos"));
+const ManagerBlocos = lazy(() => import("./pages/manager/Blocos"));
+const ManagerUnidades = lazy(() => import("./pages/manager/Unidades"));
+const ManagerMascotas = lazy(() => import("./pages/manager/Mascotas"));
+
+// Lazy imports - Admin
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const MyAccount = lazy(() => import("./pages/admin/MyAccount"));
+const Administrators = lazy(() => import("./pages/admin/Administrators"));
+const Condominios = lazy(() => import("./pages/admin/Condominios"));
+const Blocks = lazy(() => import("./pages/admin/Blocks"));
+const Units = lazy(() => import("./pages/admin/Units"));
+const CommonAreas = lazy(() => import("./pages/admin/CommonAreas"));
+const Users = lazy(() => import("./pages/admin/Users"));
+const AdminPlans = lazy(() => import("./pages/admin/Plans"));
+const Payments = lazy(() => import("./pages/admin/Payments"));
+const Settings = lazy(() => import("./pages/admin/Settings"));
+const Notifications = lazy(() => import("./pages/admin/Notifications"));
+const LandingPageSettings = lazy(() => import("./pages/admin/LandingPageSettings"));
+const Leads = lazy(() => import("./pages/admin/Leads"));
+const ResidentsManagement = lazy(() => import("./pages/admin/ResidentsManagement"));
+const Soporte = lazy(() => import("./pages/admin/Soporte"));
+const Tareas = lazy(() => import("./pages/admin/Tareas"));
+const DesignSystem = lazy(() => import("./pages/DesignSystem"));
+
+// Lazy imports - Resident
+const ResidentDashboard = lazy(() => import("./pages/ResidentDashboard"));
+const ResidentReservations = lazy(() => import("./pages/resident/Reservations"));
+const ResidentCommunications = lazy(() => import("./pages/resident/Communications"));
+const ResidentRequests = lazy(() => import("./pages/resident/Requests"));
+const ResidentUnit = lazy(() => import("./pages/resident/Unit"));
+const ResidentDocuments = lazy(() => import("./pages/resident/Documents"));
+const ResidentProfile = lazy(() => import("./pages/resident/Profile"));
+const ResidentSettings = lazy(() => import("./pages/resident/Settings"));
+
+// Lazy imports - Syndic
+const SyndicDashboard = lazy(() => import("./pages/sindico/Dashboard"));
+const RegisterAdministrator = lazy(() => import("./pages/RegisterAdministrator"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,8 +93,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthProvider>
-            <SystemTitle />
-            <Routes>
+            <AppLoader>
+              <SystemTitle />
+              <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/landing-v2" element={<LandingPageV2 />} />
               <Route path="/contacto" element={<Contacto />} />
@@ -109,7 +117,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerDashboard />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerDashboard />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -119,7 +129,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerDashboard />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerDashboard />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -129,7 +141,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerAdministradoras />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerAdministradoras />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -139,7 +153,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerCondominios />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerCondominios />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -149,7 +165,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerResidentes />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerResidentes />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -159,7 +177,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerConfiguracoes />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerConfiguracoes />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -169,7 +189,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <MiPlan />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <MiPlan />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -179,7 +201,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerComunicados />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerComunicados />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -189,7 +213,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerAreasComuns />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerAreasComuns />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -199,7 +225,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerReservas />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerReservas />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -209,7 +237,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Administrador", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerVehiculos />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerVehiculos />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -219,7 +249,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerBlocos />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerBlocos />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -229,7 +261,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerUnidades />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerUnidades />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -239,7 +273,9 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
                     <ManagerAdministradorasProvider>
-                      <ManagerMascotas />
+                      <Suspense fallback={<SuspenseFallback />}>
+                        <ManagerMascotas />
+                      </Suspense>
                     </ManagerAdministradorasProvider>
                   </ProtectedRoute>
                 }
@@ -249,7 +285,9 @@ const App = () => (
                 path="/sindico"
                 element={
                   <ProtectedRoute allowedRoles={["Sindico"]}>
-                    <SyndicDashboard />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <SyndicDashboard />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -259,7 +297,9 @@ const App = () => (
                 path="/morador-dashboard"
                 element={
                   <ProtectedRoute allowedRoles={["Morador"]}>
-                    <ResidentDashboard />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentDashboard />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -267,7 +307,9 @@ const App = () => (
                 path="/morador/reservas"
                 element={
                   <ProtectedRoute allowedRoles={["Morador"]}>
-                    <ResidentReservations />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentReservations />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -275,7 +317,9 @@ const App = () => (
                 path="/morador/comunicados"
                 element={
                   <ProtectedRoute allowedRoles={["Morador"]}>
-                    <ResidentCommunications />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentCommunications />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -283,7 +327,9 @@ const App = () => (
                 path="/morador/solicitudes"
                 element={
                   <ProtectedRoute allowedRoles={["Morador"]}>
-                    <ResidentRequests />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentRequests />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -291,7 +337,9 @@ const App = () => (
                 path="/morador/unidade"
                 element={
                   <ProtectedRoute allowedRoles={["Morador"]}>
-                    <ResidentUnit />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentUnit />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -299,7 +347,9 @@ const App = () => (
                 path="/morador/documentos"
                 element={
                   <ProtectedRoute allowedRoles={["Morador"]}>
-                    <ResidentDocuments />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentDocuments />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -307,7 +357,9 @@ const App = () => (
                 path="/morador/perfil"
                 element={
                   <ProtectedRoute allowedRoles={["Morador"]}>
-                    <ResidentProfile />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentProfile />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -315,7 +367,9 @@ const App = () => (
                 path="/morador/configuracoes"
                 element={
                   <ProtectedRoute allowedRoles={["Morador"]}>
-                    <ResidentSettings />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentSettings />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -325,7 +379,9 @@ const App = () => (
                 path="/registrar-administradora"
                 element={
                   <ProtectedRoute allowedRoles={["Administradora"]} allowWithoutProfile>
-                    <RegisterAdministrator />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <RegisterAdministrator />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -333,7 +389,9 @@ const App = () => (
                 path="/admin"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Dashboard />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Dashboard />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -341,7 +399,9 @@ const App = () => (
                 path="/admin/minha-conta"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <MyAccount />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <MyAccount />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -349,7 +409,9 @@ const App = () => (
                 path="/admin/administradoras"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Administrators />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Administrators />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -357,7 +419,9 @@ const App = () => (
                 path="/admin/condominios"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Condominios />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Condominios />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -365,7 +429,9 @@ const App = () => (
                 path="/admin/bloques"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Blocks />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Blocks />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -373,7 +439,9 @@ const App = () => (
                 path="/admin/unidades"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Units />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Units />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -381,7 +449,9 @@ const App = () => (
                 path="/admin/areas-comunes"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <CommonAreas />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <CommonAreas />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -389,7 +459,9 @@ const App = () => (
                 path="/admin/usuarios"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Users />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Users />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -397,7 +469,9 @@ const App = () => (
                 path="/admin/planes"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <AdminPlans />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <AdminPlans />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -405,7 +479,9 @@ const App = () => (
                 path="/admin/pagos"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Payments />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Payments />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -413,7 +489,9 @@ const App = () => (
                 path="/admin/configuracoes"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Settings />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Settings />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -421,7 +499,9 @@ const App = () => (
                 path="/admin/notificacoes"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Notifications />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Notifications />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -429,7 +509,9 @@ const App = () => (
                 path="/admin/pagina"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <LandingPageSettings />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <LandingPageSettings />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -437,7 +519,9 @@ const App = () => (
                 path="/admin/clientes-potenciales"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Leads />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Leads />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -445,7 +529,9 @@ const App = () => (
                 path="/admin/moradores"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <ResidentsManagement />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <ResidentsManagement />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -453,7 +539,9 @@ const App = () => (
                 path="/admin/design-system"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <DesignSystem />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <DesignSystem />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -461,7 +549,9 @@ const App = () => (
                 path="/admin/soporte"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Soporte />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Soporte />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
@@ -469,12 +559,15 @@ const App = () => (
                 path="/admin/tareas"
                 element={
                   <ProtectedRoute allowedRoles={["Admin do SaaS"]}>
-                    <Tareas />
+                    <Suspense fallback={<SuspenseFallback />}>
+                      <Tareas />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </AppLoader>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

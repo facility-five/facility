@@ -43,7 +43,8 @@ export async function getPlanLimits(userId: string): Promise<PlanLimits> {
     if (paymentError) throw paymentError;
 
     // Extrair os limites do plano
-    const plan = paymentData?.plans?.[0] as Partial<Plan> | undefined;
+    // Observação: o join `plans:plan_id` com `.single()` retorna um OBJETO, não array.
+    const plan = paymentData?.plans as Partial<Plan> | undefined;
 
     // Buscar contagens
     const { data: counts, error: countError } = await supabase.rpc('get_tenant_counts', { p_tenant_id: userId });

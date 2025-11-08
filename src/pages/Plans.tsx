@@ -44,20 +44,12 @@ const Plans = () => {
           .from('payments')
           .insert({
             user_id: session.user.id,
-            plan: plan.id,
+            plan_id: plan.id,
             amount: 0,
             status: 'active'
           });
 
         if (paymentError) throw paymentError;
-
-        // Atualizar profile com status de assinatura ativa
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ subscription_status: 'active' })
-          .eq('id', session.user.id);
-
-        if (profileError) throw profileError;
 
         showRadixSuccess("¡Plan gratuito activado con éxito!");
         await refreshPlanStatus();

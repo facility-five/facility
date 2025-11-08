@@ -74,18 +74,33 @@ export const NewManagerAdministratorModal = ({
         return;
     }
 
-    const { error } = await supabase.from("administrators").insert([
+    const { data: newAdmin, error } = await supabase.from("administrators").insert([
       {
         ...values,
         code: generateCode(),
         user_id: user.id, // Set the current user as owner
         responsible_id: user.id, // Set the current user as responsible
       },
-    ]);
+    ]).select().single();
 
     if (error) {
       showRadixError(error.message);
     } else {
+      // Se for a primeira administradora, seleciona automaticamente
+      const { count } = await supabase
+        .from("administrators")
+        .select("*", { count: "exact", head: true })
+        .or(`user_id.eq.${user.id},responsible_id.eq.${user.id}`);
+      
+      if (count === 1 && newAdmin) {
+        // É a primeira administradora, seleciona automaticamente
+        localStorage.setItem("activeAdministratorId", newAdmin.id);
+        await supabase
+          .from("profiles")
+          .update({ selected_administrator_id: newAdmin.id })
+          .eq("id", user.id);
+      }
+      
       showRadixSuccess("Administradora registrada com sucesso!");
       onSuccess();
       onClose();

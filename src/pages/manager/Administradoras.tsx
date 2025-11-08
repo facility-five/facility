@@ -20,9 +20,15 @@ import {
 } from "@/components/manager/ManagerTable";
 
 const ManagerAdministradorasContent = () => {
-  const { isLoading: planLoading } = usePlan();
+  const { currentPlan, isLoading: planLoading } = usePlan();
+
+  const administrators = useManagerAdministradoras().administrators;
+  const planName = currentPlan?.name || "Plano Desconhecido";
+  const planValue = currentPlan?.price || 0;
+  const planConsumption = administrators.length;
+  const planLimit = currentPlan?.max_admins || 1;
+
   const {
-    administrators,
     loading,
     activeAdministratorId,
     activeAdministrator,
@@ -45,7 +51,7 @@ const ManagerAdministradorasContent = () => {
   const hitLimit = used >= limit;
 
   // 🧪 Logs temporários de depuração (removíveis após QA)
-  console.log("[ADMIN USAGE]", { used, limit, remaining, planLoading, canCreateAdministrator });
+  // console.log("[ADMIN USAGE]", { used, limit, remaining, planLoading, canCreateAdministrator });
 
   const filteredAdministrators = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -240,6 +246,8 @@ const ManagerAdministradorasContent = () => {
 
         {/* Linha 3 removida: ações e uso integrados na linha 1 */}
       </div>
+
+      
 
       {/* Badge flutuante no rodapé com margem de 32px (bottom-8) */}
       {activeAdministrator && (

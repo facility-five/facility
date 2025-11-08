@@ -70,8 +70,8 @@ export const ManagerHeader = () => {
                 <SelectValue
                   placeholder={
                     administrators.length === 0
-                      ? "Nenhuma administradora"
-                      : "Selecione a administradora"
+                      ? "Sin administradoras"
+                      : "Seleccione administradora"
                   }
                 >
                   {activeAdministrator?.name}

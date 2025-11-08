@@ -42,7 +42,7 @@ const navItems = [
   { href: "/admin/tareas", icon: ListTodo, labelKey: "navigation.tasks" },
   { href: "/admin/usuarios", icon: Users, labelKey: "navigation.users" },
   { href: "/admin/moradores", icon: Users, labelKey: "navigation.residents" },
-  { href: "/admin/planes", icon: FileText, labelKey: "navigation.plans" },
+  { href: "/admin/planes", icon: FileText, labelKey: "navigation.adminPlans" },
   { href: "/admin/clientes-potenciales", icon: UserCheck, labelKey: "navigation.leads" },
   { href: "/admin/pagos", icon: DollarSign, labelKey: "navigation.payments" },
   { href: "/admin/design-system", icon: Palette, labelKey: "navigation.designSystem" },
