@@ -37,6 +37,7 @@ import RegisterAdministrator from "./pages/RegisterAdministrator";
 import DesignSystem from "./pages/DesignSystem";
 import TestToast from "./pages/TestToast";
 import Login from "./pages/Login"; // Importar o componente Login
+import { AuthCallback } from "@/components/AuthCallback";
 
 import ResidentReservations from "./pages/resident/Reservations";
 import ResidentCommunications from "./pages/resident/Communications";
@@ -99,6 +100,7 @@ const App = () => (
               <Route path="/email-confirmation" element={<EmailConfirmation />} />
               <Route path="/acesso-morador" element={<ResidentAccess />} />
               <Route path="/test-toast" element={<TestToast />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* Rotas do Gestor (protegidas) */}
               <Route

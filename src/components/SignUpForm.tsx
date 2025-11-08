@@ -68,7 +68,7 @@ export function SignUpForm() {
     
     try {
       // Login automático desativado (necessário confirmar email)
-      const { error } = await supabase.auth.signUp({
+      const { data: { session }, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
@@ -76,8 +76,7 @@ export function SignUpForm() {
             first_name: values.firstName,
             last_name: values.lastName,
             role: 'Administradora', // Define role padrão para ativar plano gratuito
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
         },
       });
 
@@ -86,10 +85,16 @@ export function SignUpForm() {
         return;
       }
 
-      // Redirecionar para página de confirmação
-      navigate('/email-confirmation', { 
-        state: { email: values.email }
-      });
+      if (session) {
+        // Se tivermos uma sessão, significa que o usuário foi auto-confirmado
+        // Redirecionar para o dashboard
+        navigate('/gestor-dashboard');
+      } else {
+        // Caso contrário, redirecionar para página de confirmação
+        navigate('/email-confirmation', { 
+          state: { email: values.email }
+        });
+      }
     } catch (error: any) {
       console.error("Erro no cadastro:", error);
       showRadixError(error.message || "Erro ao criar conta. Tente novamente.");
