@@ -41,30 +41,8 @@ export const NotificationsDropdown = () => {
 
       if (data) {
         setNotifications(data);
-        // Seed data for demo if no notifications exist
-        if (data.length === 0) {
-          seedNotifications(user.id);
-        }
       }
     };
-
-    const seedNotifications = async (userId: string) => {
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-        const fourMonthsAgo = new Date();
-        fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 4);
-
-        const { data } = await supabase.from('notifications').insert([
-          { user_id: userId, title: 'Manutenção da Piscina', message: 'A piscina estará fechada para manutenção no dia 25/06.', is_read: false, created_at: threeMonthsAgo.toISOString() },
-          { user_id: userId, title: 'Sua solicitação foi atualizada', message: "O chamado REQ-1721054321 teve o status alterado para 'Em Andamento'.", is_read: false, created_at: fourMonthsAgo.toISOString() },
-          { user_id: userId, title: 'Reunião de Condomínio', message: 'A reunião de condomínio será no dia 30/06 às 20h no salão de festas.', is_read: true, created_at: fourMonthsAgo.toISOString() },
-        ]).select();
-
-        if(data) {
-            setNotifications(data);
-            setUnreadCount(data.filter(n => !n.is_read).length);
-        }
-    }
 
     fetchNotifications();
 
@@ -153,7 +131,9 @@ export const NotificationsDropdown = () => {
         <Button variant="ghost" size="icon" className="relative text-admin-foreground-muted hover:text-admin-foreground hover:bg-admin-border">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] leading-[18px] text-center">
+              {unreadCount}
+            </span>
           )}
         </Button>
       </PopoverTrigger>
