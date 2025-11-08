@@ -65,15 +65,37 @@ const ManagerAdministradorasContent = () => {
 
   const formatSpanishPhone = (phone: string | null | undefined) => {
     if (!phone) return "N/A";
+    
     // Remove todos os caracteres não numéricos
     const cleaned = phone.replace(/\D/g, '');
-    // Formato espanhol: +34 XXX XX XX XX ou XXX XX XX XX
-    if (cleaned.length === 11 && cleaned.startsWith('34')) {
-      return `+34 ${cleaned.slice(2, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7, 9)} ${cleaned.slice(9)}`;
-    } else if (cleaned.length === 9) {
+    
+    // Se não tem números, retorna N/A
+    if (cleaned.length === 0) return "N/A";
+    
+    // Formato com código internacional +34 (11 ou 12 dígitos)
+    if (cleaned.length >= 11 && cleaned.startsWith('34')) {
+      const number = cleaned.slice(2); // Remove o 34
+      if (number.length === 9) {
+        return `+34 ${number.slice(0, 3)} ${number.slice(3, 5)} ${number.slice(5, 7)} ${number.slice(7)}`;
+      }
+    }
+    
+    // Formato nacional (9 dígitos)
+    if (cleaned.length === 9) {
       return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 5)} ${cleaned.slice(5, 7)} ${cleaned.slice(7)}`;
     }
-    return phone;
+    
+    // Se tiver menos de 9 dígitos, formata o que tem
+    if (cleaned.length < 9 && cleaned.length >= 3) {
+      let formatted = cleaned.slice(0, 3);
+      if (cleaned.length > 3) formatted += ` ${cleaned.slice(3, 5)}`;
+      if (cleaned.length > 5) formatted += ` ${cleaned.slice(5, 7)}`;
+      if (cleaned.length > 7) formatted += ` ${cleaned.slice(7)}`;
+      return formatted;
+    }
+    
+    // Retorna o número original se não se encaixar em nenhum formato
+    return cleaned;
   };
 
   const renderSkeleton = () => (
