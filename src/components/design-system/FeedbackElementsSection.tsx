@@ -3,15 +3,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { 
-  showError, 
-  showSuccess, 
-  showLoading, 
-  dismissToast,
-  showSuccessWithDescription,
-  showErrorWithDescription,
-  showInfoWithDescription,
-  showWarningWithDescription,
-  showLoadingWithDescription,
+  toast,
   showCustomToast,
   showRadixSuccess,
   showRadixError,
@@ -28,45 +20,43 @@ export const FeedbackElementsSection = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleShowSuccessToast = () => {
-    showSuccess("Operação realizada com sucesso!");
+    toast.success("Operação realizada com sucesso!");
   };
 
   const handleShowErrorToast = () => {
-    showError("Ocorreu um erro ao processar a sua solicitação.");
+    toast.error("Ocorreu um erro ao processar a sua solicitação.");
   };
 
   const handleShowLoadingToast = () => {
-    const toastId = showLoading("Aguarde, estamos a processar...");
+    const toastId = toast.loading("Aguarde, estamos a processar...");
     setTimeout(() => {
-      dismissToast(toastId);
-      showSuccess("Processo concluído!");
+      toast.dismiss(toastId);
+      toast.success("Processo concluído!");
     }, 3000);
   };
 
   // Novos handlers para toasts com título e descrição
   const handleShowSuccessWithDescription = () => {
-    showSuccessWithDescription(
-      "Conta criada com sucesso!",
-      "Bem-vindo ao sistema. Você já pode começar a usar todas as funcionalidades."
-    );
+    toast.success("Conta criada com sucesso!", {
+      description: "Bem-vindo ao sistema. Você já pode começar a usar todas as funcionalidades."
+    });
   };
 
   const handleShowErrorWithDescription = () => {
-    showErrorWithDescription(
-      "Erro de autenticação",
-      "Não foi possível fazer login. Verifique suas credenciais e tente novamente."
-    );
+    toast.error("Erro de autenticação", {
+      description: "Não foi possível fazer login. Verifique suas credenciais e tente novamente."
+    });
   };
 
   const handleShowInfoWithDescription = () => {
-    showInfoWithDescription(
+    showRadixInfo(
       "Nova atualização disponível",
       "Uma nova versão do sistema está disponível. Clique aqui para atualizar."
     );
   };
 
   const handleShowWarningWithDescription = () => {
-    showWarningWithDescription(
+    showRadixWarning(
       "Atenção: Dados não salvos",
       "Você tem alterações não salvas. Deseja continuar sem salvar?"
     );
@@ -82,13 +72,15 @@ export const FeedbackElementsSection = () => {
         action: {
           label: "Excluir",
           onClick: () => {
-            showSuccessWithDescription("Item excluído", "O item foi removido com sucesso.");
+            toast.success("Item excluído", {
+              description: "O item foi removido com sucesso."
+            });
           }
         },
         cancel: {
           label: "Cancelar",
           onClick: () => {
-            showInfoWithDescription("Operação cancelada", "Nenhum item foi excluído.");
+            showRadixInfo("Operação cancelada", "Nenhum item foi excluído.");
           }
         }
       }

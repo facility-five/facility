@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
-import { showError, showSuccess, showLoading, dismissToast } from "@/utils/toast";
+import { toast, showRadixError, showRadixSuccess } from "@/utils/toast";
 import { useEffect, useState } from "react";
 import { User as UserIcon } from "lucide-react";
 import { User } from "@supabase/supabase-js";
@@ -98,7 +98,7 @@ const MyAccount = () => {
   }, [profileForm]);
 
   async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
-    const loadingId = showLoading("Salvando alterações do perfil...");
+    const loadingId = toast.loading("Salvando alterações do perfil...");
     try {
       const { firstName, lastName, avatar_file } = values;
       let newAvatarUrl = profileForm.getValues('avatar_file'); // Começa com o valor atual do formulário
@@ -171,12 +171,12 @@ const MyAccount = () => {
       console.error("Erro não tratado durante a atualização do perfil:", err);
       showRadixError("Ocorreu um erro inesperado ao atualizar o perfil.");
     } finally {
-      dismissToast(loadingId);
+      toast.dismiss(loadingId);
     }
   }
 
   async function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
-    const loadingId = showLoading("Alterando senha...");
+    const loadingId = toast.loading("Alterando senha...");
     try {
       if (!email) {
         showRadixError("Não foi possível identificar seu e-mail.");
@@ -213,7 +213,7 @@ const MyAccount = () => {
       console.error("Erro não tratado durante a alteração da senha:", err);
       showRadixError("Ocorreu um erro inesperado ao alterar a senha.");
     } finally {
-      dismissToast(loadingId);
+      toast.dismiss(loadingId);
     }
   }
 

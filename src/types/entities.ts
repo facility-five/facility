@@ -35,23 +35,17 @@ export interface Administrator {
   id: string;
   tenant_id: string;
   name: string;
-  nif: string;
+  document: string;
   email: string;
   phone: string;
-  website?: string;
-  logo?: string;
   address?: string;
   city?: string;
   state?: string;
-  country: string;
   postal_code?: string;
-  responsible_name: string;
-  responsible_email: string;
-  responsible_phone: string;
   created_at: string;
   updated_at: string;
-  deleted_at?: string;
-  status: 'active' | 'inactive' | 'suspended';
+  deleted_at?: string | null;
+  status: 'active' | 'inactive';
 }
 
 export interface Condominium {

@@ -6,8 +6,7 @@ import {
   showRadixInfo,
   showRadixWarning,
   showRadixDefault,
-  showSuccess,
-  showError
+  toast
 } from '@/utils/toast';
 
 const TestToast = () => {
@@ -22,7 +21,7 @@ const TestToast = () => {
 
   const handleSonnerToast = () => {
     console.log('🧪 DEBUG: Testando toast Sonner na página de teste...');
-    showSuccess("Toast Sonner funcionando na página de teste!");
+    toast.success("Toast Sonner funcionando na página de teste!");
     console.log('✅ DEBUG: Toast Sonner chamado com sucesso');
   };
 

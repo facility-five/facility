@@ -5,7 +5,7 @@ import { AuthLayout } from "@/components/AuthLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { showError } from "@/utils/toast";
+import { toast } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 
@@ -79,7 +79,7 @@ function Login() {
       // Se não há role definido, não redirecionar (evitar loop)
       if (!normalizedRole) {
         console.log("Login: Usuário sem role definido");
-        showError("Seu perfil não está configurado corretamente. Entre em contato com o suporte.");
+        toast.error("Seu perfil não está configurado corretamente. Entre em contato com o suporte.");
         return;
       }
 
@@ -108,7 +108,7 @@ function Login() {
           break;
         default:
           console.log("Login: Role não reconhecido:", normalizedRole);
-          showError("Tipo de perfil não reconhecido. Entre em contato com o suporte.");
+          toast.error("Tipo de perfil não reconhecido. Entre em contato com o suporte.");
           break;
       }
     };
