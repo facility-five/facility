@@ -30,16 +30,24 @@ const ManagerCondominios = () => {
 
   const fetchCondos = useCallback(async () => {
     if (!activeAdministratorId) {
+      console.log('📋 Condominios: Skip fetch - no administrator selected');
       setLoading(false);
+      setCondos([]);
       return;
     }
+    
     setLoading(true);
+    console.log('📋 Condominios: Fetching for administrator', activeAdministratorId);
     
     try {
-      // Buscar condomínios da administradora selecionada
+      // Buscar condomínios e contagens em uma única query
       const { data: condosData, error: condosError } = await supabase
         .from("condominiums")
-        .select("*")
+        .select(`
+          *,
+          blocks:blocks(count),
+          units:units(count)
+        `)
         .eq('administrator_id', activeAdministratorId);
 
       if (condosError) {
@@ -50,28 +58,12 @@ const ManagerCondominios = () => {
         return;
       }
 
-      // Para cada condomínio, buscar contagem de blocos e unidades
-      const condosWithCounts = await Promise.all(
-        (condosData || []).map(async (condo: any) => {
-          // Contar blocos
-          const { count: blocksCount } = await supabase
-            .from("blocks")
-            .select("*", { count: 'exact', head: true })
-            .or(`condominium_id.eq.${condo.id},condo_id.eq.${condo.id}`);
-
-          // Contar unidades
-          const { count: unitsCount } = await supabase
-            .from("units")
-            .select("*", { count: 'exact', head: true })
-            .eq('condo_id', condo.id);
-
-          return {
-            ...condo,
-            total_blocks: blocksCount || 0,
-            total_units: unitsCount || 0,
-          };
-        })
-      );
+      // Mapear resultados com contagens
+      const condosWithCounts = (condosData || []).map((condo: any) => ({
+        ...condo,
+        total_blocks: (condo.blocks || []).length || 0,
+        total_units: (condo.units || []).length || 0,
+      }));
 
       setCondos(condosWithCounts);
     } catch (error) {
@@ -143,7 +135,14 @@ const ManagerCondominios = () => {
   return (
     <ManagerLayout>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Condominios</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">Condominios</h1>
+          {activeAdministrator && (
+            <Badge variant="outline" className="text-sm">
+              {activeAdministrator.name}
+            </Badge>
+          )}
+        </div>
         <div className="flex items-center gap-4">
           <Input
             placeholder="Buscar por nombre"
@@ -210,8 +209,17 @@ const ManagerCondominios = () => {
               ))
             ) : filteredCondos.length === 0 ? (
               <ManagerTableRow>
-                <ManagerTableCell colSpan={8} className="text-center text-gray-500 py-8">
-                  {activeAdministratorId ? "No se encontraron condominios para su administradora." : "Cargando información de la administradora..."}
+                <ManagerTableCell colSpan={8} className="text-center py-8">
+                  {!activeAdministratorId ? (
+                    <div className="flex flex-col items-center gap-2 text-gray-500">
+                      <p className="text-lg">Selecione uma administradora primeiro</p>
+                      <p className="text-sm">Use o seletor no topo da página para escolher uma administradora</p>
+                    </div>
+                  ) : search ? (
+                    <p className="text-gray-500">Nenhum condomínio encontrado para "{search}"</p>
+                  ) : (
+                    <p className="text-gray-500">Nenhum condomínio cadastrado para esta administradora</p>
+                  )}
                 </ManagerTableCell>
               </ManagerTableRow>
             ) : (
