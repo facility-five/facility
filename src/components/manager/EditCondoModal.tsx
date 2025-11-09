@@ -181,6 +181,9 @@ export const EditCondoModal = ({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4" autoComplete="off">
+            {/* Hidden fields to prevent browser autofill from populating visible inputs (email/password capture) */}
+            <input aria-hidden="true" style={{position: 'absolute', opacity: 0, height: 0, width: 0, overflow: 'hidden', pointerEvents: 'none'}} type="text" name="__email_autofill" autoComplete="email" />
+            <input aria-hidden="true" style={{position: 'absolute', opacity: 0, height: 0, width: 0, overflow: 'hidden', pointerEvents: 'none'}} type="password" name="__password_autofill" autoComplete="new-password" />
             <FormField
               control={form.control}
               name="administrator_id"
