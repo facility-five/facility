@@ -218,23 +218,13 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
       setAdministrators(filtered);
       
-      // Determinar administradora ativa considerando localStorage e perfil
-      const savedId = typeof window !== 'undefined' ? localStorage.getItem("activeAdministratorId") : null;
+      // Determinar administradora ativa considerando apenas o perfil do servidor
       const selectedId = profileData?.selected_administrator_id ?? null;
-      const hasSaved = savedId && filtered.some((admin) => admin.id === savedId);
-      const hasSelected = selectedId && filtered.some((admin) => admin.id === selectedId);
-      const preferredId = (hasSaved ? savedId : (hasSelected ? selectedId : null)) ?? filtered[0]?.id ?? null;
+      const preferredId = selectedId ?? filtered[0]?.id ?? null;
 
       setActiveAdministratorId(preferredId);
 
-      // Persistir localmente a escolha
-      if (preferredId) {
-        try { localStorage.setItem("activeAdministratorId", preferredId); } catch {}
-      } else {
-        try { localStorage.removeItem("activeAdministratorId"); } catch {}
-      }
-
-      // Atualizar no perfil do usuário se necessário
+      // Atualizar no perfil do usuário se necessário (server is authoritative)
       if (preferredId && preferredId !== selectedId) {
         await supabase
           .from("profiles")
@@ -393,11 +383,8 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
 
     // Persistir em localStorage
     try {
-      if (id) {
-        localStorage.setItem("activeAdministratorId", id);
-      } else {
-        localStorage.removeItem("activeAdministratorId");
-      }
+      // localStorage persistence removed: server (profiles.selected_administrator_id)
+      // is now the single source-of-truth for the selected administrator.
     } catch {}
   }, [user?.id, activeAdministratorId]);
 

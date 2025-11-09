@@ -93,8 +93,7 @@ export const NewManagerAdministratorModal = ({
         .or(`user_id.eq.${user.id},responsible_id.eq.${user.id}`);
       
       if (count === 1 && newAdmin) {
-        // É a primeira administradora, seleciona automaticamente
-        localStorage.setItem("activeAdministratorId", newAdmin.id);
+        // É a primeira administradora, seleciona automaticamente no perfil do usuário
         await supabase
           .from("profiles")
           .update({ selected_administrator_id: newAdmin.id })
