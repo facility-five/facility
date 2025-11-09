@@ -18,7 +18,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 const ManagerCondominios = () => {
-  const { activeAdministratorId, activeAdministrator } = useManagerAdministradoras();
+  const { activeAdministratorId, activeAdministrator, loading: adminLoading } = useManagerAdministradoras();
   const { isFreePlan, isLoading: planLoading, currentPlan } = usePlan();
   const [condos, setCondos] = useState<Condo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,6 +130,23 @@ const ManagerCondominios = () => {
       setLoading(false);
     }
   }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Trigger fetch when administrators context finishes loading and an administrator is selected
+  useEffect(() => {
+    if (adminLoading) {
+      // still loading administrators - keep page loading
+      setLoading(true);
+      return;
+    }
+
+    if (activeAdministratorId) {
+      fetchCondos();
+    } else {
+      // no admin available for this manager - show friendly empty state
+      setCondos([]);
+      setLoading(false);
+    }
+  }, [adminLoading, activeAdministratorId, fetchCondos]);
 
   // Listener em tempo real para sincronizar condomínios entre dispositivos
   useEffect(() => {
