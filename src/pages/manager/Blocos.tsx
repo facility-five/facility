@@ -149,7 +149,7 @@ const ManagerBlocosContent = () => {
       // Agora buscar blocos desses condomínios (SEM JOIN)
       const { data, error } = await supabase
         .from("blocks")
-        .select("id, name, status, condo_id, created_at, updated_at")
+        .select("id, name, description, status, condo_id, created_at, updated_at")
         .in("condo_id", condoIds)
         .order("name");
 
@@ -267,19 +267,20 @@ const ManagerBlocosContent = () => {
         // Update existing block
         const updateRow: any = {
           name: editingBlock.name.trim(),
-          // only add description if non-empty; sending null may still fail if column missing
-          ...(editingBlock.description ? { description: editingBlock.description.trim() } : {}),
+          description: editingBlock.description?.trim() || null,
           status: editingBlock.status,
           condo_id: editingBlock.condo_id,
           updated_at: new Date().toISOString(),
         };
 
-        // Use safeUpdate to retry removing missing columns reported by server
-        const { safeUpdate } = await import("@/lib/supabaseHelpers");
-        const updateRes = await safeUpdate("blocks", updateRow, "id", editingBlock.id);
-        if (updateRes.error) {
-          console.error("Error updating block:", updateRes.error);
-          showRadixError(updateRes.error.message || "Erro ao atualizar bloco");
+        const { error } = await supabase
+          .from("blocks")
+          .update(updateRow)
+          .eq("id", editingBlock.id);
+
+        if (error) {
+          console.error("Error updating block:", error);
+          showRadixError(error.message || "Erro ao atualizar bloco");
           setIsSubmitting(false);
           return;
         }
@@ -288,17 +289,19 @@ const ManagerBlocosContent = () => {
         // Create new block
         const insertRow: any = {
           name: editingBlock.name.trim(),
-          ...(editingBlock.description ? { description: editingBlock.description.trim() } : {}),
+          description: editingBlock.description?.trim() || null,
           status: editingBlock.status,
           condo_id: editingBlock.condo_id,
           code: generateBlockCode(),
         };
 
-        const { safeInsert } = await import("@/lib/supabaseHelpers");
-        const insertRes = await safeInsert("blocks", insertRow);
-        if (insertRes.error) {
-          console.error("Error creating block:", insertRes.error);
-          showRadixError(insertRes.error.message || "Erro ao criar bloco");
+        const { error } = await supabase
+          .from("blocks")
+          .insert(insertRow);
+
+        if (error) {
+          console.error("Error creating block:", error);
+          showRadixError(error.message || "Erro ao criar bloco");
           setIsSubmitting(false);
           return;
         }
