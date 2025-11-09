@@ -180,7 +180,7 @@ export const EditCondoModal = ({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4" autoComplete="off">
             <FormField
               control={form.control}
               name="administrator_id"
@@ -211,9 +211,9 @@ export const EditCondoModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nome</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Escriba el nombre del condominio" {...field} className="bg-admin-background border-admin-border" />
-                  </FormControl>
+                    <FormControl>
+                      <Input placeholder="Escriba el nombre del condominio" {...field} className="bg-admin-background border-admin-border" autoComplete="name" />
+                    </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -225,8 +225,8 @@ export const EditCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>NIF</FormLabel>
-                    <FormControl>
-                      <Input placeholder="NIF" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="NIF" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -238,8 +238,8 @@ export const EditCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Sitio web</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ingrese el sitio web" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="Ingrese el sitio web" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -254,7 +254,7 @@ export const EditCondoModal = ({
                   <FormItem>
                     <FormLabel>Área</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ingrese el área" {...field} className="bg-admin-background border-admin-border" />
+                      <Input placeholder="Ingrese el área" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -262,7 +262,7 @@ export const EditCondoModal = ({
               />
             <FormField
                 control={form.control}
-                name="condo_type"
+                name="type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo</FormLabel>
@@ -290,8 +290,8 @@ export const EditCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Total de Bloques</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="Ingrese el número total de bloques" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input type="number" placeholder="Ingrese el número total de bloques" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -303,8 +303,8 @@ export const EditCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Total de Unidades</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="Ingrese el número total de unidades" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input type="number" placeholder="Ingrese el número total de unidades" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -319,7 +319,7 @@ export const EditCondoModal = ({
                   <FormItem>
                     <FormLabel>Correo electrónico</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ingrese el correo electrónico" {...field} className="bg-admin-background border-admin-border" />
+                      <Input placeholder="Ingrese el correo electrónico" {...field} className="bg-admin-background border-admin-border" autoComplete="email" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -332,7 +332,7 @@ export const EditCondoModal = ({
                   <FormItem>
                     <FormLabel>Teléfono</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ingrese el teléfono" {...field} className="bg-admin-background border-admin-border" />
+                      <Input placeholder="Ingrese el teléfono" {...field} className="bg-admin-background border-admin-border" autoComplete="tel" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -345,8 +345,8 @@ export const EditCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Responsável</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nome do responsável" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="Nome do responsável" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

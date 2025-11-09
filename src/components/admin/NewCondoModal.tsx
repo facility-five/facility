@@ -105,28 +105,56 @@ export const NewCondoModal = ({
       return;
     }
 
-    // Ensure we don't send empty string to enum column `type`
-    const payload: any = { ...values };
-    if (payload.type === "" || payload.type === undefined) {
-      delete payload.type;
+    // Build a defensive payload. Some DBs have `type`, others `condo_type`.
+    const raw: any = { ...values };
+    const typeValue = raw.type ?? raw.condo_type;
+
+    // Clean up incoming values: remove empty strings
+    Object.keys(raw).forEach((k) => {
+      if (typeof raw[k] === "string" && raw[k].trim() === "") delete raw[k];
+    });
+
+    // Base row to insert
+    const baseRow: any = {
+      ...raw,
+      administrator_id: initialAdministratorId,
+      code: generateCode(),
+    };
+
+    // Try 1: send `type` if we have a value
+    const tryRow = { ...baseRow };
+    if (typeValue !== undefined && typeValue !== "") tryRow.type = typeValue;
+
+    let res = await supabase.from("condominiums").insert([tryRow]);
+
+    if (res.error) {
+      const msg = res.error.message || "";
+      // If server complains about missing `type` column, retry without it and try `condo_type` as fallback
+      if (msg.includes("Could not find the 'type' column") || msg.includes('Could not find the "type" column') || msg.includes("column \"type\"")) {
+        const retryRow = { ...baseRow };
+        if (typeValue !== undefined && typeValue !== "") retryRow.condo_type = typeValue;
+        delete retryRow.type;
+
+        const retryRes = await supabase.from("condominiums").insert([retryRow]);
+        if (retryRes.error) {
+          showRadixError(retryRes.error.message);
+          return;
+        }
+        showRadixSuccess("Condomínio registrado com sucesso!");
+        onSuccess();
+        onClose();
+        form.reset();
+        return;
+      }
+
+      showRadixError(res.error.message);
+      return;
     }
 
-    const { error } = await supabase.from("condominiums").insert([
-      {
-        ...payload,
-        administrator_id: initialAdministratorId,
-        code: generateCode(),
-      },
-    ]);
-
-    if (error) {
-      showRadixError(error.message);
-    } else {
-      showRadixSuccess("Condomínio registrado com sucesso!");
-      onSuccess();
-      onClose();
-      form.reset();
-    }
+    showRadixSuccess("Condomínio registrado com sucesso!");
+    onSuccess();
+    onClose();
+    form.reset();
   }
 
   return (
@@ -139,15 +167,15 @@ export const NewCondoModal = ({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4" autoComplete="off">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nombre</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Escriba el nombre del condominio" {...field} className="bg-admin-background border-admin-border" />
+                    <FormControl>
+                    <Input placeholder="Escriba el nombre del condominio" {...field} className="bg-admin-background border-admin-border" autoComplete="name" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -160,8 +188,8 @@ export const NewCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>NIF</FormLabel>
-                    <FormControl>
-                      <Input placeholder="NIF" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="NIF" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -173,8 +201,8 @@ export const NewCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Sitio web</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ingrese el sitio web" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="Ingrese el sitio web" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -188,8 +216,8 @@ export const NewCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Área</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ingrese el área" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="Ingrese el área" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -197,7 +225,7 @@ export const NewCondoModal = ({
               />
               <FormField
                 control={form.control}
-                name="condo_type"
+                name="type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo</FormLabel>
@@ -225,8 +253,8 @@ export const NewCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Total de Bloques</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="Ingrese el número total de bloques" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input type="number" placeholder="Ingrese el número total de bloques" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -238,8 +266,8 @@ export const NewCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Total de Unidades</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="Ingrese el número total de unidades" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input type="number" placeholder="Ingrese el número total de unidades" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -253,8 +281,8 @@ export const NewCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Correo electrónico</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ingrese el correo electrónico" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="Ingrese el correo electrónico" {...field} className="bg-admin-background border-admin-border" autoComplete="email" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -266,8 +294,8 @@ export const NewCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Teléfono</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ingrese el teléfono" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="Ingrese el teléfono" {...field} className="bg-admin-background border-admin-border" autoComplete="tel" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -280,8 +308,8 @@ export const NewCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Responsável</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nome do responsável" {...field} className="bg-admin-background border-admin-border" />
+                      <FormControl>
+                      <Input placeholder="Nome do responsável" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
