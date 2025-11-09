@@ -262,44 +262,74 @@ const ManagerBlocosContent = () => {
 
       if (editingBlock.id) {
         // Update existing block
-        const { error } = await supabase
-          .from("blocks")
-          .update({
-            name: editingBlock.name.trim(),
-            description: editingBlock.description ? editingBlock.description.trim() : null,
-            status: editingBlock.status,
-            condo_id: editingBlock.condo_id,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", editingBlock.id);
+        const updateRow: any = {
+          name: editingBlock.name.trim(),
+          // only add description if non-empty; sending null may still fail if column missing
+          ...(editingBlock.description ? { description: editingBlock.description.trim() } : {}),
+          status: editingBlock.status,
+          condo_id: editingBlock.condo_id,
+          updated_at: new Date().toISOString(),
+        };
+
+        let { error } = await supabase.from("blocks").update(updateRow).eq("id", editingBlock.id);
 
         if (error) {
+          const msg = error.message || "";
           console.error("Error updating block:", error);
-          showRadixError(error.message || "Erro ao atualizar bloco");
-          setIsSubmitting(false);
-          return;
+          // If the DB complains about missing `description` column, retry without it
+          if (msg.includes("Could not find the 'description' column") || msg.includes('Could not find the "description" column') || msg.includes("column \"description\"")) {
+            const retryRow = { ...updateRow };
+            delete retryRow.description;
+            const retryRes = await supabase.from("blocks").update(retryRow).eq("id", editingBlock.id);
+            if (retryRes.error) {
+              console.error("Retry update failed:", retryRes.error);
+              showRadixError(retryRes.error.message || "Erro ao atualizar bloco");
+              setIsSubmitting(false);
+              return;
+            }
+            showRadixSuccess("Bloco atualizado com sucesso");
+          } else {
+            showRadixError(error.message || "Erro ao atualizar bloco");
+            setIsSubmitting(false);
+            return;
+          }
+        } else {
+          showRadixSuccess("Bloco atualizado com sucesso");
         }
-
-        showRadixSuccess("Bloco atualizado com sucesso");
       } else {
         // Create new block
-        const { error } = await supabase
-          .from("blocks")
-          .insert({
-            name: editingBlock.name.trim(),
-            description: editingBlock.description ? editingBlock.description.trim() : null,
-            status: editingBlock.status,
-            condo_id: editingBlock.condo_id,
-          });
+        const insertRow: any = {
+          name: editingBlock.name.trim(),
+          ...(editingBlock.description ? { description: editingBlock.description.trim() } : {}),
+          status: editingBlock.status,
+          condo_id: editingBlock.condo_id,
+        };
 
-        if (error) {
-          console.error("Error creating block:", error);
-          showRadixError(error.message || "Erro ao criar bloco");
-          setIsSubmitting(false);
-          return;
+        let res = await supabase.from("blocks").insert(insertRow);
+
+        if (res.error) {
+          const msg = res.error.message || "";
+          console.error("Error creating block:", res.error);
+          // If server complains about missing `description` column, retry without it
+          if (msg.includes("Could not find the 'description' column") || msg.includes('Could not find the "description" column') || msg.includes("column \"description\"")) {
+            const retryRow = { ...insertRow };
+            delete retryRow.description;
+            const retryRes = await supabase.from("blocks").insert(retryRow);
+            if (retryRes.error) {
+              console.error("Retry insert failed:", retryRes.error);
+              showRadixError(retryRes.error.message || "Erro ao criar bloco");
+              setIsSubmitting(false);
+              return;
+            }
+            showRadixSuccess("Bloco criado com sucesso");
+          } else {
+            showRadixError(res.error.message || "Erro ao criar bloco");
+            setIsSubmitting(false);
+            return;
+          }
+        } else {
+          showRadixSuccess("Bloco criado com sucesso");
         }
-
-        showRadixSuccess("Bloco criado com sucesso");
       }
 
       setIsModalOpen(false);
