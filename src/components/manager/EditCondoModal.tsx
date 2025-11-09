@@ -128,17 +128,36 @@ export const EditCondoModal = ({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!condo) return; // Should only be called for editing existing condos
 
-    // Prepare payload: map `condo_type` -> `type` (DB column), and don't send empty strings
+    // Build a safe payload based on what the server actually returned for this condo.
+    // Some deployments use `type` column, others use `condo_type`. The condo prop contains
+    // whatever the server returned; prefer that as the source of truth for which column to send.
     const payload: any = { ...values };
-    if (payload.type === "" || payload.type === undefined) {
-      // Ensure we don't send an empty string to the enum column
-      delete payload.type;
-    } else {
-      delete payload.condo_type; // Remove old field if it exists
+
+    // Capture any type value present in either shape (form may expose `condo_type` or `type`)
+    const typeValue = payload.type ?? payload.condo_type;
+
+    // Remove both keys so we can re-assign only the one that exists on the server
+    delete payload.type;
+    delete payload.condo_type;
+
+    const serverHasType = Object.prototype.hasOwnProperty.call(condo as any, "type");
+    const serverHasCondoType = Object.prototype.hasOwnProperty.call(condo as any, "condo_type");
+
+    if (typeValue !== undefined && typeValue !== "") {
+      if (serverHasType) payload.type = typeValue;
+      else if (serverHasCondoType) payload.condo_type = typeValue;
+      // if neither column exists on this server, don't send a type at all
     }
 
+    // Remove empty-string fields to avoid enum validation errors or postgres complaints
+    Object.keys(payload).forEach((k) => {
+      if (typeof payload[k] === "string" && payload[k].trim() === "") {
+        delete payload[k];
+      }
+    });
+
     const { error } = await supabase
-      .from("condominiums") // Changed from "condos" to "condominiums"
+      .from("condominiums")
       .update(payload)
       .eq("id", condo.id);
 
