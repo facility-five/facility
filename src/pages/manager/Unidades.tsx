@@ -372,8 +372,18 @@ const ManagerUnidadesContent = () => {
   };
 
   const resetForm = () => {
-    setEditingUnit(null);
-    setIsDialogOpen(false);
+    setEditingUnit({
+      number: "",
+      floor: null,
+      type: "Apartamento",
+      area: null,
+      bedrooms: null,
+      bathrooms: null,
+      status: "Disponible",
+      block_id: blocks.length > 0 ? blocks[0].id : "",
+      condo_id: condos.length > 0 ? condos[0].id : "",
+    });
+    setIsDialogOpen(true);
   };
 
   // Fallback visual quando não há administradora selecionada
