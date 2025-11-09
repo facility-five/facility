@@ -288,6 +288,8 @@ const ManagerUnidadesContent = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    console.log("🔍 handleSubmit - editingUnit:", editingUnit);
+    
     if (!activeAdministratorId) {
       showRadixError("Selecione uma administradora antes de criar/editar unidades.");
       return;
@@ -311,19 +313,25 @@ const ManagerUnidadesContent = () => {
         condo_id: editingUnit.condo_id,
       };
 
+      console.log("📤 Enviando dados:", unitData);
+
       if (editingUnit.id) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("units")
           .update(unitData)
-          .eq("id", editingUnit.id);
+          .eq("id", editingUnit.id)
+          .select();
 
+        console.log("✅ Resposta update:", { data, error });
         if (error) throw error;
         showRadixSuccess("Unidade atualizada com sucesso!");
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("units")
-          .insert([unitData]);
+          .insert([unitData])
+          .select();
 
+        console.log("✅ Resposta insert:", { data, error });
         if (error) throw error;
         showRadixSuccess("Unidade criada com sucesso!");
       }
@@ -331,9 +339,10 @@ const ManagerUnidadesContent = () => {
       setIsDialogOpen(false);
       setEditingUnit(null);
       await fetchUnits();
-    } catch (error) {
-      console.error("Erro ao salvar unidade:", error);
-      showRadixError("Erro ao salvar unidade");
+    } catch (error: any) {
+      console.error("❌ Erro ao salvar unidade:", error);
+      console.error("❌ Detalhes do erro:", error.message, error.details, error.hint);
+      showRadixError(error.message || "Erro ao salvar unidade");
     } finally {
       setSubmitting(false);
     }
