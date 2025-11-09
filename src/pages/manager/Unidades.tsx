@@ -414,7 +414,12 @@ const ManagerUnidadesContent = () => {
           <DoorOpen className="h-6 w-6 text-purple-600" />
           <h1 className="text-2xl font-bold text-gray-900">Unidades</h1>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            setEditingUnit(null);
+          }
+          setIsDialogOpen(open);
+        }}>
           {!planLoading && (
             <>
               {(currentPlan && currentPlan.max_units !== null && units.length >= currentPlan.max_units) ? (
@@ -427,12 +432,10 @@ const ManagerUnidadesContent = () => {
                 </Button>
               ) : (
                 // Botão normal quando aún pode criar
-                <DialogTrigger asChild>
-                  <Button onClick={resetForm} className="bg-purple-600 hover:bg-purple-700">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nova Unidade
-                  </Button>
-                </DialogTrigger>
+                <Button onClick={resetForm} className="bg-purple-600 hover:bg-purple-700">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nova Unidade
+                </Button>
               )}
             </>
           )}
