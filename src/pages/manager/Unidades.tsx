@@ -190,24 +190,39 @@ const ManagerUnidadesContent = () => {
     console.log("🔍 Unidades - Buscando unidades...");
     console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     try {
+      // Primeiro buscar os condomínios da administradora
+      const { data: condoData, error: condoError } = await supabase
+        .from("condominiums")
+        .select("id, name")
+        .eq("administrator_id", activeAdministratorId);
+
+      if (condoError) {
+        console.error("❌ Unidades - Erro ao buscar condomínios:", condoError);
+        throw condoError;
+      }
+
+      const condoIds = condoData?.map(c => c.id) || [];
+      const condoMap = new Map(condoData?.map(c => [c.id, c.name]) || []);
+
+      if (condoIds.length === 0) {
+        console.log("⚠️ Unidades - Nenhum condomínio encontrado");
+        setUnits([]);
+        return;
+      }
+
+      // Buscar blocos para ter o map de nomes
+      const { data: blockData } = await supabase
+        .from("blocks")
+        .select("id, name")
+        .in("condo_id", condoIds);
+
+      const blockMap = new Map(blockData?.map(b => [b.id, b.name]) || []);
+
+      // Agora buscar unidades desses condomínios (SEM JOIN)
       const { data, error } = await supabase
         .from("units")
-        .select(`
-          id,
-          number,
-          floor,
-          area,
-          bedrooms,
-          bathrooms,
-          status,
-          block_id,
-          condo_id,
-          created_at,
-          updated_at,
-          blocks!inner(name),
-          condominiums!inner(name, administrator_id)
-        `)
-        .eq("condominiums.administrator_id", activeAdministratorId)
+        .select("id, number, floor, type, area, bedrooms, bathrooms, status, block_id, condo_id, created_at, updated_at")
+        .in("condo_id", condoIds)
         .order("number");
 
       if (error) {
@@ -221,15 +236,15 @@ const ManagerUnidadesContent = () => {
         id: unit.id,
         number: unit.number,
         floor: unit.floor,
-        type: unit.type,
+        type: unit.type || "Residencial",
         area: unit.area,
         bedrooms: unit.bedrooms,
         bathrooms: unit.bathrooms,
         status: unit.status,
         block_id: unit.block_id,
         condo_id: unit.condo_id,
-        block_name: unit.blocks?.name || "N/A",
-        condo_name: unit.condominiums?.name || "N/A",
+        block_name: blockMap.get(unit.block_id) || "N/A",
+        condo_name: condoMap.get(unit.condo_id) || "N/A",
         created_at: unit.created_at,
         updated_at: unit.updated_at,
       }));
