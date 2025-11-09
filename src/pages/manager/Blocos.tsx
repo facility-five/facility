@@ -241,6 +241,9 @@ const ManagerBlocosContent = () => {
     }
   };
 
+  // Small helper to generate a short code for a block
+  const generateBlockCode = () => `BLK-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingBlock) return;
@@ -303,6 +306,7 @@ const ManagerBlocosContent = () => {
           ...(editingBlock.description ? { description: editingBlock.description.trim() } : {}),
           status: editingBlock.status,
           condo_id: editingBlock.condo_id,
+          code: generateBlockCode(),
         };
 
         let res = await supabase.from("blocks").insert(insertRow);
