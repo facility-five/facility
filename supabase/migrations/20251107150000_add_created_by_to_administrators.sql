@@ -1,5 +1,7 @@
--- Atualizar a função RPC para incluir dados de quem cadastrou a administradora
-CREATE OR REPLACE FUNCTION get_administrators_with_details()
+-- Drop e recriar a função RPC para incluir dados de quem cadastrou a administradora
+DROP FUNCTION IF EXISTS get_administrators_with_details();
+
+CREATE FUNCTION get_administrators_with_details()
 RETURNS TABLE (
   id UUID,
   code TEXT,

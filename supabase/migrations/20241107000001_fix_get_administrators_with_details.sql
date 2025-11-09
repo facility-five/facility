@@ -1,5 +1,7 @@
--- Criar ou substituir a função RPC para buscar administradoras com detalhes do responsável
-CREATE OR REPLACE FUNCTION get_administrators_with_details()
+-- Drop e recriar a função RPC para buscar administradoras com detalhes do responsável
+DROP FUNCTION IF EXISTS get_administrators_with_details();
+
+CREATE FUNCTION get_administrators_with_details()
 RETURNS TABLE (
   id UUID,
   code TEXT,
