@@ -216,10 +216,10 @@ const ManagerUnidadesContent = () => {
 
       const blockMap = new Map(blockData?.map(b => [b.id, b.name]) || []);
 
-      // Agora buscar unidades desses condomínios (SEM JOIN)
+      // Agora buscar unidades desses condomínios (SEM JOIN) - usando select * para evitar erros de colunas
       const { data, error } = await supabase
         .from("units")
-        .select("id, number, floor, area, bedrooms, bathrooms, status, block_id, condo_id, created_at, updated_at")
+        .select("*")
         .in("condo_id", condoIds)
         .order("number");
 
