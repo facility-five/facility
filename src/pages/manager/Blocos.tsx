@@ -247,33 +247,58 @@ const ManagerBlocosContent = () => {
 
     setIsSubmitting(true);
     try {
+      // Basic validation
+      if (!editingBlock.name || editingBlock.name.trim() === "") {
+        showRadixError("O nome do bloco é obrigatório");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!editingBlock.condo_id) {
+        showRadixError("Selecione um condomínio");
+        setIsSubmitting(false);
+        return;
+      }
+
       if (editingBlock.id) {
         // Update existing block
         const { error } = await supabase
           .from("blocks")
           .update({
-            name: editingBlock.name,
-            description: editingBlock.description || null,
+            name: editingBlock.name.trim(),
+            description: editingBlock.description ? editingBlock.description.trim() : null,
             status: editingBlock.status,
             condo_id: editingBlock.condo_id,
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingBlock.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error updating block:", error);
+          showRadixError(error.message || "Erro ao atualizar bloco");
+          setIsSubmitting(false);
+          return;
+        }
+
         showRadixSuccess("Bloco atualizado com sucesso");
       } else {
         // Create new block
         const { error } = await supabase
           .from("blocks")
           .insert({
-            name: editingBlock.name,
-            description: editingBlock.description || null,
+            name: editingBlock.name.trim(),
+            description: editingBlock.description ? editingBlock.description.trim() : null,
             status: editingBlock.status,
             condo_id: editingBlock.condo_id,
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error creating block:", error);
+          showRadixError(error.message || "Erro ao criar bloco");
+          setIsSubmitting(false);
+          return;
+        }
+
         showRadixSuccess("Bloco criado com sucesso");
       }
 
