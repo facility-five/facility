@@ -274,31 +274,16 @@ const ManagerBlocosContent = () => {
           updated_at: new Date().toISOString(),
         };
 
-        let { error } = await supabase.from("blocks").update(updateRow).eq("id", editingBlock.id);
-
-        if (error) {
-          const msg = error.message || "";
-          console.error("Error updating block:", error);
-          // If the DB complains about missing `description` column, retry without it
-          if (msg.includes("Could not find the 'description' column") || msg.includes('Could not find the "description" column') || msg.includes("column \"description\"")) {
-            const retryRow = { ...updateRow };
-            delete retryRow.description;
-            const retryRes = await supabase.from("blocks").update(retryRow).eq("id", editingBlock.id);
-            if (retryRes.error) {
-              console.error("Retry update failed:", retryRes.error);
-              showRadixError(retryRes.error.message || "Erro ao atualizar bloco");
-              setIsSubmitting(false);
-              return;
-            }
-            showRadixSuccess("Bloco atualizado com sucesso");
-          } else {
-            showRadixError(error.message || "Erro ao atualizar bloco");
-            setIsSubmitting(false);
-            return;
-          }
-        } else {
-          showRadixSuccess("Bloco atualizado com sucesso");
+        // Use safeUpdate to retry removing missing columns reported by server
+        const { safeUpdate } = await import("@/lib/supabaseHelpers");
+        const updateRes = await safeUpdate("blocks", updateRow, "id", editingBlock.id);
+        if (updateRes.error) {
+          console.error("Error updating block:", updateRes.error);
+          showRadixError(updateRes.error.message || "Erro ao atualizar bloco");
+          setIsSubmitting(false);
+          return;
         }
+        showRadixSuccess("Bloco atualizado com sucesso");
       } else {
         // Create new block
         const insertRow: any = {
@@ -309,31 +294,15 @@ const ManagerBlocosContent = () => {
           code: generateBlockCode(),
         };
 
-        let res = await supabase.from("blocks").insert(insertRow);
-
-        if (res.error) {
-          const msg = res.error.message || "";
-          console.error("Error creating block:", res.error);
-          // If server complains about missing `description` column, retry without it
-          if (msg.includes("Could not find the 'description' column") || msg.includes('Could not find the "description" column') || msg.includes("column \"description\"")) {
-            const retryRow = { ...insertRow };
-            delete retryRow.description;
-            const retryRes = await supabase.from("blocks").insert(retryRow);
-            if (retryRes.error) {
-              console.error("Retry insert failed:", retryRes.error);
-              showRadixError(retryRes.error.message || "Erro ao criar bloco");
-              setIsSubmitting(false);
-              return;
-            }
-            showRadixSuccess("Bloco criado com sucesso");
-          } else {
-            showRadixError(res.error.message || "Erro ao criar bloco");
-            setIsSubmitting(false);
-            return;
-          }
-        } else {
-          showRadixSuccess("Bloco criado com sucesso");
+        const { safeInsert } = await import("@/lib/supabaseHelpers");
+        const insertRes = await safeInsert("blocks", insertRow);
+        if (insertRes.error) {
+          console.error("Error creating block:", insertRes.error);
+          showRadixError(insertRes.error.message || "Erro ao criar bloco");
+          setIsSubmitting(false);
+          return;
         }
+        showRadixSuccess("Bloco criado com sucesso");
       }
 
       setIsModalOpen(false);

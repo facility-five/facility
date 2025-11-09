@@ -156,13 +156,11 @@ export const EditCondoModal = ({
       }
     });
 
-    const { error } = await supabase
-      .from("condominiums")
-      .update(payload)
-      .eq("id", condo.id);
+    const { safeUpdate } = await import("@/lib/supabaseHelpers");
+    const res = await safeUpdate("condominiums", payload as Record<string, any>, "id", condo.id);
 
-    if (error) {
-      showRadixError(error.message);
+    if (res.error) {
+      showRadixError(res.error.message || "Erro ao atualizar condomínio");
     } else {
       showRadixSuccess("Condomínio atualizado com sucesso!");
       onSuccess();

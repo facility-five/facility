@@ -125,29 +125,12 @@ export const NewCondoModal = ({
     const tryRow = { ...baseRow };
     if (typeValue !== undefined && typeValue !== "") tryRow.type = typeValue;
 
-    let res = await supabase.from("condominiums").insert([tryRow]);
+    // Use safeInsert helper which retries by removing missing columns reported by the server
+    const { safeInsert } = await import("@/lib/supabaseHelpers");
+    const insertRes = await safeInsert("condominiums", tryRow as Record<string, any>);
 
-    if (res.error) {
-      const msg = res.error.message || "";
-      // If server complains about missing `type` column, retry without it and try `condo_type` as fallback
-      if (msg.includes("Could not find the 'type' column") || msg.includes('Could not find the "type" column') || msg.includes("column \"type\"")) {
-        const retryRow = { ...baseRow };
-        if (typeValue !== undefined && typeValue !== "") retryRow.condo_type = typeValue;
-        delete retryRow.type;
-
-        const retryRes = await supabase.from("condominiums").insert([retryRow]);
-        if (retryRes.error) {
-          showRadixError(retryRes.error.message);
-          return;
-        }
-        showRadixSuccess("Condomínio registrado com sucesso!");
-        onSuccess();
-        onClose();
-        form.reset();
-        return;
-      }
-
-      showRadixError(res.error.message);
+    if (insertRes.error) {
+      showRadixError(insertRes.error.message || "Erro ao criar condomínio");
       return;
     }
 
