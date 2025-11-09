@@ -285,28 +285,33 @@ const ManagerUnidadesContent = () => {
     return blocks.filter(block => block.condo_id === selectedCondo);
   }, [blocks, selectedCondo]);
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
     if (!activeAdministratorId) {
       showRadixError("Selecione uma administradora antes de criar/editar unidades.");
+      return;
+    }
+
+    if (!editingUnit) {
+      showRadixError("Dados da unidade não encontrados.");
       return;
     }
 
     setSubmitting(true);
     try {
       const unitData = {
-        number: formData.get("number") as string,
-        floor: formData.get("floor") ? parseInt(formData.get("floor") as string) : null,
-        type: formData.get("type") as string,
-        area: formData.get("area") ? parseFloat(formData.get("area") as string) : null,
-        bedrooms: formData.get("bedrooms") ? parseInt(formData.get("bedrooms") as string) : null,
-        bathrooms: formData.get("bathrooms") ? parseInt(formData.get("bathrooms") as string) : null,
-        status: formData.get("status") as string,
-        block_id: formData.get("block_id") as string,
-        condo_id: formData.get("condo_id") as string,
-        administrator_id: activeAdministratorId,
+        number: editingUnit.number,
+        floor: editingUnit.floor,
+        area: editingUnit.area,
+        bedrooms: editingUnit.bedrooms,
+        bathrooms: editingUnit.bathrooms,
+        status: editingUnit.status,
+        block_id: editingUnit.block_id,
+        condo_id: editingUnit.condo_id,
       };
 
-      if (editingUnit?.id) {
+      if (editingUnit.id) {
         const { error } = await supabase
           .from("units")
           .update(unitData)
@@ -339,7 +344,6 @@ const ManagerUnidadesContent = () => {
       id: unit.id,
       number: unit.number,
       floor: unit.floor,
-      type: unit.type,
       area: unit.area,
       bedrooms: unit.bedrooms,
       bathrooms: unit.bathrooms,
@@ -440,7 +444,7 @@ const ManagerUnidadesContent = () => {
             </>
           )}
           <DialogContent className="sm:max-w-[600px]">
-            <form action={handleSubmit}>
+            <form onSubmit={handleSubmit}>
               <DialogHeader>
                 <DialogTitle>
                   {editingUnit?.id ? "Editar Unidade" : "Nova Unidade"}
