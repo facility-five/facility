@@ -459,7 +459,8 @@ const ManagerUnidadesContent = () => {
                     <Input
                       id="number"
                       name="number"
-                      defaultValue={editingUnit?.number || ""}
+                      value={editingUnit?.number || ""}
+                      onChange={(e) => setEditingUnit(prev => prev ? { ...prev, number: e.target.value } : null)}
                       placeholder="Ex: 101, A-201"
                       required
                     />
@@ -470,7 +471,8 @@ const ManagerUnidadesContent = () => {
                       id="floor"
                       name="floor"
                       type="number"
-                      defaultValue={editingUnit?.floor || ""}
+                      value={editingUnit?.floor || ""}
+                      onChange={(e) => setEditingUnit(prev => prev ? { ...prev, floor: e.target.value ? parseInt(e.target.value) : null } : null)}
                       placeholder="Ex: 1, 2, 3"
                     />
                   </div>
@@ -483,7 +485,8 @@ const ManagerUnidadesContent = () => {
                       name="area"
                       type="number"
                       step="0.01"
-                      defaultValue={editingUnit?.area || ""}
+                      value={editingUnit?.area || ""}
+                      onChange={(e) => setEditingUnit(prev => prev ? { ...prev, area: e.target.value ? parseFloat(e.target.value) : null } : null)}
                       placeholder="Ex: 85.5"
                     />
                   </div>
@@ -517,7 +520,8 @@ const ManagerUnidadesContent = () => {
                       id="bedrooms"
                       name="bedrooms"
                       type="number"
-                      defaultValue={editingUnit?.bedrooms || ""}
+                      value={editingUnit?.bedrooms || ""}
+                      onChange={(e) => setEditingUnit(prev => prev ? { ...prev, bedrooms: e.target.value ? parseInt(e.target.value) : null } : null)}
                       placeholder="Ex: 2"
                     />
                   </div>
@@ -527,7 +531,8 @@ const ManagerUnidadesContent = () => {
                       id="bathrooms"
                       name="bathrooms"
                       type="number"
-                      defaultValue={editingUnit?.bathrooms || ""}
+                      value={editingUnit?.bathrooms || ""}
+                      onChange={(e) => setEditingUnit(prev => prev ? { ...prev, bathrooms: e.target.value ? parseInt(e.target.value) : null } : null)}
                       placeholder="Ex: 1"
                     />
                   </div>
