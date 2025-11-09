@@ -56,7 +56,6 @@ type UnitRow = {
   id: string;
   number: string;
   floor: number | null;
-  type: string;
   area: number | null;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -73,7 +72,6 @@ type UnitForEdit = {
   id?: string;
   number: string;
   floor: number | null;
-  type: string;
   area: number | null;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -221,7 +219,7 @@ const ManagerUnidadesContent = () => {
       // Agora buscar unidades desses condomínios (SEM JOIN)
       const { data, error } = await supabase
         .from("units")
-        .select("id, number, floor, type, area, bedrooms, bathrooms, status, block_id, condo_id, created_at, updated_at")
+        .select("id, number, floor, area, bedrooms, bathrooms, status, block_id, condo_id, created_at, updated_at")
         .in("condo_id", condoIds)
         .order("number");
 
@@ -236,7 +234,6 @@ const ManagerUnidadesContent = () => {
         id: unit.id,
         number: unit.number,
         floor: unit.floor,
-        type: unit.type || "Residencial",
         area: unit.area,
         bedrooms: unit.bedrooms,
         bathrooms: unit.bathrooms,
@@ -375,7 +372,6 @@ const ManagerUnidadesContent = () => {
     setEditingUnit({
       number: "",
       floor: null,
-      type: "Apartamento",
       area: null,
       bedrooms: null,
       bathrooms: null,
@@ -478,30 +474,6 @@ const ManagerUnidadesContent = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="type">Tipo *</Label>
-                    <Select 
-                      name="type" 
-                      defaultValue={editingUnit?.type || ""} 
-                      required
-                      onValueChange={(value) => {
-                        if (editingUnit) {
-                          setEditingUnit({ ...editingUnit, type: value });
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Apartamento">Apartamento</SelectItem>
-                        <SelectItem value="Casa">Casa</SelectItem>
-                        <SelectItem value="Cobertura">Cobertura</SelectItem>
-                        <SelectItem value="Loft">Loft</SelectItem>
-                        <SelectItem value="Studio">Studio</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="area">Área (m²)</Label>
                     <Input
                       id="area"
@@ -511,6 +483,28 @@ const ManagerUnidadesContent = () => {
                       defaultValue={editingUnit?.area || ""}
                       placeholder="Ex: 85.5"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status *</Label>
+                    <Select 
+                      name="status" 
+                      defaultValue={editingUnit?.status || "Disponible"} 
+                      required
+                      onValueChange={(value) => {
+                        if (editingUnit) {
+                          setEditingUnit({ ...editingUnit, status: value });
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Disponible">Disponible</SelectItem>
+                        <SelectItem value="Ocupada">Ocupada</SelectItem>
+                        <SelectItem value="Reservada">Reservada</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -685,7 +679,6 @@ const ManagerUnidadesContent = () => {
           <ManagerTableHeader>
             <ManagerTableRow>
               <ManagerTableHead>Número</ManagerTableHead>
-              <ManagerTableHead>Tipo</ManagerTableHead>
               <ManagerTableHead>Andar</ManagerTableHead>
               <ManagerTableHead>Área (m²)</ManagerTableHead>
               <ManagerTableHead>Quartos</ManagerTableHead>
@@ -699,7 +692,7 @@ const ManagerUnidadesContent = () => {
           <ManagerTableBody>
             {filteredUnits.length === 0 ? (
               <ManagerTableRow>
-                <ManagerTableCell colSpan={10} className="text-center text-gray-500">
+                <ManagerTableCell colSpan={9} className="text-center text-gray-500">
                   Nenhuma unidade encontrada
                 </ManagerTableCell>
               </ManagerTableRow>
@@ -707,7 +700,6 @@ const ManagerUnidadesContent = () => {
               filteredUnits.map((unit) => (
                 <ManagerTableRow key={unit.id}>
                   <ManagerTableCell className="font-medium">{unit.number}</ManagerTableCell>
-                  <ManagerTableCell>{unit.type}</ManagerTableCell>
                   <ManagerTableCell>{unit.floor || "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.area ? `${unit.area} m²` : "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.bedrooms || "-"}</ManagerTableCell>
