@@ -142,10 +142,30 @@ const ManagerUnidadesContent = () => {
     console.log("🔍 Unidades - Buscando blocos...");
     console.log("[QUERY PARAMS]", { administrator_id: activeAdministratorId });
     try {
+      // Primeiro buscar os condomínios da administradora
+      const { data: condoData, error: condoError } = await supabase
+        .from("condominiums")
+        .select("id")
+        .eq("administrator_id", activeAdministratorId);
+
+      if (condoError) {
+        console.error("❌ Unidades - Erro ao buscar condomínios:", condoError);
+        throw condoError;
+      }
+
+      const condoIds = condoData?.map(c => c.id) || [];
+
+      if (condoIds.length === 0) {
+        console.log("⚠️ Unidades - Nenhum condomínio encontrado");
+        setBlocks([]);
+        return;
+      }
+
+      // Agora buscar blocos desses condomínios
       const { data, error } = await supabase
         .from("blocks")
         .select("id, name, condo_id")
-        .eq("administrator_id", activeAdministratorId)
+        .in("condo_id", condoIds)
         .order("name");
 
       if (error) {
