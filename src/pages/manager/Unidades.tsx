@@ -56,7 +56,6 @@ type UnitRow = {
   id: string;
   number: string;
   floor: number | null;
-  area: number | null;
   bedrooms: number | null;
   bathrooms: number | null;
   status: string;
@@ -72,7 +71,6 @@ type UnitForEdit = {
   id?: string;
   number: string;
   floor: number | null;
-  area: number | null;
   bedrooms: number | null;
   bathrooms: number | null;
   status: string;
@@ -305,7 +303,6 @@ const ManagerUnidadesContent = () => {
       const unitData = {
         number: editingUnit.number,
         floor: editingUnit.floor,
-        area: editingUnit.area,
         bedrooms: editingUnit.bedrooms,
         bathrooms: editingUnit.bathrooms,
         status: editingUnit.status,
@@ -353,7 +350,6 @@ const ManagerUnidadesContent = () => {
       id: unit.id,
       number: unit.number,
       floor: unit.floor,
-      area: unit.area,
       bedrooms: unit.bedrooms,
       bathrooms: unit.bathrooms,
       status: unit.status,
@@ -385,7 +381,6 @@ const ManagerUnidadesContent = () => {
     setEditingUnit({
       number: "",
       floor: null,
-      area: null,
       bedrooms: null,
       bathrooms: null,
       status: "Disponible",
@@ -495,21 +490,8 @@ const ManagerUnidadesContent = () => {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="area">Área (m²)</Label>
-                    <Input
-                      id="area"
-                      name="area"
-                      type="number"
-                      step="0.01"
-                      value={editingUnit?.area || ""}
-                      onChange={(e) => setEditingUnit(prev => prev ? { ...prev, area: e.target.value ? parseFloat(e.target.value) : null } : null)}
-                      placeholder="Ex: 85.5"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
                     <Select 
                       name="status" 
                       defaultValue={editingUnit?.status || "Disponible"} 
@@ -529,7 +511,6 @@ const ManagerUnidadesContent = () => {
                         <SelectItem value="Reservada">Reservada</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -706,7 +687,6 @@ const ManagerUnidadesContent = () => {
             <ManagerTableRow>
               <ManagerTableHead>Número</ManagerTableHead>
               <ManagerTableHead>Andar</ManagerTableHead>
-              <ManagerTableHead>Área (m²)</ManagerTableHead>
               <ManagerTableHead>Quartos</ManagerTableHead>
               <ManagerTableHead>Banheiros</ManagerTableHead>
               <ManagerTableHead>Bloco</ManagerTableHead>
@@ -718,7 +698,7 @@ const ManagerUnidadesContent = () => {
           <ManagerTableBody>
             {filteredUnits.length === 0 ? (
               <ManagerTableRow>
-                <ManagerTableCell colSpan={9} className="text-center text-gray-500">
+                <ManagerTableCell colSpan={8} className="text-center text-gray-500">
                   Nenhuma unidade encontrada
                 </ManagerTableCell>
               </ManagerTableRow>
@@ -727,7 +707,6 @@ const ManagerUnidadesContent = () => {
                 <ManagerTableRow key={unit.id}>
                   <ManagerTableCell className="font-medium">{unit.number}</ManagerTableCell>
                   <ManagerTableCell>{unit.floor || "-"}</ManagerTableCell>
-                  <ManagerTableCell>{unit.area ? `${unit.area} m²` : "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.bedrooms || "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.bathrooms || "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.block_name}</ManagerTableCell>
