@@ -269,6 +269,7 @@ export const NewManagerReservationModal = ({
           end_time: values.end_time,
           status: values.status,
           total_value: selectedArea.booking_fee,
+          created_by: "admin", // Valor padrão simples
         },
       ]);
 
