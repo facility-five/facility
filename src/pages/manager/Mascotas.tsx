@@ -118,6 +118,7 @@ const ManagerMascotasContent = () => {
   const fetchCondos = useCallback(async () => {
     if (!activeAdministratorId) {
       console.log("🔍 Mascotas - Sem administradora ativa, pulando fetchCondos");
+      setCondos([]);
       return;
     }
 
@@ -139,12 +140,14 @@ const ManagerMascotasContent = () => {
     } catch (error) {
       console.error("❌ Mascotas - Erro na fetchCondos:", error);
       showRadixError("Erro ao carregar condomínios");
+      setCondos([]);
     }
   }, [activeAdministratorId]);
 
   const fetchUnits = useCallback(async () => {
     if (!activeAdministratorId) {
       console.log("🔍 Mascotas - Sem administradora ativa, pulando fetchUnits");
+      setUnits([]);
       return;
     }
 
@@ -186,6 +189,7 @@ const ManagerMascotasContent = () => {
     } catch (error) {
       console.error("❌ Mascotas - Erro na fetchUnits:", error);
       showRadixError("Erro ao carregar unidades");
+      setUnits([]);
     }
   }, [activeAdministratorId]);
 
@@ -252,12 +256,14 @@ const ManagerMascotasContent = () => {
     } catch (error) {
       console.error("❌ Mascotas - Erro na fetchResidents:", error);
       showRadixError("Erro ao carregar residentes");
+      setResidents([]);
     }
   }, [activeAdministratorId]);
 
   const fetchPets = useCallback(async () => {
     if (!activeAdministratorId) {
       console.log("🔍 Mascotas - Sem administradora ativa, pulando fetchPets");
+      setPets([]);
       return;
     }
 
@@ -384,23 +390,36 @@ const ManagerMascotasContent = () => {
     } catch (error) {
       console.error("❌ Mascotas - Erro na fetchPets:", error);
       showRadixError("Erro ao carregar mascotas");
+      setPets([]);
     }
   }, [activeAdministratorId]);
 
   useEffect(() => {
     const loadData = async () => {
+      if (!activeAdministratorId) {
+        console.log("🔍 Mascotas - Administradora não disponível ainda");
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
-      await Promise.all([fetchCondos(), fetchUnits(), fetchResidents(), fetchPets()]);
-      setLoading(false);
+      try {
+        console.log("🔍 Mascotas - Iniciando carregamento de dados para:", activeAdministratorId);
+        // Executar de forma sequencial para evitar conflitos
+        await fetchCondos();
+        await fetchUnits();
+        await fetchResidents();
+        await fetchPets();
+        console.log("✅ Mascotas - Todos os dados carregados com sucesso");
+      } catch (error) {
+        console.error("❌ Mascotas - Erro ao carregar dados:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (activeAdministratorId) {
-      loadData();
-    } else {
-      // Se não há administrator_id, definir loading como false para mostrar a interface
-      setLoading(false);
-    }
-  }, [activeAdministratorId]); // eslint-disable-line react-hooks/exhaustive-deps
+    loadData();
+  }, [activeAdministratorId, fetchCondos, fetchUnits, fetchResidents, fetchPets]);
 
   const filteredPets = useMemo(() => {
     return pets.filter((pet) => {
