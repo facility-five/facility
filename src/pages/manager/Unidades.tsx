@@ -57,7 +57,6 @@ type UnitRow = {
   number: string;
   floor: number | null;
   bedrooms: number | null;
-  bathrooms: number | null;
   status: string;
   block_id: string;
   condo_id: string;
@@ -72,7 +71,6 @@ type UnitForEdit = {
   number: string;
   floor: number | null;
   bedrooms: number | null;
-  bathrooms: number | null;
   status: string;
   block_id: string;
   condo_id: string;
@@ -304,7 +302,6 @@ const ManagerUnidadesContent = () => {
         number: editingUnit.number,
         floor: editingUnit.floor,
         bedrooms: editingUnit.bedrooms,
-        bathrooms: editingUnit.bathrooms,
         status: editingUnit.status,
         block_id: editingUnit.block_id,
         condo_id: editingUnit.condo_id,
@@ -351,7 +348,6 @@ const ManagerUnidadesContent = () => {
       number: unit.number,
       floor: unit.floor,
       bedrooms: unit.bedrooms,
-      bathrooms: unit.bathrooms,
       status: unit.status,
       block_id: unit.block_id,
       condo_id: unit.condo_id,
@@ -382,7 +378,6 @@ const ManagerUnidadesContent = () => {
       number: "",
       floor: null,
       bedrooms: null,
-      bathrooms: null,
       status: "Disponible",
       block_id: blocks.length > 0 ? blocks[0].id : "",
       condo_id: condos.length > 0 ? condos[0].id : "",
@@ -522,17 +517,6 @@ const ManagerUnidadesContent = () => {
                       value={editingUnit?.bedrooms || ""}
                       onChange={(e) => setEditingUnit(prev => prev ? { ...prev, bedrooms: e.target.value ? parseInt(e.target.value) : null } : null)}
                       placeholder="Ex: 2"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bathrooms">Banheiros</Label>
-                    <Input
-                      id="bathrooms"
-                      name="bathrooms"
-                      type="number"
-                      value={editingUnit?.bathrooms || ""}
-                      onChange={(e) => setEditingUnit(prev => prev ? { ...prev, bathrooms: e.target.value ? parseInt(e.target.value) : null } : null)}
-                      placeholder="Ex: 1"
                     />
                   </div>
                 </div>
@@ -688,7 +672,6 @@ const ManagerUnidadesContent = () => {
               <ManagerTableHead>Número</ManagerTableHead>
               <ManagerTableHead>Andar</ManagerTableHead>
               <ManagerTableHead>Quartos</ManagerTableHead>
-              <ManagerTableHead>Banheiros</ManagerTableHead>
               <ManagerTableHead>Bloco</ManagerTableHead>
               <ManagerTableHead>Condomínio</ManagerTableHead>
               <ManagerTableHead>Status</ManagerTableHead>
@@ -698,7 +681,7 @@ const ManagerUnidadesContent = () => {
           <ManagerTableBody>
             {filteredUnits.length === 0 ? (
               <ManagerTableRow>
-                <ManagerTableCell colSpan={8} className="text-center text-gray-500">
+                <ManagerTableCell colSpan={7} className="text-center text-gray-500">
                   Nenhuma unidade encontrada
                 </ManagerTableCell>
               </ManagerTableRow>
@@ -708,7 +691,6 @@ const ManagerUnidadesContent = () => {
                   <ManagerTableCell className="font-medium">{unit.number}</ManagerTableCell>
                   <ManagerTableCell>{unit.floor || "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.bedrooms || "-"}</ManagerTableCell>
-                  <ManagerTableCell>{unit.bathrooms || "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.block_name}</ManagerTableCell>
                   <ManagerTableCell>{unit.condo_name}</ManagerTableCell>
                   <ManagerTableCell>{statusBadge(unit.status)}</ManagerTableCell>
