@@ -56,7 +56,6 @@ type UnitRow = {
   id: string;
   number: string;
   floor: number | null;
-  status: string;
   block_id: string;
   condo_id: string;
   block_name: string;
@@ -69,7 +68,6 @@ type UnitForEdit = {
   id?: string;
   number: string;
   floor: number | null;
-  status: string;
   block_id: string;
   condo_id: string;
 };
@@ -228,10 +226,6 @@ const ManagerUnidadesContent = () => {
         id: unit.id,
         number: unit.number,
         floor: unit.floor,
-        area: unit.area,
-        bedrooms: unit.bedrooms,
-        bathrooms: unit.bathrooms,
-        status: unit.status,
         block_id: unit.block_id,
         condo_id: unit.condo_id,
         block_name: blockMap.get(unit.block_id) || "N/A",
@@ -299,7 +293,6 @@ const ManagerUnidadesContent = () => {
       const unitData = {
         number: editingUnit.number,
         floor: editingUnit.floor,
-        status: editingUnit.status,
         block_id: editingUnit.block_id,
         condo_id: editingUnit.condo_id,
       };
@@ -344,7 +337,6 @@ const ManagerUnidadesContent = () => {
       id: unit.id,
       number: unit.number,
       floor: unit.floor,
-      status: unit.status,
       block_id: unit.block_id,
       condo_id: unit.condo_id,
     });
@@ -373,7 +365,6 @@ const ManagerUnidadesContent = () => {
     setEditingUnit({
       number: "",
       floor: null,
-      status: "Disponible",
       block_id: blocks.length > 0 ? blocks[0].id : "",
       condo_id: condos.length > 0 ? condos[0].id : "",
     });
@@ -479,28 +470,6 @@ const ManagerUnidadesContent = () => {
                       placeholder="Ex: 1, 2, 3"
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status *</Label>
-                    <Select 
-                      name="status" 
-                      defaultValue={editingUnit?.status || "Disponible"} 
-                      required
-                      onValueChange={(value) => {
-                        if (editingUnit) {
-                          setEditingUnit({ ...editingUnit, status: value });
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Disponible">Disponible</SelectItem>
-                        <SelectItem value="Ocupada">Ocupada</SelectItem>
-                        <SelectItem value="Reservada">Reservada</SelectItem>
-                      </SelectContent>
-                    </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="condo_id">Condomínio *</Label>
@@ -655,14 +624,13 @@ const ManagerUnidadesContent = () => {
               <ManagerTableHead>Andar</ManagerTableHead>
               <ManagerTableHead>Bloco</ManagerTableHead>
               <ManagerTableHead>Condomínio</ManagerTableHead>
-              <ManagerTableHead>Status</ManagerTableHead>
               <ManagerTableHead className="text-right">Ações</ManagerTableHead>
             </ManagerTableRow>
           </ManagerTableHeader>
           <ManagerTableBody>
             {filteredUnits.length === 0 ? (
               <ManagerTableRow>
-                <ManagerTableCell colSpan={6} className="text-center text-gray-500">
+                <ManagerTableCell colSpan={5} className="text-center text-gray-500">
                   Nenhuma unidade encontrada
                 </ManagerTableCell>
               </ManagerTableRow>
@@ -673,7 +641,6 @@ const ManagerUnidadesContent = () => {
                   <ManagerTableCell>{unit.floor || "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.block_name}</ManagerTableCell>
                   <ManagerTableCell>{unit.condo_name}</ManagerTableCell>
-                  <ManagerTableCell>{statusBadge(unit.status)}</ManagerTableCell>
                   <ManagerTableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
