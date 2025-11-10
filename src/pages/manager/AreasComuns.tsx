@@ -68,7 +68,7 @@ const AreasComunsContent = () => {
     const { data, error } = await query;
 
     if (error) {
-      showRadixError("Erro ao buscar �reas comuns.");
+      showRadixError("Error al buscar áreas comunes.");
       console.error("Error fetching areas:", error);
     } else {
       setAreas(data as any[] || []);
@@ -139,10 +139,10 @@ const AreasComunsContent = () => {
       <div className="flex flex-col items-center justify-center h-64">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Selecione uma administradora
+            Seleccione una administradora
           </h2>
           <p className="text-gray-500">
-            Para visualizar as �reas comuns, selecione uma administradora no cabe�alho.
+            Para visualizar las áreas comunes, seleccione una administradora en el encabezado.
           </p>
         </div>
       </div>
@@ -153,9 +153,9 @@ const AreasComunsContent = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">�reas Comuns</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Áreas Comunes</h1>
           <p className="text-gray-600 mt-1">
-            Gerencie as �reas comuns dos condom�nios
+            Gerencie las áreas comunes de los condominios
           </p>
         </div>
         {!planLoading && (
@@ -175,7 +175,7 @@ const AreasComunsContent = () => {
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Nova Área Comum
+                Nueva Área Común
               </Button>
             )}
           </>
@@ -186,7 +186,7 @@ const AreasComunsContent = () => {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Buscar por nome, c�digo, descri��o ou condom�nio..."
+            placeholder="Buscar por nombre, código, descripción o condominio..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -199,14 +199,14 @@ const AreasComunsContent = () => {
         <ManagerTable>
           <ManagerTableHeader>
             <ManagerTableRow>
-              <ManagerTableHead>C�digo</ManagerTableHead>
-              <ManagerTableHead>Nome</ManagerTableHead>
-              <ManagerTableHead>Condom�nio</ManagerTableHead>
-              <ManagerTableHead>Capacidade</ManagerTableHead>
-              <ManagerTableHead>Hor�rio</ManagerTableHead>
-              <ManagerTableHead>Taxa</ManagerTableHead>
-              <ManagerTableHead>Aprova��o</ManagerTableHead>
-              <ManagerTableHead className="text-right">A��es</ManagerTableHead>
+              <ManagerTableHead>Código</ManagerTableHead>
+              <ManagerTableHead>Nombre</ManagerTableHead>
+              <ManagerTableHead>Condominio</ManagerTableHead>
+              <ManagerTableHead>Capacidad</ManagerTableHead>
+              <ManagerTableHead>Horario</ManagerTableHead>
+              <ManagerTableHead>Tasa</ManagerTableHead>
+              <ManagerTableHead>Aprobación</ManagerTableHead>
+              <ManagerTableHead className="text-right">Acciones</ManagerTableHead>
             </ManagerTableRow>
           </ManagerTableHeader>
           <ManagerTableBody>
@@ -236,7 +236,7 @@ const AreasComunsContent = () => {
                   </ManagerTableCell>
                   <ManagerTableCell>{area.condominiums?.name || 'N/A'}</ManagerTableCell>
                   <ManagerTableCell>
-                    {area.capacity ? `${area.capacity} pessoas` : '-'}
+                    {area.capacity ? `${area.capacity} personas` : '-'}
                   </ManagerTableCell>
                   <ManagerTableCell>
                     {area.opening_time && area.closing_time
@@ -251,7 +251,7 @@ const AreasComunsContent = () => {
                         ? 'bg-yellow-100 text-yellow-800' 
                         : 'bg-green-100 text-green-800'
                     }`}>
-                      {area.requires_approval ? 'Requer' : 'Livre'}
+                      {area.requires_approval ? 'Requiere' : 'Libre'}
                     </span>
                   </ManagerTableCell>
                   <ManagerTableCell className="text-right">
@@ -280,11 +280,11 @@ const AreasComunsContent = () => {
               <ManagerTableRow>
                 <ManagerTableCell colSpan={8} className="text-center py-12">
                   <div className="text-gray-500">
-                    <p className="text-lg font-medium">Nenhuma �rea comum encontrada</p>
+                    <p className="text-lg font-medium">Ninguna área común encontrada</p>
                     <p className="text-sm mt-1">
                       {searchTerm 
-                        ? "Tente ajustar os filtros de busca" 
-                        : "Clique em 'Nova �rea Comum' para come�ar"
+                        ? "Intente ajustar los filtros de búsqueda" 
+                        : "Clique en 'Nueva Área Común' para comenzar"
                       }
                     </p>
                   </div>
