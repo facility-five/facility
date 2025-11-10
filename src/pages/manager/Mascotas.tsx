@@ -268,11 +268,6 @@ const ManagerMascotasContent = () => {
 
     console.log("🔍 Mascotas - Buscando mascotas...");
     try {
-      // TEMPORÁRIO: Tabela pets não existe ainda, então vamos retornar array vazio
-      console.log("⚠️ Mascotas - Tabela pets não existe ainda, retornando lista vazia");
-      setPets([]);
-      
-      /* TODO: Uncomment when pets table is created
       // Primeiro buscar condomínios da administradora
       const { data: condosData, error: condosError } = await supabase
         .from("condominiums")
@@ -292,7 +287,45 @@ const ManagerMascotasContent = () => {
         return;
       }
 
-      // Buscar pets dos condomínios
+      // Buscar unidades dos condomínios primeiro
+      const { data: unitsData, error: unitsError } = await supabase
+        .from("units")
+        .select("id")
+        .in("condominium_id", condoIds);
+
+      if (unitsError) {
+        console.error("❌ Mascotas - Erro ao buscar unidades:", unitsError);
+        throw unitsError;
+      }
+
+      const unitIds = unitsData?.map(u => u.id) || [];
+      console.log("🔍 Mascotas - Unidades encontradas:", unitIds.length);
+
+      if (unitIds.length === 0) {
+        setPets([]);
+        return;
+      }
+
+      // Buscar residentes das unidades
+      const { data: residentsData, error: residentsError } = await supabase
+        .from("residents")
+        .select("id")
+        .in("unit_id", unitIds);
+
+      if (residentsError) {
+        console.error("❌ Mascotas - Erro ao buscar residentes:", residentsError);
+        throw residentsError;
+      }
+
+      const residentIds = residentsData?.map(r => r.id) || [];
+      console.log("🔍 Mascotas - Residentes encontrados:", residentIds.length);
+
+      if (residentIds.length === 0) {
+        setPets([]);
+        return;
+      }
+
+      // Agora buscar pets dos residentes
       const { data, error } = await supabase
         .from("pets")
         .select(`
@@ -300,18 +333,15 @@ const ManagerMascotasContent = () => {
           name,
           species,
           breed,
-          age,
+          date_of_birth,
           weight,
           color,
-          description,
-          status,
-          unit_id,
+          observations,
           resident_id,
-          condo_id,
           created_at,
           updated_at
         `)
-        .in("condo_id", condoIds)
+        .in("resident_id", residentIds)
         .order("name");
 
       if (error) {
@@ -322,66 +352,67 @@ const ManagerMascotasContent = () => {
       console.log("✅ Mascotas - Mascotas carregadas:", data?.length || 0);
 
       // Agora buscar os dados relacionados separadamente
-      const unitIds = [...new Set(data?.map((pet: any) => pet.unit_id).filter(Boolean))];
-      const residentIds = [...new Set(data?.map((pet: any) => pet.resident_id).filter(Boolean))];
+      const petResidentIds = [...new Set(data?.map((pet: any) => pet.resident_id).filter(Boolean))];
 
-      // Buscar unidades
-      const unitsMap = new Map();
-      if (unitIds.length > 0) {
-        const { data: unitsData } = await supabase
-          .from("units")
-          .select("id, number")
-          .in("id", unitIds);
-        
-        unitsData?.forEach((unit: any) => {
-          unitsMap.set(unit.id, unit);
-        });
-      }
+      // Buscar residentes e suas unidades
+      let residentsMap = new Map();
+      let unitsMap = new Map();
+      let condosMap = new Map();
 
-      // Buscar residentes
-      const residentsMap = new Map();
-      if (residentIds.length > 0) {
-        const { data: residentsData } = await supabase
+      if (petResidentIds.length > 0) {
+        const { data: fullResidentsData } = await supabase
           .from("residents")
-          .select("id, full_name")
-          .in("id", residentIds);
+          .select(`
+            id,
+            full_name,
+            unit_id,
+            units!inner(
+              id,
+              number,
+              condominium_id,
+              condominiums!inner(
+                id,
+                name
+              )
+            )
+          `)
+          .in("id", petResidentIds);
         
-        residentsData?.forEach((resident: any) => {
+        fullResidentsData?.forEach((resident: any) => {
           residentsMap.set(resident.id, resident);
-        });
-      }
-
-      // Buscar condomínios
-      const condosMap = new Map();
-      if (condoIds.length > 0) {
-        const { data: condosMapData } = await supabase
-          .from("condominiums")
-          .select("id, name")
-          .in("id", condoIds);
-        
-        condosMapData?.forEach((condo: any) => {
+          const unit = resident.units;
+          unitsMap.set(unit.id, unit);
+          const condo = unit.condominiums;
           condosMap.set(condo.id, condo);
         });
       }
 
       const formattedPets: PetRow[] = (data || []).map((pet: any) => {
-        const unit = unitsMap.get(pet.unit_id);
         const resident = residentsMap.get(pet.resident_id);
-        const condo = condosMap.get(pet.condo_id);
+        const unit = resident?.units;
+        const condo = unit?.condominiums;
+
+        // Calculate age from date_of_birth
+        let age = null;
+        if (pet.date_of_birth) {
+          const birthDate = new Date(pet.date_of_birth);
+          const today = new Date();
+          age = Math.floor((today.getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+        }
 
         return {
           id: pet.id,
           name: pet.name,
           species: pet.species,
           breed: pet.breed,
-          age: pet.age,
-          weight: pet.weight,
+          age: age,
+          weight: pet.weight ? Number(pet.weight) : null,
           color: pet.color,
-          description: pet.description,
-          status: pet.status,
-          unit_id: pet.unit_id,
+          description: pet.observations,
+          status: "Ativo", // Default status since pets table doesn't have status field
+          unit_id: unit?.id || "",
           resident_id: pet.resident_id,
-          condo_id: pet.condo_id,
+          condo_id: condo?.id || "",
           unit_number: unit?.number || "N/A",
           condo_name: condo?.name || "N/A",
           resident_name: resident?.full_name || "N/A",
@@ -391,7 +422,6 @@ const ManagerMascotasContent = () => {
       });
 
       setPets(formattedPets);
-      */
     } catch (error) {
       console.error("❌ Mascotas - Erro na fetchPets:", error);
       showRadixError("Erro ao carregar mascotas");
@@ -459,19 +489,24 @@ const ManagerMascotasContent = () => {
 
     setSubmitting(true);
     try {
+      // Convert age to date_of_birth if provided
+      const ageValue = formData.get("age");
+      let dateOfBirth = null;
+      if (ageValue) {
+        const age = parseInt(ageValue as string);
+        const today = new Date();
+        dateOfBirth = new Date(today.getFullYear() - age, today.getMonth(), today.getDate());
+      }
+
       const petData = {
         name: formData.get("name") as string,
         species: formData.get("species") as string,
         breed: formData.get("breed") as string || null,
-        age: formData.get("age") ? parseInt(formData.get("age") as string) : null,
+        date_of_birth: dateOfBirth,
         weight: formData.get("weight") ? parseFloat(formData.get("weight") as string) : null,
         color: formData.get("color") as string || null,
-        description: formData.get("description") as string || null,
-        status: formData.get("status") as string,
-        unit_id: formData.get("unit_id") as string,
+        observations: formData.get("description") as string || null,
         resident_id: formData.get("resident_id") as string,
-        condo_id: formData.get("condo_id") as string,
-        administrator_id: activeAdministratorId,
       };
 
       if (editingPet?.id) {
