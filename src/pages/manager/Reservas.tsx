@@ -110,10 +110,10 @@ const Reservas = () => {
         return;
       }
 
-      // Buscar áreas comuns dos condominios
+      // Buscar áreas comuns dos condominios com seus nomes
       const { data: areasData, error: areasError } = await supabase
         .from("common_areas")
-        .select("id")
+        .select("id, name, condo_id")
         .in("condo_id", condoIds);
 
       if (areasError) throw areasError;
@@ -127,20 +127,22 @@ const Reservas = () => {
         return;
       }
 
+      // Criar mapa de área -> condomínio
+      const areaToCondoMap = new Map();
+      areasData?.forEach(area => {
+        const condo = condoData?.find(c => c.id === area.condo_id);
+        areaToCondoMap.set(area.id, {
+          areaName: area.name,
+          condoId: condo?.id || '',
+          condoName: condo?.name || 'N/A'
+        });
+      });
+
       // Buscar reservas das áreas comuns
       const { data, error } = await supabase
         .from("reservas")
         .select(`
           *,
-          common_areas(
-            id,
-            name,
-            condo_id,
-            condominiums(
-              id,
-              name
-            )
-          ),
           residents:resident_id(
             id,
             name,
@@ -152,8 +154,24 @@ const Reservas = () => {
 
       if (error) throw error;
 
-      console.log("✅ Reservas - Reservas carregadas:", data?.length || 0);
-      setReservations(data as any[] || []);
+      // Mapear dados manualmente
+      const formattedReservations = (data || []).map((reservation: any) => {
+        const areaInfo = areaToCondoMap.get(reservation.common_area_id);
+        return {
+          ...reservation,
+          common_areas: {
+            id: reservation.common_area_id,
+            name: areaInfo?.areaName || 'N/A',
+            condominiums: {
+              id: areaInfo?.condoId || '',
+              name: areaInfo?.condoName || 'N/A'
+            }
+          }
+        };
+      });
+
+      console.log("✅ Reservas - Reservas carregadas:", formattedReservations.length);
+      setReservations(formattedReservations);
     } catch (error) {
       console.error("❌ Erro ao buscar reservas:", error);
       showRadixError("Error al buscar reservas.");
