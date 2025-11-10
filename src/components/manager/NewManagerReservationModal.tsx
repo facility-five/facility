@@ -269,7 +269,6 @@ export const NewManagerReservationModal = ({
           end_time: values.end_time,
           status: values.status,
           total_value: selectedArea.booking_fee,
-          created_by: "00000000-0000-0000-0000-000000000000", // UUID padrão
         },
       ]);
 
