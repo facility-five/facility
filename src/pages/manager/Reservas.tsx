@@ -138,25 +138,34 @@ const Reservas = () => {
         });
       });
 
-      // Buscar reservas das áreas comuns
-      const { data, error } = await supabase
+      // Buscar reservas das áreas comuns (sem JOIN)
+      const { data: reservasData, error } = await supabase
         .from("reservas")
-        .select(`
-          *,
-          residents:resident_id(
-            id,
-            name,
-            email
-          )
-        `)
+        .select("*")
         .in("common_area_id", areaIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      // Buscar todos os residentes únicos das reservas
+      const residentIds = [...new Set(reservasData?.map(r => r.resident_id).filter(Boolean))];
+      
+      let residentsMap = new Map();
+      if (residentIds.length > 0) {
+        const { data: residentsData } = await supabase
+          .from("residents")
+          .select("id, name, email")
+          .in("id", residentIds);
+        
+        residentsData?.forEach(resident => {
+          residentsMap.set(resident.id, resident);
+        });
+      }
+
       // Mapear dados manualmente
-      const formattedReservations = (data || []).map((reservation: any) => {
+      const formattedReservations = (reservasData || []).map((reservation: any) => {
         const areaInfo = areaToCondoMap.get(reservation.common_area_id);
+        const resident = residentsMap.get(reservation.resident_id);
         return {
           ...reservation,
           common_areas: {
@@ -166,6 +175,11 @@ const Reservas = () => {
               id: areaInfo?.condoId || '',
               name: areaInfo?.condoName || 'N/A'
             }
+          },
+          residents: resident || {
+            id: reservation.resident_id,
+            name: 'N/A',
+            email: 'N/A'
           }
         };
       });
