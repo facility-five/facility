@@ -67,12 +67,9 @@ interface CommonArea {
 
 interface Resident {
   id: string;
-  name: string;
+  full_name: string;
   email: string;
-  condo_id: string;
-  condominiums: {
-    name: string;
-  };
+  unit_id: string;
 }
 
 export const NewManagerReservationModal = ({
@@ -148,30 +145,12 @@ export const NewManagerReservationModal = ({
       return;
     }
 
-    // Buscar condominios da administradora
-    const { data: condoData, error: condoError } = await supabase
-      .from("condominiums")
-      .select("id, name")
-      .eq("administrator_id", activeAdministratorId);
-
-    if (condoError) {
-      console.error("Error fetching condos:", condoError);
-      return;
-    }
-
-    const condoIds = condoData?.map(c => c.id) || [];
-
-    if (condoIds.length === 0) {
-      setResidents([]);
-      return;
-    }
-
-    // Buscar moradores dos condominios
+    // Buscar moradores da administradora diretamente
     const { data, error } = await supabase
       .from("residents")
-      .select("*, condominiums(name)")
-      .in("condo_id", condoIds)
-      .order("name");
+      .select("id, full_name, email, unit_id")
+      .eq("administrator_id", activeAdministratorId)
+      .order("full_name");
 
     if (error) {
       console.error("Error fetching residents:", error);
@@ -250,9 +229,9 @@ export const NewManagerReservationModal = ({
                         {residents.map((resident) => (
                           <SelectItem key={resident.id} value={resident.id}>
                             <div className="flex flex-col">
-                              <span>{resident.name}</span>
+                              <span>{resident.full_name}</span>
                               <span className="text-xs text-gray-500">
-                                {resident.condominiums?.name} - {resident.email}
+                                {resident.email}
                               </span>
                             </div>
                           </SelectItem>
