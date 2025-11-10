@@ -38,7 +38,6 @@ import { showRadixError, showRadixSuccess } from '@/utils/toast';
 import { useManagerAdministradoras } from '@/contexts/ManagerAdministradorasContext';
 
 const formSchema = z.object({
-  resident_id: z.string().min(1, "Selecione um residente"),
   common_area_id: z.string().min(1, "Selecione uma área comum"),
   date: z.date({
     required_error: "Selecione uma data",
@@ -223,30 +222,10 @@ export const NewManagerReservationModal = ({
     setLoading(true);
 
     try {
-      // Verificar se o residente existe antes de criar a reserva
-      console.log("🔍 Verificando residente ID:", values.resident_id);
-      const { data: residentCheck, error: residentError } = await supabase
-        .from("residents")
-        .select("id, full_name")
-        .eq("id", values.resident_id)
-        .single();
-
-      console.log("🔍 Resultado da verificação do residente:", { residentCheck, residentError });
-
-      if (residentError || !residentCheck) {
-        console.error("❌ Residente não encontrado:", residentError);
-        showRadixError("Residente selecionado não encontrado.");
-        setLoading(false);
-        return;
-      }
-
-      console.log("✅ Residente encontrado:", residentCheck);
-
-      // Verificar área comum selecionada
+      // Verificar se a área comum existe e pegar o condo_id
       console.log("🔍 Área comum selecionada:", selectedArea);
       console.log("🔍 common_area_id:", values.common_area_id);
 
-      // Verificar se a área comum existe
       const { data: areaCheck, error: areaError } = await supabase
         .from("common_areas")
         .select("id, name, condo_id")
@@ -267,34 +246,27 @@ export const NewManagerReservationModal = ({
       // Gerar código único para a reserva
       const code = `RES-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       
-      // Obter usuário autenticado
-      const { data: { user } } = await supabase.auth.getUser();
-      
       console.log("Tentando criar reserva com dados:", {
         code,
         common_area_id: values.common_area_id,
-        resident_id: values.resident_id,
+        condo_id: areaCheck.condo_id,
         reservation_date: format(values.date, 'yyyy-MM-dd'),
         start_time: values.start_time,
         end_time: values.end_time,
         status: values.status,
         total_value: selectedArea.booking_fee,
-        condo_id: selectedArea.condo_id,
-        created_by: user?.id,
       });
       
       const { error } = await supabase.from("reservas").insert([
         {
           code: code,
           common_area_id: values.common_area_id,
-          resident_id: values.resident_id,
+          condo_id: areaCheck.condo_id,
           reservation_date: format(values.date, 'yyyy-MM-dd'),
           start_time: values.start_time,
           end_time: values.end_time,
           status: values.status,
           total_value: selectedArea.booking_fee,
-          condo_id: selectedArea.condo_id,
-          created_by: user?.id,
         },
       ]);
 
@@ -333,39 +305,6 @@ export const NewManagerReservationModal = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="resident_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Residente *</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value || ""}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecionar residente..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {residents.map((resident) => (
-                          <SelectItem key={resident.id} value={resident.id}>
-                            <div className="flex flex-col">
-                              <span>{resident.full_name}</span>
-                              <span className="text-xs text-gray-500">
-                                {resident.email}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="common_area_id"
