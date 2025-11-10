@@ -35,8 +35,6 @@ import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, PawPrint } from "lucide-react";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
-import { usePlan } from "@/hooks/usePlan";
-
 const CONDO_PLACEHOLDER_VALUE = "__no_condo_available__";
 const UNIT_PLACEHOLDER_VALUE = "__no_unit_available__";
 
@@ -100,7 +98,6 @@ const statusBadge = (status: string) => {
 
 const ManagerMascotasContent = () => {
   const { activeAdministratorId } = useManagerAdministradoras();
-  const { currentPlan } = usePlan();
   const [pets, setPets] = useState<PetRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
   const [units, setUnits] = useState<UnitSummary[]>([]);
@@ -153,10 +150,30 @@ const ManagerMascotasContent = () => {
 
     console.log("🔍 Mascotas - Buscando unidades...");
     try {
+      // Primeiro buscar condomínios da administradora
+      const { data: condosData, error: condosError } = await supabase
+        .from("condominiums")
+        .select("id")
+        .eq("administrator_id", activeAdministratorId);
+
+      if (condosError) {
+        console.error("❌ Mascotas - Erro ao buscar condomínios para unidades:", condosError);
+        throw condosError;
+      }
+
+      const condoIds = condosData?.map(c => c.id) || [];
+      console.log("🔍 Mascotas - Condomínios encontrados:", condoIds.length);
+
+      if (condoIds.length === 0) {
+        setUnits([]);
+        return;
+      }
+
+      // Buscar unidades dos condomínios
       const { data, error } = await supabase
         .from("units")
         .select("id, number, condo_id")
-        .eq("administrator_id", activeAdministratorId)
+        .in("condo_id", condoIds)
         .order("number");
 
       if (error) {
@@ -180,10 +197,49 @@ const ManagerMascotasContent = () => {
 
     console.log("🔍 Mascotas - Buscando residentes...");
     try {
+      // Primeiro buscar condomínios da administradora
+      const { data: condosData, error: condosError } = await supabase
+        .from("condominiums")
+        .select("id")
+        .eq("administrator_id", activeAdministratorId);
+
+      if (condosError) {
+        console.error("❌ Mascotas - Erro ao buscar condomínios para residentes:", condosError);
+        throw condosError;
+      }
+
+      const condoIds = condosData?.map(c => c.id) || [];
+      console.log("🔍 Mascotas - Condomínios encontrados para residentes:", condoIds.length);
+
+      if (condoIds.length === 0) {
+        setResidents([]);
+        return;
+      }
+
+      // Buscar unidades dos condomínios
+      const { data: unitsData, error: unitsError } = await supabase
+        .from("units")
+        .select("id")
+        .in("condo_id", condoIds);
+
+      if (unitsError) {
+        console.error("❌ Mascotas - Erro ao buscar unidades para residentes:", unitsError);
+        throw unitsError;
+      }
+
+      const unitIds = unitsData?.map(u => u.id) || [];
+      console.log("🔍 Mascotas - Unidades encontradas para residentes:", unitIds.length);
+
+      if (unitIds.length === 0) {
+        setResidents([]);
+        return;
+      }
+
+      // Buscar residentes das unidades
       const { data, error } = await supabase
         .from("residents")
         .select("id, first_name, last_name, unit_id")
-        .eq("administrator_id", activeAdministratorId)
+        .in("unit_id", unitIds)
         .order("first_name");
 
       if (error) {
@@ -207,6 +263,26 @@ const ManagerMascotasContent = () => {
 
     console.log("🔍 Mascotas - Buscando mascotas...");
     try {
+      // Primeiro buscar condomínios da administradora
+      const { data: condosData, error: condosError } = await supabase
+        .from("condominiums")
+        .select("id")
+        .eq("administrator_id", activeAdministratorId);
+
+      if (condosError) {
+        console.error("❌ Mascotas - Erro ao buscar condomínios para pets:", condosError);
+        throw condosError;
+      }
+
+      const condoIds = condosData?.map(c => c.id) || [];
+      console.log("🔍 Mascotas - Condomínios encontrados para pets:", condoIds.length);
+
+      if (condoIds.length === 0) {
+        setPets([]);
+        return;
+      }
+
+      // Buscar pets dos condomínios
       const { data, error } = await supabase
         .from("pets")
         .select(`
@@ -223,12 +299,9 @@ const ManagerMascotasContent = () => {
           resident_id,
           condo_id,
           created_at,
-          updated_at,
-          units!inner(number),
-          condominiums!inner(name),
-          residents!inner(first_name, last_name)
+          updated_at
         `)
-        .eq("administrator_id", activeAdministratorId)
+        .in("condo_id", condoIds)
         .order("name");
 
       if (error) {
@@ -238,25 +311,74 @@ const ManagerMascotasContent = () => {
 
       console.log("✅ Mascotas - Mascotas carregadas:", data?.length || 0);
 
-      const formattedPets: PetRow[] = (data || []).map((pet: any) => ({
-        id: pet.id,
-        name: pet.name,
-        species: pet.species,
-        breed: pet.breed,
-        age: pet.age,
-        weight: pet.weight,
-        color: pet.color,
-        description: pet.description,
-        status: pet.status,
-        unit_id: pet.unit_id,
-        resident_id: pet.resident_id,
-        condo_id: pet.condo_id,
-        unit_number: pet.units?.number || "N/A",
-        condo_name: pet.condominiums?.name || "N/A",
-        resident_name: `${pet.residents?.first_name || ""} ${pet.residents?.last_name || ""}`.trim() || "N/A",
-        created_at: pet.created_at,
-        updated_at: pet.updated_at,
-      }));
+      // Agora buscar os dados relacionados separadamente
+      const unitIds = [...new Set(data?.map((pet: any) => pet.unit_id).filter(Boolean))];
+      const residentIds = [...new Set(data?.map((pet: any) => pet.resident_id).filter(Boolean))];
+
+      // Buscar unidades
+      const unitsMap = new Map();
+      if (unitIds.length > 0) {
+        const { data: unitsData } = await supabase
+          .from("units")
+          .select("id, number")
+          .in("id", unitIds);
+        
+        unitsData?.forEach((unit: any) => {
+          unitsMap.set(unit.id, unit);
+        });
+      }
+
+      // Buscar residentes
+      const residentsMap = new Map();
+      if (residentIds.length > 0) {
+        const { data: residentsData } = await supabase
+          .from("residents")
+          .select("id, first_name, last_name")
+          .in("id", residentIds);
+        
+        residentsData?.forEach((resident: any) => {
+          residentsMap.set(resident.id, resident);
+        });
+      }
+
+      // Buscar condomínios
+      const condosMap = new Map();
+      if (condoIds.length > 0) {
+        const { data: condosMapData } = await supabase
+          .from("condominiums")
+          .select("id, name")
+          .in("id", condoIds);
+        
+        condosMapData?.forEach((condo: any) => {
+          condosMap.set(condo.id, condo);
+        });
+      }
+
+      const formattedPets: PetRow[] = (data || []).map((pet: any) => {
+        const unit = unitsMap.get(pet.unit_id);
+        const resident = residentsMap.get(pet.resident_id);
+        const condo = condosMap.get(pet.condo_id);
+
+        return {
+          id: pet.id,
+          name: pet.name,
+          species: pet.species,
+          breed: pet.breed,
+          age: pet.age,
+          weight: pet.weight,
+          color: pet.color,
+          description: pet.description,
+          status: pet.status,
+          unit_id: pet.unit_id,
+          resident_id: pet.resident_id,
+          condo_id: pet.condo_id,
+          unit_number: unit?.number || "N/A",
+          condo_name: condo?.name || "N/A",
+          resident_name: resident ? `${resident.first_name || ""} ${resident.last_name || ""}`.trim() : "N/A",
+          created_at: pet.created_at,
+          updated_at: pet.updated_at,
+        };
+      });
 
       setPets(formattedPets);
     } catch (error) {
@@ -439,15 +561,13 @@ const ManagerMascotasContent = () => {
             Gestione las mascotas de los residentes
           </p>
         </div>
-        {!currentPlan ? (
-          // Botão normal para usuários com plano pago
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm} className="bg-purple-600 hover:bg-purple-700">
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Mascota
-              </Button>
-            </DialogTrigger>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={resetForm} className="bg-purple-600 hover:bg-purple-700">
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Mascota
+            </Button>
+          </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <form action={handleSubmit}>
                 <DialogHeader>
@@ -654,16 +774,6 @@ const ManagerMascotasContent = () => {
               </form>
             </DialogContent>
           </Dialog>
-        ) : (
-          // Botão de upgrade para usuários com plano gratuito
-          <Button 
-            onClick={() => window.location.href = '/gestor/mi-plan'}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Fazer Upgrade para Criar Mascotas
-          </Button>
-        )}
       </div>
 
 
