@@ -37,11 +37,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
-  name: z.string().min(1, "O nome é obrigatório."),
-  condo_id: z.string().min(1, "O condomínio é obrigatório."),
+  name: z.string().min(1, "El nombre es obligatorio."),
+  condo_id: z.string().min(1, "El condominio es obligatorio."),
   description: z.string().optional(),
-  capacity: z.coerce.number().min(1, "A capacidade deve ser maior que 0").optional(),
-  booking_fee: z.coerce.number().min(0, "A taxa não pode ser negativa").optional(),
+  capacity: z.coerce.number().min(1, "La capacidad debe ser mayor que 0").optional(),
+  booking_fee: z.coerce.number().min(0, "La tasa no puede ser negativa").optional(),
   opening_time: z.string().optional(),
   closing_time: z.string().optional(),
   requires_approval: z.boolean().default(false),
@@ -122,8 +122,8 @@ export const NewManagerCommonAreaModal = ({
   const generateCode = () => `AC-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!selectedAdministratorId) {
-      showRadixError("Selecione uma administradora primeiro.");
+    if (!activeAdministratorId) {
+      showRadixError("Seleccione una administradora primero.");
       return;
     }
 
@@ -160,12 +160,12 @@ export const NewManagerCommonAreaModal = ({
       if (error) {
         showRadixError(error.message);
       } else {
-        showRadixSuccess(`Área comum ${commonArea ? "atualizada" : "cadastrada"} com sucesso!`);
+        showRadixSuccess(`Área común ${commonArea ? "actualizada" : "registrada"} con éxito!`);
         onSuccess();
         onClose();
       }
     } catch (error) {
-      showRadixError("Erro inesperado. Tente novamente.");
+      showRadixError("Error inesperado. Intente nuevamente.");
     } finally {
       setLoading(false);
     }
@@ -176,7 +176,7 @@ export const NewManagerCommonAreaModal = ({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {commonArea ? "Editar Área Comum" : "Nova Área Comum"}
+            {commonArea ? "Editar Área Común" : "Nueva Área Común"}
           </DialogTitle>
         </DialogHeader>
         
@@ -188,10 +188,10 @@ export const NewManagerCommonAreaModal = ({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome da Área *</FormLabel>
+                    <FormLabel>Nombre del Área *</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Ex: Salão de Festas"
+                        placeholder="Ej: Salón de Fiestas"
                         {...field} 
                       />
                     </FormControl>
@@ -205,11 +205,11 @@ export const NewManagerCommonAreaModal = ({
                 name="condo_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Condomínio *</FormLabel>
+                    <FormLabel>Condominio *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione o condomínio" />
+                          <SelectValue placeholder="Seleccione el condominio" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -231,10 +231,10 @@ export const NewManagerCommonAreaModal = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel>Descripción</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Descreva a área comum, suas características e regras de uso..."
+                      placeholder="Describa el área común, sus características y reglas de uso..."
                       className="min-h-[80px]"
                       {...field} 
                     />
@@ -250,11 +250,11 @@ export const NewManagerCommonAreaModal = ({
                 name="capacity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Capacidade (pessoas)</FormLabel>
+                    <FormLabel>Capacidad (personas)</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
-                        placeholder="Ex: 50"
+                        placeholder="Ej: 50"
                         min="1"
                         {...field} 
                       />
@@ -269,11 +269,11 @@ export const NewManagerCommonAreaModal = ({
                 name="booking_fee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Taxa de Reserva (R$)</FormLabel>
+                    <FormLabel>Tasa de Reserva (R$)</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
-                        placeholder="Ex: 100.00"
+                        placeholder="Ej: 100.00"
                         min="0"
                         step="0.01"
                         {...field} 
@@ -291,7 +291,7 @@ export const NewManagerCommonAreaModal = ({
                 name="opening_time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Horário de Abertura</FormLabel>
+                    <FormLabel>Horario de Apertura</FormLabel>
                     <FormControl>
                       <Input 
                         type="time" 
@@ -308,7 +308,7 @@ export const NewManagerCommonAreaModal = ({
                 name="closing_time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Horário de Fechamento</FormLabel>
+                    <FormLabel>Horario de Cierre</FormLabel>
                     <FormControl>
                       <Input 
                         type="time" 
@@ -328,10 +328,10 @@ export const NewManagerCommonAreaModal = ({
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">
-                      Requer Aprovação
+                      Requiere Aprobación
                     </FormLabel>
                     <div className="text-sm text-muted-foreground">
-                      As reservas desta área precisam ser aprovadas pela administração
+                      Las reservas de esta área necesitan ser aprobadas por la administración
                     </div>
                   </div>
                   <FormControl>
@@ -358,7 +358,7 @@ export const NewManagerCommonAreaModal = ({
                 className="bg-purple-600 hover:bg-purple-700"
                 disabled={loading}
               >
-                {loading ? "Salvando..." : (commonArea ? "Atualizar" : "Cadastrar")}
+                {loading ? "Guardando..." : (commonArea ? "Actualizar" : "Registrar")}
               </Button>
             </DialogFooter>
           </form>
