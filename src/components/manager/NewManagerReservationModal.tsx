@@ -171,7 +171,6 @@ export const NewManagerReservationModal = ({
       .from("residents")
       .select("*, condominiums(name)")
       .in("condo_id", condoIds)
-      .eq("is_deleted", false)
       .order("name");
 
     if (error) {
