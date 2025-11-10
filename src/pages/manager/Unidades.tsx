@@ -668,7 +668,7 @@ const ManagerUnidadesContent = () => {
               </ManagerTableRow>
             ) : (
               filteredUnits.map((unit) => (
-                <ManagerTableRow key={unit.id}>
+                <ManagerTableRow key={unit.id} className="hover:bg-purple-50">
                   <ManagerTableCell className="font-medium">{unit.number}</ManagerTableCell>
                   <ManagerTableCell>{unit.floor || "-"}</ManagerTableCell>
                   <ManagerTableCell>{unit.block_name}</ManagerTableCell>

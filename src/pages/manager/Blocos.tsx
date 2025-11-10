@@ -456,7 +456,7 @@ const ManagerBlocosContent = () => {
             </ManagerTableRow>
           ) : (
             filteredBlocks.map((block) => (
-                    <ManagerTableRow key={block.id}>
+                    <ManagerTableRow key={block.id} className="hover:bg-purple-50">
                       <ManagerTableCell className="font-medium">{block.name}</ManagerTableCell>
                       <ManagerTableCell>{block.condo_name}</ManagerTableCell>
                       <ManagerTableCell className="max-w-[200px] truncate">

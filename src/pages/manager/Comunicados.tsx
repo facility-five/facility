@@ -204,7 +204,7 @@ const Communications = () => {
               ))
             ) : communications.length > 0 ? (
               communications.map((comm) => (
-                <ManagerTableRow key={comm.id}>
+                <ManagerTableRow key={comm.id} className="hover:bg-purple-50">
                   <ManagerTableCell className="font-medium text-purple-600">{comm.code}</ManagerTableCell>
                   <ManagerTableCell>
                     <p className="font-medium">{comm.title}</p>

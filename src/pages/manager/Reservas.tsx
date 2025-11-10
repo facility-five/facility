@@ -445,7 +445,7 @@ const Reservas = () => {
                   ))
                 ) : filteredReservations.length > 0 ? (
                   filteredReservations.map((reservation) => (
-                    <ManagerTableRow key={reservation.id}>
+                    <ManagerTableRow key={reservation.id} className="hover:bg-purple-50">
                       <ManagerTableCell className="font-medium text-purple-600">
                         {formatDate(reservation.reservation_date)}
                       </ManagerTableCell>

@@ -221,7 +221,7 @@ const AreasComunsContent = () => {
               ))
             ) : filteredAreas.length > 0 ? (
               filteredAreas.map((area) => (
-                <ManagerTableRow key={area.id}>
+                <ManagerTableRow key={area.id} className="hover:bg-purple-50">
                   <ManagerTableCell className="font-medium text-purple-600">
                     {area.code}
                   </ManagerTableCell>

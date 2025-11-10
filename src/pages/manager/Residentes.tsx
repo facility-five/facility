@@ -412,15 +412,15 @@ const ManagerResidentesContent = () => {
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <ManagerTable>
             <ManagerTableHeader>
-              <ManagerTableRow className="bg-purple-50">
-                <ManagerTableHead className="w-[140px] text-sm font-semibold text-purple-700">Codigo</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Nombre</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Tipo</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Documento</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Telefono</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Correo</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Estado</ManagerTableHead>
-                <ManagerTableHead className="w-[120px] text-right text-sm font-semibold text-purple-700">Acciones</ManagerTableHead>
+              <ManagerTableRow>
+                <ManagerTableHead className="w-[140px] text-sm font-semibold">Codigo</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Nombre</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Tipo</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Documento</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Telefono</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Correo</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Estado</ManagerTableHead>
+                <ManagerTableHead className="w-[120px] text-right text-sm font-semibold">Acciones</ManagerTableHead>
               </ManagerTableRow>
             </ManagerTableHeader>
             <ManagerTableBody>
@@ -447,15 +447,15 @@ const ManagerResidentesContent = () => {
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <ManagerTable>
             <ManagerTableHeader>
-              <ManagerTableRow className="bg-purple-50">
-                <ManagerTableHead className="w-[140px] text-sm font-semibold text-purple-700">Codigo</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Nombre</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Tipo</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Documento</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Telefono</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Correo</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Unidad</ManagerTableHead>
-                <ManagerTableHead className="text-sm font-semibold text-purple-700">Estado</ManagerTableHead>
+              <ManagerTableRow>
+                <ManagerTableHead className="w-[140px] text-sm font-semibold">Codigo</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Nombre</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Tipo</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Documento</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Telefono</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Correo</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Unidad</ManagerTableHead>
+                <ManagerTableHead className="text-sm font-semibold">Estado</ManagerTableHead>
                 <ManagerTableHead className="w-[120px] text-right text-sm font-semibold text-purple-700">Acciones</ManagerTableHead>
               </ManagerTableRow>
             </ManagerTableHeader>

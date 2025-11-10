@@ -543,7 +543,7 @@ const ManagerVehiculosContent = () => {
               </ManagerTableRow>
             ) : (
               filteredVehicles.map((vehicle) => (
-                <ManagerTableRow key={vehicle.id}>
+                <ManagerTableRow key={vehicle.id} className="hover:bg-purple-50">
                   <ManagerTableCell className="font-mono font-medium">
                     {vehicle.license_plate}
                   </ManagerTableCell>

@@ -753,7 +753,7 @@ const ManagerMascotasContent = () => {
               </ManagerTableRow>
             ) : (
               filteredPets.map((pet) => (
-                <ManagerTableRow key={pet.id}>
+                <ManagerTableRow key={pet.id} className="hover:bg-purple-50">
                   <ManagerTableCell className="font-medium">{pet.name}</ManagerTableCell>
                   <ManagerTableCell>{pet.species}</ManagerTableCell>
                   <ManagerTableCell>{pet.breed || "-"}</ManagerTableCell>
