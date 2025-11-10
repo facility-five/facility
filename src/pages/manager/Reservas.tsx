@@ -83,60 +83,77 @@ const Reservas = () => {
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
 
   const fetchReservations = async () => {
+    if (!activeAdministratorId) {
+      console.log("üîç Reservas - Sem administradora ativa");
+      setLoading(false);
+      return;
+    }
+
+    console.log("üîç Reservas - Buscando reservas para administradora:", activeAdministratorId);
     setLoading(true);
     
-    let query = supabase
-      .from("reservas")
-      .select(`
-        *,
-        common_areas!inner(
-          id,
-          name,
-          condo_id
-        ),
-        residents:resident_id(
-          id,
-          name,
-          email
-        ),
-        condominiums!inner(
-          id,
-          name,
-          administrator_id
-        )
-      `);
+    try {
+      // Primeiro buscar os condominios da administradora
+      const { data: condoData, error: condoError } = await supabase
+        .from("condominiums")
+        .select("id")
+        .eq("administrator_id", activeAdministratorId);
 
-    // No plano gratuito, busca todas as reservas. No plano pago, filtra por administradora
-    if (!currentPlan && activeAdministratorId) {
-      query = query.eq("condominiums.administrator_id", activeAdministratorId);
-    }
+      if (condoError) throw condoError;
 
-    const { data, error } = await query.order("created_at", { ascending: false });
+      const condoIds = condoData?.map(c => c.id) || [];
+      
+      if (condoIds.length === 0) {
+        console.log("üì≠ Nenhum condom√≠nio encontrado para esta administradora");
+        setReservations([]);
+        setLoading(false);
+        return;
+      }
 
-    if (error) {
-      showRadixError("Erro ao buscar reservas.");
-      console.error("Error fetching reservations:", error);
-    } else {
+      // Buscar reservas dos condominios
+      const { data, error } = await supabase
+        .from("reservas")
+        .select(`
+          *,
+          common_areas!inner(
+            id,
+            name,
+            condo_id
+          ),
+          residents:resident_id(
+            id,
+            name,
+            email
+          ),
+          condominiums!inner(
+            id,
+            name
+          )
+        `)
+        .in("condominiums.id", condoIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      console.log("‚úÖ Reservas - Reservas carregadas:", data?.length || 0);
       setReservations(data as any[] || []);
+    } catch (error) {
+      console.error("‚ùå Erro ao buscar reservas:", error);
+      showRadixError("Error al buscar reservas.");
+      setReservations([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchCondominiums = async () => {
-    // No plano gratuito, busca todos os condomÌnios. No plano pago, filtra por administradora
-    if (!currentPlan) {
-      if (!activeAdministratorId) return;
-    }
+    if (!activeAdministratorId) return;
 
-    let query = supabase
+    const { data, error } = await supabase
       .from("condominiums")
-      .select("id, name");
-
-    if (!currentPlan && activeAdministratorId) {
-      query = query.eq("administrator_id", activeAdministratorId);
-    }
-
-    const { data, error } = await query.order("name");
+      .select("id, name")
+      .eq("administrator_id", activeAdministratorId)
+      .order("name");
 
     if (error) {
       console.error("Error fetching condominiums:", error);
@@ -146,14 +163,9 @@ const Reservas = () => {
   };
 
   useEffect(() => {
-    if (currentPlan || activeAdministratorId) {
-      fetchReservations();
-      fetchCondominiums();
-    } else {
-      // Se n„o h· activeAdministratorId no plano pago, definir loading como false para mostrar a interface
-      setLoading(false);
-    }
-  }, [activeAdministratorId, currentPlan]);
+    fetchReservations();
+    fetchCondominiums();
+  }, [activeAdministratorId]);
 
   const stats = useMemo(() => {
     const total = reservations.length;
@@ -188,7 +200,7 @@ const Reservas = () => {
     setIsDeleteModalOpen(true);
   };
 
-  // A exclus„o agora È tratada dentro do modal
+  // A exclusÔøΩo agora ÔøΩ tratada dentro do modal
 
   const handleStatusChange = async (reservationId: string, newStatus: string) => {
     const { error } = await supabase
@@ -197,9 +209,9 @@ const Reservas = () => {
       .eq("id", reservationId);
 
     if (error) {
-      showRadixError("Erro ao atualizar status da reserva.");
+      showRadixError("Error al actualizar estado de la reserva.");
     } else {
-      showRadixSuccess("Status da reserva atualizado com sucesso!");
+      showRadixSuccess("¬°Estado de la reserva actualizado con √©xito!");
       fetchReservations();
     }
   };
@@ -228,16 +240,16 @@ const Reservas = () => {
     return variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800';
   };
 
-  if (!currentPlan && !activeAdministratorId) {
+  if (!activeAdministratorId) {
     return (
       <ManagerLayout>
         <div className="flex flex-col items-center justify-center h-64">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-700 mb-2">
-              Selecione uma administradora
+              Seleccione una administradora
             </h2>
             <p className="text-gray-500">
-              Para visualizar as reservas, selecione uma administradora no cabeÁalho.
+              Para visualizar las reservas, seleccione una administradora en el encabezado.
             </p>
           </div>
         </div>
@@ -252,37 +264,21 @@ const Reservas = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Reservas</h1>
             <p className="text-gray-600 mt-1">
-              Gestione las reservas de las ·reas comunes
+              Gestione las reservas de las ÔøΩreas comunes
             </p>
           </div>
-          {!planLoading && (
-            <>
-              {!currentPlan ? (
-                // Bot„o normal para usu·rios com plano pago
-                <Button 
-                  className="bg-purple-600 hover:bg-purple-700"
-                  onClick={() => setIsNewModalOpen(true)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Novo Reservo
-                </Button>
-              ) : (
-                // Bot„o de upgrade para usu·rios com plano gratuito
-                <Button 
-                  onClick={() => window.location.href = '/gestor/mi-plan'}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Fazer Upgrade para Criar Reservas
-                </Button>
-              )}
-            </>
-          )}
+          <Button 
+            className="bg-purple-600 hover:bg-purple-700"
+            onClick={() => setIsNewModalOpen(true)}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nueva Reserva
+          </Button>
         </div>
 
 
 
-        {/* EstatÌsticas */}
+        {/* EstatÔøΩsticas */}
         <div className="grid gap-6 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -330,28 +326,28 @@ const Reservas = () => {
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <Input
-                placeholder="Buscar por cÛdigo, ·rea, residente ou condomÌnio..."
+                placeholder="Buscar por c√≥digo, √°rea, residente o condominio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1"
               />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filtrar por status" />
+                  <SelectValue placeholder="Filtrar por estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  <SelectItem value="Pendente">Pendente</SelectItem>
+                  <SelectItem value="all">Todos os estados</SelectItem>
+                  <SelectItem value="Pendente">Pendiente</SelectItem>
                   <SelectItem value="Confirmada">Confirmada</SelectItem>
                   <SelectItem value="Cancelada">Cancelada</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={condoFilter} onValueChange={setCondoFilter}>
                 <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filtrar por condomÌnio" />
+                  <SelectValue placeholder="Filtrar por condominio" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os condomÌnios</SelectItem>
+                  <SelectItem value="all">Todos os condomÔøΩnios</SelectItem>
                   {condominiums.map((condo) => (
                     <SelectItem key={condo.id} value={condo.id}>
                       {condo.name}
@@ -364,13 +360,13 @@ const Reservas = () => {
             <ManagerTable>
               <ManagerTableHeader>
                 <ManagerTableRow>
-                  <ManagerTableHead>CÛdigo</ManagerTableHead>
+                  <ManagerTableHead>C√≥digo</ManagerTableHead>
                   <ManagerTableHead>Residente</ManagerTableHead>
-                  <ManagerTableHead>¡rea Com˙n</ManagerTableHead>
-                  <ManagerTableHead>CondomÌnio</ManagerTableHead>
+                  <ManagerTableHead>√Årea Com√∫n</ManagerTableHead>
+                  <ManagerTableHead>Condominio</ManagerTableHead>
                   <ManagerTableHead>Fecha</ManagerTableHead>
                   <ManagerTableHead>Horario</ManagerTableHead>
-                  <ManagerTableHead>Status</ManagerTableHead>
+                  <ManagerTableHead>Estado</ManagerTableHead>
                   <ManagerTableHead>Valor</ManagerTableHead>
                   <ManagerTableHead className="text-right">Acciones</ManagerTableHead>
                 </ManagerTableRow>
@@ -415,7 +411,7 @@ const Reservas = () => {
                             </Badge>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Pendente">Pendente</SelectItem>
+                            <SelectItem value="Pendente">Pendiente</SelectItem>
                             <SelectItem value="Confirmada">Confirmada</SelectItem>
                             <SelectItem value="Cancelada">Cancelada</SelectItem>
                           </SelectContent>
@@ -447,8 +443,8 @@ const Reservas = () => {
                       <ManagerTableCell colSpan={9} className="text-center text-gray-500 py-8">
                         <div className="flex flex-col items-center">
                           <MapPin className="h-12 w-12 text-gray-300 mb-4" />
-                          <p className="text-lg font-medium">No hay nada registrado aquÌ.</p>
-                          <p className="text-sm">Ainda n„o h· nenhum conte˙do registrado nesta seÁ„o.</p>
+                          <p className="text-lg font-medium">No hay nada registrado aqu√≠.</p>
+                          <p className="text-sm">Todav√≠a no hay ning√∫n contenido registrado en esta secci√≥n.</p>
                         </div>
                       </ManagerTableCell>
                     </ManagerTableRow>
