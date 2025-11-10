@@ -18,7 +18,7 @@ CREATE POLICY "Administrators can view reservas"
             JOIN public.condominiums c ON ca.condo_id = c.id
             JOIN public.administrators a ON c.administrator_id = a.id
             WHERE ca.id = reservas.common_area_id
-            AND a.tenant_id = auth.uid()
+            AND (a.tenant_id = auth.uid() OR a.user_id = auth.uid())
         )
     );
 
@@ -31,7 +31,7 @@ CREATE POLICY "Administrators can insert reservas"
             JOIN public.condominiums c ON ca.condo_id = c.id
             JOIN public.administrators a ON c.administrator_id = a.id
             WHERE ca.id = reservas.common_area_id
-            AND a.tenant_id = auth.uid()
+            AND (a.tenant_id = auth.uid() OR a.user_id = auth.uid())
         )
     );
 
@@ -44,7 +44,7 @@ CREATE POLICY "Administrators can update reservas"
             JOIN public.condominiums c ON ca.condo_id = c.id
             JOIN public.administrators a ON c.administrator_id = a.id
             WHERE ca.id = reservas.common_area_id
-            AND a.tenant_id = auth.uid()
+            AND (a.tenant_id = auth.uid() OR a.user_id = auth.uid())
         )
     );
 
@@ -57,7 +57,7 @@ CREATE POLICY "Administrators can delete reservas"
             JOIN public.condominiums c ON ca.condo_id = c.id
             JOIN public.administrators a ON c.administrator_id = a.id
             WHERE ca.id = reservas.common_area_id
-            AND a.tenant_id = auth.uid()
+            AND (a.tenant_id = auth.uid() OR a.user_id = auth.uid())
         )
     );
 
