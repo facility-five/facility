@@ -54,6 +54,7 @@ type BlockSummary = {
 
 type UnitRow = {
   id: string;
+  code: string;
   number: string;
   floor: number | null;
   block_id: string;
@@ -66,6 +67,7 @@ type UnitRow = {
 
 type UnitForEdit = {
   id?: string;
+  code: string;
   number: string;
   floor: number | null;
   block_id: string;
@@ -224,6 +226,7 @@ const ManagerUnidadesContent = () => {
 
       const formattedUnits: UnitRow[] = (data || []).map((unit: any) => ({
         id: unit.id,
+        code: unit.code,
         number: unit.number,
         floor: unit.floor,
         block_id: unit.block_id,
@@ -291,6 +294,7 @@ const ManagerUnidadesContent = () => {
     setSubmitting(true);
     try {
       const unitData = {
+        code: editingUnit.code,
         number: editingUnit.number,
         floor: editingUnit.floor,
         block_id: editingUnit.block_id,
@@ -335,6 +339,7 @@ const ManagerUnidadesContent = () => {
   const handleEdit = (unit: UnitRow) => {
     setEditingUnit({
       id: unit.id,
+      code: unit.code,
       number: unit.number,
       floor: unit.floor,
       block_id: unit.block_id,
@@ -363,6 +368,7 @@ const ManagerUnidadesContent = () => {
 
   const resetForm = () => {
     setEditingUnit({
+      code: "",
       number: "",
       floor: null,
       block_id: blocks.length > 0 ? blocks[0].id : "",
@@ -448,6 +454,17 @@ const ManagerUnidadesContent = () => {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="code">Código *</Label>
+                    <Input
+                      id="code"
+                      name="code"
+                      value={editingUnit?.code || ""}
+                      onChange={(e) => setEditingUnit(prev => prev ? { ...prev, code: e.target.value } : null)}
+                      placeholder="Ex: UNI-101"
+                      required
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="number">Número *</Label>
                     <Input
