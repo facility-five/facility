@@ -82,6 +82,7 @@ export const NewManagerReservationModal = ({
   const [commonAreas, setCommonAreas] = useState<CommonArea[]>([]);
   const [residents, setResidents] = useState<Resident[]>([]);
   const [selectedArea, setSelectedArea] = useState<CommonArea | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -340,7 +341,7 @@ export const NewManagerReservationModal = ({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Fecha de reserva *</FormLabel>
-                  <Popover>
+                  <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -363,7 +364,10 @@ export const NewManagerReservationModal = ({
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          setCalendarOpen(false);
+                        }}
                         disabled={(date) =>
                           date < new Date() || date < new Date("1900-01-01")
                         }
