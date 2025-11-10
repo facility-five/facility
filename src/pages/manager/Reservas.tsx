@@ -56,15 +56,15 @@ interface Reservation {
   common_areas: {
     id: string;
     name: string;
+    condominiums: {
+      id: string;
+      name: string;
+    };
   };
   residents: {
     id: string;
     name: string;
     email: string;
-  };
-  condominiums: {
-    id: string;
-    name: string;
   };
 }
 
@@ -110,27 +110,44 @@ const Reservas = () => {
         return;
       }
 
-      // Buscar reservas dos condominios
+      // Buscar áreas comuns dos condominios
+      const { data: areasData, error: areasError } = await supabase
+        .from("common_areas")
+        .select("id")
+        .in("condo_id", condoIds);
+
+      if (areasError) throw areasError;
+
+      const areaIds = areasData?.map(a => a.id) || [];
+
+      if (areaIds.length === 0) {
+        console.log("📭 Nenhuma área comum encontrada");
+        setReservations([]);
+        setLoading(false);
+        return;
+      }
+
+      // Buscar reservas das áreas comuns
       const { data, error } = await supabase
         .from("reservas")
         .select(`
           *,
-          common_areas!inner(
+          common_areas(
             id,
             name,
-            condo_id
+            condo_id,
+            condominiums(
+              id,
+              name
+            )
           ),
           residents:resident_id(
             id,
             name,
             email
-          ),
-          condominiums!inner(
-            id,
-            name
           )
         `)
-        .in("condominiums.id", condoIds)
+        .in("common_area_id", areaIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -181,10 +198,10 @@ const Reservas = () => {
         reservation.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reservation.common_areas?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reservation.residents?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reservation.condominiums?.name.toLowerCase().includes(searchTerm.toLowerCase());
+        reservation.common_areas?.condominiums?.name.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus = statusFilter === "all" || reservation.status === statusFilter;
-      const matchesCondo = condoFilter === "all" || reservation.condominiums?.id === condoFilter;
+      const matchesCondo = condoFilter === "all" || reservation.common_areas?.condominiums?.id === condoFilter;
 
       return matchesSearch && matchesStatus && matchesCondo;
     });
@@ -264,7 +281,7 @@ const Reservas = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Reservas</h1>
             <p className="text-gray-600 mt-1">
-              Gestione las reservas de las �reas comunes
+              Gestione las reservas de las áreas comunes
             </p>
           </div>
           <Button 
@@ -347,7 +364,7 @@ const Reservas = () => {
                   <SelectValue placeholder="Filtrar por condominio" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os condom�nios</SelectItem>
+                  <SelectItem value="all">Todos los condominios</SelectItem>
                   {condominiums.map((condo) => (
                     <SelectItem key={condo.id} value={condo.id}>
                       {condo.name}
@@ -395,7 +412,7 @@ const Reservas = () => {
                         </div>
                       </ManagerTableCell>
                       <ManagerTableCell>{reservation.common_areas?.name}</ManagerTableCell>
-                      <ManagerTableCell>{reservation.condominiums?.name}</ManagerTableCell>
+                      <ManagerTableCell>{reservation.common_areas?.condominiums?.name}</ManagerTableCell>
                       <ManagerTableCell>{formatDate(reservation.reservation_date)}</ManagerTableCell>
                       <ManagerTableCell>
                         {formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}
