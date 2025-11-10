@@ -40,13 +40,16 @@ import { useManagerAdministradoras } from '@/contexts/ManagerAdministradorasCont
 const formSchema = z.object({
   resident_id: z.string().min(1, "Selecione um residente"),
   common_area_id: z.string().min(1, "Selecione uma área comum"),
-  reservation_date: z.date({
+  unit_id: z.string().min(1, "Unidade é obrigatória"),
+  date: z.date({
     required_error: "Selecione uma data",
   }),
   start_time: z.string().min(1, "Informe o horário de início"),
   end_time: z.string().min(1, "Informe o horário de fim"),
-  observations: z.string().optional(),
-  status: z.enum(['Pendente', 'Confirmada', 'Cancelada']).default('Pendente'),
+  guests_count: z.number().min(0).default(0),
+  notes: z.string().optional(),
+  status: z.enum(['pending', 'approved', 'cancelled']).default('pending'),
+  payment_status: z.enum(['pending', 'paid', 'cancelled']).default('pending'),
 });
 
 interface NewManagerReservationModalProps {
@@ -87,7 +90,9 @@ export const NewManagerReservationModal = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      status: 'Pendente',
+      status: 'pending',
+      payment_status: 'pending',
+      guests_count: 0,
     },
   });
 
@@ -96,7 +101,9 @@ export const NewManagerReservationModal = ({
       fetchCommonAreas();
       fetchResidents();
       form.reset({
-        status: 'Pendente',
+        status: 'pending',
+        payment_status: 'pending',
+        guests_count: 0,
       });
     }
   }, [isOpen, activeAdministratorId, form]);
@@ -214,8 +221,6 @@ export const NewManagerReservationModal = ({
     }
   };
 
-  const generateCode = () => `RE-${Math.random().toString(36).substr(2, 12).toUpperCase()}`;
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!selectedArea) {
       showRadixError("Selecione uma área comum.");
@@ -225,14 +230,19 @@ export const NewManagerReservationModal = ({
     setLoading(true);
 
     try {
-      const { error } = await supabase.from("reservas").insert([
+      const { error } = await supabase.from("reservations").insert([
         {
-          ...values,
-          reservation_date: format(values.reservation_date, 'yyyy-MM-dd'),
-          condo_id: selectedArea.condo_id,
-          total_value: selectedArea.booking_fee,
-          code: generateCode(),
-          created_by: (await supabase.auth.getUser()).data.user?.id,
+          common_area_id: values.common_area_id,
+          resident_id: values.resident_id,
+          unit_id: values.unit_id,
+          date: format(values.date, 'yyyy-MM-dd'),
+          start_time: values.start_time,
+          end_time: values.end_time,
+          guests_count: values.guests_count || 0,
+          status: values.status,
+          payment_status: values.payment_status,
+          amount: selectedArea.booking_fee,
+          notes: values.notes || null,
         },
       ]);
 
@@ -255,6 +265,13 @@ export const NewManagerReservationModal = ({
     setSelectedArea(area || null);
   };
 
+  const handleResidentChange = (residentId: string) => {
+    const resident = residents.find(r => r.id === residentId);
+    if (resident && resident.unit_id) {
+      form.setValue('unit_id', resident.unit_id);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -267,6 +284,9 @@ export const NewManagerReservationModal = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Campo oculto para unit_id */}
+            <input type="hidden" {...form.register('unit_id')} />
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -274,7 +294,13 @@ export const NewManagerReservationModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Residente *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        handleResidentChange(value);
+                      }} 
+                      defaultValue={field.value || ""}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecionar residente..." />
@@ -337,7 +363,7 @@ export const NewManagerReservationModal = ({
 
             <FormField
               control={form.control}
-              name="reservation_date"
+              name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Fecha de reserva *</FormLabel>
@@ -417,32 +443,53 @@ export const NewManagerReservationModal = ({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="pending">Pendiente</SelectItem>
+                        <SelectItem value="approved">Aprobada</SelectItem>
+                        <SelectItem value="cancelled">Cancelada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="guests_count"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número de Invitados</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                      <Input 
+                        type="number" 
+                        min="0"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Pendente">Pendiente</SelectItem>
-                      <SelectItem value="Confirmada">Confirmada</SelectItem>
-                      <SelectItem value="Cancelada">Cancelada</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
-              name="observations"
+              name="notes"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Observaciones</FormLabel>

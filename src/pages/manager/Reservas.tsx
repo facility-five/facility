@@ -43,16 +43,18 @@ import { useManagerAdministradoras } from '@/contexts/ManagerAdministradorasCont
 
 interface Reservation {
   id: string;
-  code: string;
-  reservation_date: string;
+  date: string;
   start_time: string;
   end_time: string;
-  status: 'Pendente' | 'Confirmada' | 'Cancelada';
-  total_value: number;
-  observations?: string;
+  status: 'pending' | 'approved' | 'cancelled';
+  payment_status: 'pending' | 'paid' | 'cancelled';
+  amount: number;
+  guests_count: number;
+  notes?: string;
   created_at: string;
   resident_id: string;
   common_area_id: string;
+  unit_id: string;
   common_areas: {
     id: string;
     name: string;
@@ -140,9 +142,10 @@ const Reservas = () => {
 
       // Buscar reservas das áreas comuns (sem JOIN)
       const { data: reservasData, error } = await supabase
-        .from("reservas")
+        .from("reservations")
         .select("*")
         .in("common_area_id", areaIds)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -154,11 +157,15 @@ const Reservas = () => {
       if (residentIds.length > 0) {
         const { data: residentsData } = await supabase
           .from("residents")
-          .select("id, name, email")
+          .select("id, full_name, email")
           .in("id", residentIds);
         
         residentsData?.forEach(resident => {
-          residentsMap.set(resident.id, resident);
+          residentsMap.set(resident.id, {
+            id: resident.id,
+            name: resident.full_name,
+            email: resident.email
+          });
         });
       }
 
@@ -218,19 +225,19 @@ const Reservas = () => {
 
   const stats = useMemo(() => {
     const total = reservations.length;
-    const confirmed = reservations.filter(r => r.status === 'Confirmada').length;
-    const pending = reservations.filter(r => r.status === 'Pendente').length;
-    const cancelled = reservations.filter(r => r.status === 'Cancelada').length;
+    const confirmed = reservations.filter(r => r.status === 'approved').length;
+    const pending = reservations.filter(r => r.status === 'pending').length;
+    const cancelled = reservations.filter(r => r.status === 'cancelled').length;
     return { total, confirmed, pending, cancelled };
   }, [reservations]);
 
   const filteredReservations = useMemo(() => {
     return reservations.filter(reservation => {
       const matchesSearch = 
-        reservation.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reservation.common_areas?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reservation.residents?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reservation.common_areas?.condominiums?.name.toLowerCase().includes(searchTerm.toLowerCase());
+        reservation.common_areas?.condominiums?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation.date.includes(searchTerm);
 
       const matchesStatus = statusFilter === "all" || reservation.status === statusFilter;
       const matchesCondo = condoFilter === "all" || reservation.common_areas?.condominiums?.id === condoFilter;
@@ -253,8 +260,8 @@ const Reservas = () => {
 
   const handleStatusChange = async (reservationId: string, newStatus: string) => {
     const { error } = await supabase
-      .from("reservas")
-      .update({ status: newStatus })
+      .from("reservations")
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
       .eq("id", reservationId);
 
     if (error) {
@@ -282,11 +289,20 @@ const Reservas = () => {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      'Pendente': 'bg-yellow-100 text-yellow-800',
-      'Confirmada': 'bg-green-100 text-green-800',
-      'Cancelada': 'bg-red-100 text-red-800'
+      'pending': 'bg-yellow-100 text-yellow-800',
+      'approved': 'bg-green-100 text-green-800',
+      'cancelled': 'bg-red-100 text-red-800'
     };
     return variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels = {
+      'pending': 'Pendiente',
+      'approved': 'Aprobada',
+      'cancelled': 'Cancelada'
+    };
+    return labels[status as keyof typeof labels] || status;
   };
 
   if (!activeAdministratorId) {
@@ -386,9 +402,9 @@ const Reservas = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os estados</SelectItem>
-                  <SelectItem value="Pendente">Pendiente</SelectItem>
-                  <SelectItem value="Confirmada">Confirmada</SelectItem>
-                  <SelectItem value="Cancelada">Cancelada</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
+                  <SelectItem value="approved">Aprobada</SelectItem>
+                  <SelectItem value="cancelled">Cancelada</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={condoFilter} onValueChange={setCondoFilter}>
@@ -409,11 +425,10 @@ const Reservas = () => {
             <ManagerTable>
               <ManagerTableHeader>
                 <ManagerTableRow>
-                  <ManagerTableHead>Código</ManagerTableHead>
+                  <ManagerTableHead>Fecha</ManagerTableHead>
                   <ManagerTableHead>Residente</ManagerTableHead>
                   <ManagerTableHead>Área Común</ManagerTableHead>
                   <ManagerTableHead>Condominio</ManagerTableHead>
-                  <ManagerTableHead>Fecha</ManagerTableHead>
                   <ManagerTableHead>Horario</ManagerTableHead>
                   <ManagerTableHead>Estado</ManagerTableHead>
                   <ManagerTableHead>Valor</ManagerTableHead>
@@ -435,7 +450,7 @@ const Reservas = () => {
                   filteredReservations.map((reservation) => (
                     <ManagerTableRow key={reservation.id}>
                       <ManagerTableCell className="font-medium text-purple-600">
-                        {reservation.code}
+                        {formatDate(reservation.date)}
                       </ManagerTableCell>
                       <ManagerTableCell>
                         <div>
@@ -445,7 +460,6 @@ const Reservas = () => {
                       </ManagerTableCell>
                       <ManagerTableCell>{reservation.common_areas?.name}</ManagerTableCell>
                       <ManagerTableCell>{reservation.common_areas?.condominiums?.name}</ManagerTableCell>
-                      <ManagerTableCell>{formatDate(reservation.reservation_date)}</ManagerTableCell>
                       <ManagerTableCell>
                         {formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}
                       </ManagerTableCell>
@@ -456,17 +470,17 @@ const Reservas = () => {
                         >
                           <SelectTrigger className="w-32">
                             <Badge className={getStatusBadge(reservation.status)}>
-                              {reservation.status}
+                              {getStatusLabel(reservation.status)}
                             </Badge>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Pendente">Pendiente</SelectItem>
-                            <SelectItem value="Confirmada">Confirmada</SelectItem>
-                            <SelectItem value="Cancelada">Cancelada</SelectItem>
+                            <SelectItem value="pending">Pendiente</SelectItem>
+                            <SelectItem value="approved">Aprobada</SelectItem>
+                            <SelectItem value="cancelled">Cancelada</SelectItem>
                           </SelectContent>
                         </Select>
                       </ManagerTableCell>
-                      <ManagerTableCell>{formatCurrency(reservation.total_value)}</ManagerTableCell>
+                      <ManagerTableCell>{formatCurrency(reservation.amount)}</ManagerTableCell>
                       <ManagerTableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button 
