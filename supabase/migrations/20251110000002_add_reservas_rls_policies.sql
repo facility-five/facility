@@ -61,20 +61,20 @@ CREATE POLICY "Administrators can delete reservas"
         )
     );
 
--- Política para moradores verem suas próprias reservas
-CREATE POLICY "Residents can view own reservas"
-    ON public.reservas FOR SELECT
-    USING (
-        resident_id IN (
-            SELECT id FROM public.residents WHERE user_id = auth.uid()
-        )
-    );
+-- Política para moradores verem suas próprias reservas (removida por enquanto)
+-- CREATE POLICY "Residents can view own reservas"
+--     ON public.reservas FOR SELECT
+--     USING (
+--         resident_id IN (
+--             SELECT id FROM public.residents WHERE user_id = auth.uid()
+--         )
+--     );
 
--- Política para moradores criarem suas próprias reservas
-CREATE POLICY "Residents can insert own reservas"
-    ON public.reservas FOR INSERT
-    WITH CHECK (
-        resident_id IN (
-            SELECT id FROM public.residents WHERE user_id = auth.uid()
-        )
-    );
+-- Política para moradores criarem suas próprias reservas (removida por enquanto)
+-- CREATE POLICY "Residents can insert own reservas"
+--     ON public.reservas FOR INSERT
+--     WITH CHECK (
+--         resident_id IN (
+--             SELECT id FROM public.residents WHERE user_id = auth.uid()
+--         )
+--     );
