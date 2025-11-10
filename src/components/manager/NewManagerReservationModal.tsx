@@ -145,11 +145,65 @@ export const NewManagerReservationModal = ({
       return;
     }
 
-    // Buscar moradores da administradora diretamente
+    // Buscar condominios da administradora
+    const { data: condoData, error: condoError } = await supabase
+      .from("condominiums")
+      .select("id")
+      .eq("administrator_id", activeAdministratorId);
+
+    if (condoError) {
+      console.error("Error fetching condos:", condoError);
+      return;
+    }
+
+    const condoIds = condoData?.map(c => c.id) || [];
+
+    if (condoIds.length === 0) {
+      setResidents([]);
+      return;
+    }
+
+    // Buscar blocos dos condominios
+    const { data: blocksData, error: blocksError } = await supabase
+      .from("blocks")
+      .select("id")
+      .in("condo_id", condoIds);
+
+    if (blocksError) {
+      console.error("Error fetching blocks:", blocksError);
+      return;
+    }
+
+    const blockIds = blocksData?.map(b => b.id) || [];
+
+    if (blockIds.length === 0) {
+      setResidents([]);
+      return;
+    }
+
+    // Buscar unidades dos blocos
+    const { data: unitsData, error: unitsError } = await supabase
+      .from("units")
+      .select("id")
+      .in("block_id", blockIds);
+
+    if (unitsError) {
+      console.error("Error fetching units:", unitsError);
+      return;
+    }
+
+    const unitIds = unitsData?.map(u => u.id) || [];
+
+    if (unitIds.length === 0) {
+      setResidents([]);
+      return;
+    }
+
+    // Buscar moradores das unidades
     const { data, error } = await supabase
       .from("residents")
       .select("id, full_name, email, unit_id")
-      .eq("administrator_id", activeAdministratorId)
+      .in("unit_id", unitIds)
       .order("full_name");
 
     if (error) {
