@@ -223,11 +223,37 @@ export const NewManagerReservationModal = ({
     setLoading(true);
 
     try {
+      // Verificar se o residente existe antes de criar a reserva
+      const { data: residentCheck, error: residentError } = await supabase
+        .from("residents")
+        .select("id")
+        .eq("id", values.resident_id)
+        .single();
+
+      if (residentError || !residentCheck) {
+        showRadixError("Residente selecionado não encontrado.");
+        setLoading(false);
+        return;
+      }
+
       // Gerar código único para a reserva
       const code = `RES-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       
       // Obter usuário autenticado
       const { data: { user } } = await supabase.auth.getUser();
+      
+      console.log("Tentando criar reserva com dados:", {
+        code,
+        common_area_id: values.common_area_id,
+        resident_id: values.resident_id,
+        reservation_date: format(values.date, 'yyyy-MM-dd'),
+        start_time: values.start_time,
+        end_time: values.end_time,
+        status: values.status,
+        total_value: selectedArea.booking_fee,
+        condo_id: selectedArea.condo_id,
+        created_by: user?.id,
+      });
       
       const { error } = await supabase.from("reservas").insert([
         {
@@ -245,7 +271,8 @@ export const NewManagerReservationModal = ({
       ]);
 
       if (error) {
-        showRadixError(error.message);
+        console.error("Erro detalhado ao criar reserva:", error);
+        showRadixError(`Erro ao criar reserva: ${error.message}`);
       } else {
         showRadixSuccess("Reserva criada com sucesso!");
         onSuccess();
