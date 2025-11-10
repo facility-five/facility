@@ -223,8 +223,12 @@ export const NewManagerReservationModal = ({
     setLoading(true);
 
     try {
+      // Gerar código único para a reserva
+      const code = `RES-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      
       const { error } = await supabase.from("reservas").insert([
         {
+          code: code,
           common_area_id: values.common_area_id,
           resident_id: values.resident_id,
           reservation_date: format(values.date, 'yyyy-MM-dd'),
