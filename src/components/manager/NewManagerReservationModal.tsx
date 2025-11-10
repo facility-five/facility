@@ -247,8 +247,18 @@ export const NewManagerReservationModal = ({
       // Gerar código único para a reserva
       const code = `RES-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       
+      // Obter usuário autenticado
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        showRadixError("Usuário não autenticado.");
+        setLoading(false);
+        return;
+      }
+
       console.log("Tentando criar reserva com dados:", {
         code,
+        resident_id: values.resident_id,
         common_area_id: values.common_area_id,
         condo_id: areaCheck.condo_id,
         reservation_date: format(values.date, 'yyyy-MM-dd'),
@@ -256,6 +266,7 @@ export const NewManagerReservationModal = ({
         end_time: values.end_time,
         status: values.status,
         total_value: selectedArea.booking_fee,
+        created_by: user.id,
       });
       
       const { error } = await supabase.from("reservas").insert([
@@ -269,6 +280,7 @@ export const NewManagerReservationModal = ({
           end_time: values.end_time,
           status: values.status,
           total_value: selectedArea.booking_fee,
+          created_by: user.id,
         },
       ]);
 
