@@ -35,6 +35,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { showRadixError, showRadixSuccess } from '@/utils/toast';
+import { useManagerAdministradoras } from '@/contexts/ManagerAdministradorasContext';
 
 const formSchema = z.object({
   resident_id: z.string().min(1, "Selecione um residente"),
@@ -79,6 +80,7 @@ export const NewManagerReservationModal = ({
   onClose,
   onSuccess,
 }: NewManagerReservationModalProps) => {
+  const { activeAdministratorId } = useManagerAdministradoras();
   const [loading, setLoading] = useState(false);
   const [commonAreas, setCommonAreas] = useState<CommonArea[]>([]);
   const [residents, setResidents] = useState<Resident[]>([]);
@@ -99,17 +101,37 @@ export const NewManagerReservationModal = ({
         status: 'Pendente',
       });
     }
-  }, [isOpen, form]);
+  }, [isOpen, activeAdministratorId, form]);
 
   const fetchCommonAreas = async () => {
+    if (!activeAdministratorId) {
+      setCommonAreas([]);
+      return;
+    }
+
+    // Buscar condominios da administradora
+    const { data: condoData, error: condoError } = await supabase
+      .from("condominiums")
+      .select("id, name")
+      .eq("administrator_id", activeAdministratorId);
+
+    if (condoError) {
+      console.error("Error fetching condos:", condoError);
+      return;
+    }
+
+    const condoIds = condoData?.map(c => c.id) || [];
+
+    if (condoIds.length === 0) {
+      setCommonAreas([]);
+      return;
+    }
+
+    // Buscar áreas comuns dos condominios
     const { data, error } = await supabase
       .from("common_areas")
-      .select(`
-        *,
-        condominiums!inner(
-          name
-        )
-      `)
+      .select("*, condominiums(name)")
+      .in("condo_id", condoIds)
       .eq("is_deleted", false)
       .order("name");
 
@@ -121,14 +143,34 @@ export const NewManagerReservationModal = ({
   };
 
   const fetchResidents = async () => {
+    if (!activeAdministratorId) {
+      setResidents([]);
+      return;
+    }
+
+    // Buscar condominios da administradora
+    const { data: condoData, error: condoError } = await supabase
+      .from("condominiums")
+      .select("id, name")
+      .eq("administrator_id", activeAdministratorId);
+
+    if (condoError) {
+      console.error("Error fetching condos:", condoError);
+      return;
+    }
+
+    const condoIds = condoData?.map(c => c.id) || [];
+
+    if (condoIds.length === 0) {
+      setResidents([]);
+      return;
+    }
+
+    // Buscar moradores dos condominios
     const { data, error } = await supabase
       .from("residents")
-      .select(`
-        *,
-        condominiums!inner(
-          name
-        )
-      `)
+      .select("*, condominiums(name)")
+      .in("condo_id", condoIds)
       .eq("is_deleted", false)
       .order("name");
 
