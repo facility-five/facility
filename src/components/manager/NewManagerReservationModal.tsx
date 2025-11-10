@@ -224,17 +224,45 @@ export const NewManagerReservationModal = ({
 
     try {
       // Verificar se o residente existe antes de criar a reserva
+      console.log("🔍 Verificando residente ID:", values.resident_id);
       const { data: residentCheck, error: residentError } = await supabase
         .from("residents")
-        .select("id")
+        .select("id, full_name")
         .eq("id", values.resident_id)
         .single();
 
+      console.log("🔍 Resultado da verificação do residente:", { residentCheck, residentError });
+
       if (residentError || !residentCheck) {
+        console.error("❌ Residente não encontrado:", residentError);
         showRadixError("Residente selecionado não encontrado.");
         setLoading(false);
         return;
       }
+
+      console.log("✅ Residente encontrado:", residentCheck);
+
+      // Verificar área comum selecionada
+      console.log("🔍 Área comum selecionada:", selectedArea);
+      console.log("🔍 common_area_id:", values.common_area_id);
+
+      // Verificar se a área comum existe
+      const { data: areaCheck, error: areaError } = await supabase
+        .from("common_areas")
+        .select("id, name, condo_id")
+        .eq("id", values.common_area_id)
+        .single();
+
+      console.log("🔍 Resultado da verificação da área:", { areaCheck, areaError });
+
+      if (areaError || !areaCheck) {
+        console.error("❌ Área comum não encontrada:", areaError);
+        showRadixError("Área comum selecionada não encontrada.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("✅ Área comum encontrada:", areaCheck);
 
       // Gerar código único para a reserva
       const code = `RES-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
