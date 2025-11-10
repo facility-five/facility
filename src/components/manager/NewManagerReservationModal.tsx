@@ -38,6 +38,7 @@ import { showRadixError, showRadixSuccess } from '@/utils/toast';
 import { useManagerAdministradoras } from '@/contexts/ManagerAdministradorasContext';
 
 const formSchema = z.object({
+  resident_id: z.string().min(1, "Selecione um residente"),
   common_area_id: z.string().min(1, "Selecione uma área comum"),
   date: z.date({
     required_error: "Selecione uma data",
@@ -260,6 +261,7 @@ export const NewManagerReservationModal = ({
       const { error } = await supabase.from("reservas").insert([
         {
           code: code,
+          resident_id: values.resident_id,
           common_area_id: values.common_area_id,
           condo_id: areaCheck.condo_id,
           reservation_date: format(values.date, 'yyyy-MM-dd'),
@@ -305,6 +307,39 @@ export const NewManagerReservationModal = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="resident_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Residente *</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value || ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar residente..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {residents.map((resident) => (
+                          <SelectItem key={resident.id} value={resident.id}>
+                            <div className="flex flex-col">
+                              <span>{resident.full_name}</span>
+                              <span className="text-xs text-gray-500">
+                                {resident.email}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="common_area_id"
