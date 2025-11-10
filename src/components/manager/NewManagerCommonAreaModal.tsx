@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { CommonArea } from "@/pages/manager/AreasComuns";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -61,6 +62,7 @@ export const NewManagerCommonAreaModal = ({
   onSuccess,
   commonArea,
 }: NewManagerCommonAreaModalProps) => {
+  const { activeAdministratorId } = useManagerAdministradoras();
   const [condos, setCondos] = useState<Condo[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -73,9 +75,15 @@ export const NewManagerCommonAreaModal = ({
 
   useEffect(() => {
     const fetchCondos = async () => {
+      if (!activeAdministratorId) {
+        setCondos([]);
+        return;
+      }
+
       const { data } = await supabase
         .from("condominiums")
         .select("id, name")
+        .eq("administrator_id", activeAdministratorId)
         .order("name");
       setCondos(data || []);
     };
@@ -83,7 +91,7 @@ export const NewManagerCommonAreaModal = ({
     if (isOpen) {
       fetchCondos();
     }
-  }, [isOpen]);
+  }, [isOpen, activeAdministratorId]);
 
   useEffect(() => {
     if (commonArea) {
