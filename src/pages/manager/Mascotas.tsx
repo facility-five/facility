@@ -51,8 +51,7 @@ type UnitSummary = {
 
 type ResidentSummary = {
   id: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   unit_id: string;
 };
 
@@ -242,9 +241,9 @@ const ManagerMascotasContent = () => {
       // Buscar residentes das unidades
       const { data, error } = await supabase
         .from("residents")
-        .select("id, first_name, last_name, unit_id")
+        .select("id, full_name, unit_id")
         .in("unit_id", unitIds)
-        .order("first_name");
+        .order("full_name");
 
       if (error) {
         console.error("❌ Mascotas - Erro ao buscar residentes:", error);
@@ -269,6 +268,11 @@ const ManagerMascotasContent = () => {
 
     console.log("🔍 Mascotas - Buscando mascotas...");
     try {
+      // TEMPORÁRIO: Tabela pets não existe ainda, então vamos retornar array vazio
+      console.log("⚠️ Mascotas - Tabela pets não existe ainda, retornando lista vazia");
+      setPets([]);
+      
+      /* TODO: Uncomment when pets table is created
       // Primeiro buscar condomínios da administradora
       const { data: condosData, error: condosError } = await supabase
         .from("condominiums")
@@ -339,7 +343,7 @@ const ManagerMascotasContent = () => {
       if (residentIds.length > 0) {
         const { data: residentsData } = await supabase
           .from("residents")
-          .select("id, first_name, last_name")
+          .select("id, full_name")
           .in("id", residentIds);
         
         residentsData?.forEach((resident: any) => {
@@ -380,13 +384,14 @@ const ManagerMascotasContent = () => {
           condo_id: pet.condo_id,
           unit_number: unit?.number || "N/A",
           condo_name: condo?.name || "N/A",
-          resident_name: resident ? `${resident.first_name || ""} ${resident.last_name || ""}`.trim() : "N/A",
+          resident_name: resident?.full_name || "N/A",
           created_at: pet.created_at,
           updated_at: pet.updated_at,
         };
       });
 
       setPets(formattedPets);
+      */
     } catch (error) {
       console.error("❌ Mascotas - Erro na fetchPets:", error);
       showRadixError("Erro ao carregar mascotas");
@@ -763,7 +768,7 @@ const ManagerMascotasContent = () => {
                         ) : (
                           availableResidents.map((resident) => (
                             <SelectItem key={resident.id} value={resident.id}>
-                              {resident.first_name} {resident.last_name}
+                              {resident.full_name}
                             </SelectItem>
                           ))
                         )}
