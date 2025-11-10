@@ -395,6 +395,11 @@ const ManagerUnidadesContent = () => {
     setIsDialogOpen(true);
   };
 
+  const handleCancel = () => {
+    setEditingUnit(null);
+    setIsDialogOpen(false);
+  };
+
   // Fallback visual quando não há administradora selecionada
   if (!activeAdministratorId) {
     return (
@@ -635,7 +640,7 @@ const ManagerUnidadesContent = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={resetForm}>
+                <Button type="button" variant="outline" onClick={handleCancel}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={submitting}>
