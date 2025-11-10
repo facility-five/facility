@@ -226,6 +226,9 @@ export const NewManagerReservationModal = ({
       // Gerar código único para a reserva
       const code = `RES-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       
+      // Obter usuário autenticado
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase.from("reservas").insert([
         {
           code: code,
@@ -236,8 +239,8 @@ export const NewManagerReservationModal = ({
           end_time: values.end_time,
           status: values.status,
           total_value: selectedArea.booking_fee,
-          observations: values.notes || null,
           condo_id: selectedArea.condo_id,
+          created_by: user?.id,
         },
       ]);
 
