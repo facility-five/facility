@@ -46,46 +46,62 @@ const AreasComunsContent = () => {
   const [selectedArea, setSelectedArea] = useState<CommonArea | null>(null);
 
   const fetchAreas = async () => {
+    if (!activeAdministratorId) {
+      console.log("🔍 Áreas Comuns - Sem administradora ativa");
+      setLoading(false);
+      return;
+    }
+
+    console.log("🔍 Áreas Comuns - Buscando áreas para administradora:", activeAdministratorId);
     setLoading(true);
     
-    let query = supabase
-      .from("common_areas")
-      .select(`
-        *,
-        condominiums!inner(
-          name,
-          administrator_id
-        )
-      `)
-      .eq("is_deleted", false)
-      .order("created_at", { ascending: false });
+    try {
+      // Primeiro buscar os condominios da administradora
+      const { data: condoData, error: condoError } = await supabase
+        .from("condominiums")
+        .select("id")
+        .eq("administrator_id", activeAdministratorId);
 
-    // No plano pago, filtra por administradora selecionada
-    if (!currentPlan && activeAdministratorId) {
-      query = query.eq("condominiums.administrator_id", activeAdministratorId);
-    }
+      if (condoError) throw condoError;
 
-    const { data, error } = await query;
+      const condoIds = condoData?.map(c => c.id) || [];
+      
+      if (condoIds.length === 0) {
+        console.log("📭 Nenhum condomínio encontrado para esta administradora");
+        setAreas([]);
+        setLoading(false);
+        return;
+      }
 
-    if (error) {
-      showRadixError("Error al buscar áreas comunes.");
-      console.error("Error fetching areas:", error);
-    } else {
+      // Buscar áreas comuns dos condominios
+      const { data, error } = await supabase
+        .from("common_areas")
+        .select(`
+          *,
+          condominiums!inner(
+            name
+          )
+        `)
+        .in("condo_id", condoIds)
+        .eq("is_deleted", false)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      console.log("✅ Áreas Comuns - Áreas carregadas:", data?.length || 0);
       setAreas(data as any[] || []);
+    } catch (error) {
+      console.error("❌ Erro ao buscar áreas comuns:", error);
+      showRadixError("Error al buscar áreas comunes.");
+      setAreas([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
-    // No plano gratuito, sempre busca as �reas
-    // No plano pago, s� busca se h� administradora selecionada
-    if (currentPlan || activeAdministratorId) {
-      fetchAreas();
-    } else {
-      // Se n�o h� activeAdministratorId no plano pago, definir loading como false para mostrar a interface
-      setLoading(false);
-    }
-  }, [activeAdministratorId, currentPlan]);
+    fetchAreas();
+  }, [activeAdministratorId]);
 
   const handleNewArea = () => {
     setSelectedArea(null);
@@ -134,7 +150,7 @@ const AreasComunsContent = () => {
     area.condominiums?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!currentPlan && !activeAdministratorId) {
+  if (!activeAdministratorId) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <div className="text-center">
@@ -158,28 +174,13 @@ const AreasComunsContent = () => {
             Gerencie las áreas comunes de los condominios
           </p>
         </div>
-        {!planLoading && (
-          <>
-            {(currentPlan && currentPlan.max_common_areas !== null && areas.length >= currentPlan.max_common_areas) ? (
-              // Botão de upgrade quando alcança o limite
-              <Button 
-                onClick={() => window.location.href = '/gestor/mi-plan'}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-              >
-                Actualizar para Crear Más Áreas
-              </Button>
-            ) : (
-              // Botão normal quando aún pode criar
-              <Button
-                onClick={handleNewArea}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Área Común
-              </Button>
-            )}
-          </>
-        )}
+        <Button
+          onClick={handleNewArea}
+          className="bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Nueva Área Común
+        </Button>
       </div>
 
       <div className="flex items-center gap-4">
