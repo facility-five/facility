@@ -43,18 +43,16 @@ import { useManagerAdministradoras } from '@/contexts/ManagerAdministradorasCont
 
 interface Reservation {
   id: string;
-  date: string;
+  reservation_date: string;
   start_time: string;
   end_time: string;
-  status: 'pending' | 'approved' | 'cancelled';
-  payment_status: 'pending' | 'paid' | 'cancelled';
-  amount: number;
-  guests_count: number;
-  notes?: string;
+  status: string;
+  total_value: number;
+  observations?: string;
   created_at: string;
   resident_id: string;
   common_area_id: string;
-  unit_id: string;
+  condo_id: string;
   common_areas: {
     id: string;
     name: string;
@@ -142,10 +140,9 @@ const Reservas = () => {
 
       // Buscar reservas das áreas comuns (sem JOIN)
       const { data: reservasData, error } = await supabase
-        .from("reservations")
+        .from("reservas")
         .select("*")
         .in("common_area_id", areaIds)
-        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -225,9 +222,9 @@ const Reservas = () => {
 
   const stats = useMemo(() => {
     const total = reservations.length;
-    const confirmed = reservations.filter(r => r.status === 'approved').length;
-    const pending = reservations.filter(r => r.status === 'pending').length;
-    const cancelled = reservations.filter(r => r.status === 'cancelled').length;
+    const confirmed = reservations.filter(r => r.status === 'Confirmada').length;
+    const pending = reservations.filter(r => r.status === 'Pendente').length;
+    const cancelled = reservations.filter(r => r.status === 'Cancelada').length;
     return { total, confirmed, pending, cancelled };
   }, [reservations]);
 
@@ -260,8 +257,8 @@ const Reservas = () => {
 
   const handleStatusChange = async (reservationId: string, newStatus: string) => {
     const { error } = await supabase
-      .from("reservations")
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .from("reservas")
+      .update({ status: newStatus })
       .eq("id", reservationId);
 
     if (error) {
@@ -289,18 +286,18 @@ const Reservas = () => {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      'pending': 'bg-yellow-100 text-yellow-800',
-      'approved': 'bg-green-100 text-green-800',
-      'cancelled': 'bg-red-100 text-red-800'
+      'Pendente': 'bg-yellow-100 text-yellow-800',
+      'Confirmada': 'bg-green-100 text-green-800',
+      'Cancelada': 'bg-red-100 text-red-800'
     };
     return variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800';
   };
 
   const getStatusLabel = (status: string) => {
     const labels = {
-      'pending': 'Pendiente',
-      'approved': 'Aprobada',
-      'cancelled': 'Cancelada'
+      'Pendente': 'Pendiente',
+      'Confirmada': 'Confirmada',
+      'Cancelada': 'Cancelada'
     };
     return labels[status as keyof typeof labels] || status;
   };
@@ -402,9 +399,9 @@ const Reservas = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os estados</SelectItem>
-                  <SelectItem value="pending">Pendiente</SelectItem>
-                  <SelectItem value="approved">Aprobada</SelectItem>
-                  <SelectItem value="cancelled">Cancelada</SelectItem>
+                  <SelectItem value="Pendente">Pendiente</SelectItem>
+                  <SelectItem value="Confirmada">Confirmada</SelectItem>
+                  <SelectItem value="Cancelada">Cancelada</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={condoFilter} onValueChange={setCondoFilter}>
@@ -450,7 +447,7 @@ const Reservas = () => {
                   filteredReservations.map((reservation) => (
                     <ManagerTableRow key={reservation.id}>
                       <ManagerTableCell className="font-medium text-purple-600">
-                        {formatDate(reservation.date)}
+                        {formatDate(reservation.reservation_date)}
                       </ManagerTableCell>
                       <ManagerTableCell>
                         <div>
@@ -474,13 +471,13 @@ const Reservas = () => {
                             </Badge>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pending">Pendiente</SelectItem>
-                            <SelectItem value="approved">Aprobada</SelectItem>
-                            <SelectItem value="cancelled">Cancelada</SelectItem>
+                            <SelectItem value="Pendente">Pendiente</SelectItem>
+                            <SelectItem value="Confirmada">Confirmada</SelectItem>
+                            <SelectItem value="Cancelada">Cancelada</SelectItem>
                           </SelectContent>
                         </Select>
                       </ManagerTableCell>
-                      <ManagerTableCell>{formatCurrency(reservation.amount)}</ManagerTableCell>
+                      <ManagerTableCell>{formatCurrency(reservation.total_value)}</ManagerTableCell>
                       <ManagerTableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button 
