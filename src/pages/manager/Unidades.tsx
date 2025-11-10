@@ -93,6 +93,8 @@ const ManagerUnidadesContent = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<UnitForEdit | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [unitToDelete, setUnitToDelete] = useState<string | null>(null);
 
   // Debug logs
   console.log("🔍 Unidades - Administradora ativa:", activeAdministratorId);
@@ -348,14 +350,19 @@ const ManagerUnidadesContent = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta unidade?")) return;
+  const handleDeleteClick = (id: string) => {
+    setUnitToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!unitToDelete) return;
 
     try {
       const { error } = await supabase
         .from("units")
         .delete()
-        .eq("id", id);
+        .eq("id", unitToDelete);
 
       if (error) throw error;
       showRadixSuccess("Unidade excluída com sucesso!");
@@ -363,7 +370,15 @@ const ManagerUnidadesContent = () => {
     } catch (error) {
       console.error("Erro ao excluir unidade:", error);
       showRadixError("Erro ao excluir unidade");
+    } finally {
+      setDeleteDialogOpen(false);
+      setUnitToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setUnitToDelete(null);
   };
 
   const resetForm = () => {
@@ -670,7 +685,7 @@ const ManagerUnidadesContent = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(unit.id)}
+                        onClick={() => handleDeleteClick(unit.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -682,6 +697,26 @@ const ManagerUnidadesContent = () => {
           </ManagerTableBody>
         </ManagerTable>
       </div>
+
+      {/* Modal de confirmação de exclusão */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir esta unidade? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={handleDeleteCancel}>
+              Cancelar
+            </Button>
+            <Button type="button" variant="destructive" onClick={handleDeleteConfirm}>
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
