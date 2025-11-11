@@ -201,12 +201,17 @@ const ManagerDashboardContent = () => {
   );
 };
 
-const ManagerDashboard = () => (
-  <ManagerLayout>
-    <ManagerDashboardContent />
-  </ManagerLayout>
-);
+const ManagerDashboard = () => {
+  console.log('🏠 ManagerDashboard: Componente carregado');
+  
+  return (
+    <ManagerLayout>
+      <ManagerDashboardContent />
+    </ManagerLayout>
+  );
+};
 
+// Exportação explícita como default
 export default ManagerDashboard;
 
 
