@@ -63,11 +63,7 @@ type VehicleFormData = {
   year: number | null;
   vehicle_type: string;
   status: string;
-  resident_id: string;
-  owner_name: string;
-  owner_document: string;
-  unit_id: string;
-  notes: string;
+  resident_id: string; // Changed from unit_id to resident_id
 };
 
 type CondoSummary = {
@@ -151,10 +147,6 @@ const ManagerVehiculosContent = () => {
     vehicle_type: "car",
     status: "active",
     resident_id: "",
-    owner_name: "",
-    owner_document: "",
-    unit_id: "",
-    notes: "",
   });
 
   const fetchCondos = useCallback(async () => {
@@ -199,7 +191,55 @@ const ManagerVehiculosContent = () => {
       setLoading(true);
       console.log("🚗 fetchVehicles - Fazendo consulta ao Supabase");
       
-      // Use proper multi-tenant filtering: vehicles -> residents -> units -> condominiums -> administrator_id
+      // Step 1: Get condominiums for this administrator
+      const { data: condosData, error: condosError } = await supabase
+        .from("condominiums")
+        .select("id")
+        .eq("administrator_id", activeAdministratorId);
+
+      if (condosError) throw condosError;
+
+      const condoIds = condosData?.map(c => c.id) || [];
+      console.log("🚗 fetchVehicles - Condomínios encontrados:", condoIds.length);
+
+      if (condoIds.length === 0) {
+        setVehicles([]);
+        return;
+      }
+
+      // Step 2: Get units for these condominiums
+      const { data: unitsData, error: unitsError } = await supabase
+        .from("units")
+        .select("id")
+        .in("condo_id", condoIds);
+
+      if (unitsError) throw unitsError;
+
+      const unitIds = unitsData?.map(u => u.id) || [];
+      console.log("🚗 fetchVehicles - Unidades encontradas:", unitIds.length);
+
+      if (unitIds.length === 0) {
+        setVehicles([]);
+        return;
+      }
+
+      // Step 3: Get residents for these units
+      const { data: residentsData, error: residentsError } = await supabase
+        .from("residents")
+        .select("id")
+        .in("unit_id", unitIds);
+
+      if (residentsError) throw residentsError;
+
+      const residentIds = residentsData?.map(r => r.id) || [];
+      console.log("🚗 fetchVehicles - Residentes encontrados:", residentIds.length);
+
+      if (residentIds.length === 0) {
+        setVehicles([]);
+        return;
+      }
+
+      // Step 4: Get vehicles for these residents
       const { data, error } = await supabase
         .from("vehicles")
         .select(`
@@ -213,29 +253,71 @@ const ManagerVehiculosContent = () => {
           status,
           resident_id,
           created_at,
-          updated_at,
-          residents!inner(
-            id,
-            full_name,
-            units!inner(
-              id,
-              number,
-              condominiums!inner(
-                id,
-                name,
-                administrator_id
-              )
-            )
-          )
+          updated_at
         `)
-        .eq("residents.units.condominiums.administrator_id", activeAdministratorId)
+        .in("resident_id", residentIds)
         .order("plate");
 
       console.log("🚗 fetchVehicles - Resposta do Supabase:", { data, error });
 
       if (error) throw error;
 
-      const vehiclesData: VehicleRow[] = (data || []).map((vehicle: any) => ({
+      // Step 5: Get related data for display
+      let vehiclesWithData: VehicleRow[] = [];
+      
+      if (data && data.length > 0) {
+        // Get residents with their unit and condo info
+        const { data: residentsWithDetails } = await supabase
+          .from("residents")
+          .select(`
+            id,
+            full_name,
+            unit_id,
+            units!inner(
+              id,
+              number,
+              condo_id,
+              condominiums!inner(
+                id,
+                name
+              )
+            )
+          `)
+          .in("id", residentIds);
+
+        // Create a map for quick lookup
+        const residentsMap = new Map();
+        residentsWithDetails?.forEach((resident: any) => {
+          residentsMap.set(resident.id, resident);
+        });
+
+        vehiclesWithData = data.map((vehicle: any) => {
+          const resident = residentsMap.get(vehicle.resident_id);
+          
+          return {
+            id: vehicle.id,
+            license_plate: vehicle.plate, // Map plate to license_plate for UI consistency
+            brand: vehicle.brand,
+            model: vehicle.model,
+            color: vehicle.color,
+            year: vehicle.year,
+            vehicle_type: vehicle.vehicle_type,
+            status: vehicle.status,
+            owner_name: resident?.full_name || "N/A",
+            owner_document: null, // Not available in current schema
+            unit_number: resident?.units?.number || "N/A",
+            block_name: null, // Not available in current schema
+            condo_name: resident?.units?.condominiums?.name || "N/A",
+            notes: null, // Not available in current schema
+            created_at: vehicle.created_at,
+          };
+        });
+      }
+
+      setVehicles(vehiclesWithData);
+      console.log("✅ fetchVehicles - Veículos carregados:", vehiclesWithData.length);
+    } catch (error) {
+      console.error("❌ fetchVehicles - Erro:", error);
         id: vehicle.id,
         license_plate: vehicle.plate, // Map plate to license_plate for UI consistency
         brand: vehicle.brand,
@@ -250,14 +332,12 @@ const ManagerVehiculosContent = () => {
         block_name: null, // Not available in current schema
         condo_name: vehicle.residents?.units?.condominiums?.name || "N/A",
         notes: null, // Not available in current schema
-        created_at: vehicle.created_at,
-      }));
-
-      setVehicles(vehiclesData);
-      console.log("✅ fetchVehicles - Veículos carregados:", vehiclesData.length);
+      setVehicles(vehiclesWithData);
+      console.log("✅ fetchVehicles - Veículos carregados:", vehiclesWithData.length);
     } catch (error) {
       console.error("❌ fetchVehicles - Erro:", error);
       showRadixError("Erro ao carregar veículos");
+      setVehicles([]);
     } finally {
       setLoading(false);
     }
@@ -285,7 +365,7 @@ const ManagerVehiculosContent = () => {
       const { data: unitsData, error: unitsError } = await supabase
         .from("units")
         .select("id")
-        .in("condo_id", condoIds);
+        .in("condominium_id", condoIds);
 
       if (unitsError) throw unitsError;
 
@@ -305,7 +385,7 @@ const ManagerVehiculosContent = () => {
           units!inner(
             id,
             number,
-            condo_id,
+            condominium_id,
             condominiums!inner(
               id,
               name
@@ -431,7 +511,6 @@ const ManagerVehiculosContent = () => {
       year: vehicle.year,
       vehicle_type: vehicle.vehicle_type,
       status: vehicle.status,
-      resident_id: "", // Will be populated based on selection
       owner_name: vehicle.owner_name,
       owner_document: vehicle.owner_document || "",
       unit_id: unit?.id || "",
@@ -469,7 +548,6 @@ const ManagerVehiculosContent = () => {
       year: null,
       vehicle_type: "car",
       status: "active",
-      resident_id: "",
       owner_name: "",
       owner_document: "",
       unit_id: "",
