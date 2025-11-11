@@ -41,7 +41,6 @@ const ManagerReservas = lazy(() => import("./pages/manager/Reservas"));
 const ManagerVehiculos = lazy(() => import("./pages/manager/Vehiculos"));
 const ManagerBlocos = lazy(() => import("./pages/manager/Blocos"));
 const ManagerUnidades = lazy(() => import("./pages/manager/Unidades"));
-const ManagerMascotas = lazy(() => import("./pages/manager/Mascotas"));
 
 // Lazy imports - Admin
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -260,18 +259,6 @@ const App = () => (
 
                       <Suspense fallback={<SuspenseFallback />}>
                         <ManagerUnidades />
-                      </Suspense>
-
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/gestor/mascotas"
-                element={
-                  <ProtectedRoute allowedRoles={["Administradora", "Funcionario"]}>
-
-                      <Suspense fallback={<SuspenseFallback />}>
-                        <ManagerMascotas />
                       </Suspense>
 
                   </ProtectedRoute>

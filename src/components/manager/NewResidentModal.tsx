@@ -342,11 +342,9 @@ export const NewResidentModal = ({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-4 bg-admin-background">
+          <TabsList className="grid grid-cols-2 bg-admin-background">
             <TabsTrigger value="personal">Personal</TabsTrigger>
             <TabsTrigger value="location">Ubicacion</TabsTrigger>
-            <TabsTrigger value="pets" disabled>Mascotas</TabsTrigger>
-            <TabsTrigger value="vehicles" disabled>Vehiculos</TabsTrigger>
           </TabsList>
 
           <Form {...form}>
@@ -655,18 +653,6 @@ export const NewResidentModal = ({
                     </FormItem>
                   )}
                 />
-              </TabsContent>
-
-              <TabsContent value="pets">
-                <p className="text-sm text-muted-foreground">
-                  Gestion de mascotas disponible proximamente.
-                </p>
-              </TabsContent>
-
-              <TabsContent value="vehicles">
-                <p className="text-sm text-muted-foreground">
-                  Gestion de vehiculos disponible proximamente.
-                </p>
               </TabsContent>
 
               <DialogFooter className="pt-2">
