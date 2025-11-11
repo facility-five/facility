@@ -74,7 +74,7 @@ port = 587
 user = "resend"
 # ✅ API Key do Resend configurada
 pass = "re_g9vvTZuo_JhgVUCYcmrQpBiov997pAQG3"
-admin_email = "noreply@facility.com"
+admin_email = "no-responda@facilityfincas.es"
 
 # Email templates configuration
 [auth.email.template.confirmation]
