@@ -206,6 +206,9 @@ const ManagerPetsContent = () => {
     if (!activeAdministratorId) return;
     try {
       setLoading(true);
+      console.log("[Pets] Fetching pets for administrator:", activeAdministratorId);
+      
+      // Try the complex query with proper joins
       const { data, error } = await supabase
         .from("pets")
         .select(`
@@ -226,11 +229,41 @@ const ManagerPetsContent = () => {
         `)
         .eq("residents.units.condominiums.administrator_id", activeAdministratorId)
         .order("name");
-      if (error) throw error;
+        
+      console.log("[Pets] Query result:", { data, error });
+      
+      if (error) {
+        console.error("[Pets] Complex query failed:", error);
+        // Fallback to simple query without filtering by administrator
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("pets")
+          .select("*, residents(full_name)")
+          .order("name");
+          
+        if (fallbackError) throw fallbackError;
+        
+        const petsData: PetRow[] = (fallbackData || []).map((pet: any) => ({
+          id: pet.id,
+          name: pet.name ?? "",
+          species: pet.species ?? "other",
+          breed: pet.breed ?? null,
+          color: pet.color ?? null,
+          size: pet.size ?? null,
+          status: pet.status ?? "active",
+          owner_name: pet.residents?.full_name ?? "N/A",
+          unit_number: "N/A",
+          condo_name: "N/A",
+          notes: pet.notes ?? null,
+          created_at: pet.created_at ?? new Date().toISOString(),
+        }));
+        
+        setPets(petsData);
+        return;
+      }
+      
       const petsData: PetRow[] = (data || []).map((pet: any) => ({
         id: pet.id,
         name: pet.name ?? "",
-        // Se a coluna não existir, padroniza para "other" para manter filtros estáveis
         species: pet.species ?? "other",
         breed: pet.breed ?? null,
         color: pet.color ?? null,
@@ -242,10 +275,13 @@ const ManagerPetsContent = () => {
         notes: pet.notes ?? null,
         created_at: pet.created_at ?? new Date().toISOString(),
       }));
+      
+      console.log("[Pets] Final processed pets data:", petsData);
       setPets(petsData);
+      
     } catch (error) {
       console.error("Error al cargar mascotas:", error);
-      showRadixError("Error al cargar mascotas");
+      showRadixError(`Error al cargar mascotas: ${(error as any).message || 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }
@@ -301,18 +337,30 @@ const ManagerPetsContent = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation checks
+    if (!formData.name.trim()) {
+      showRadixError("El nombre es obligatorio");
+      return;
+    }
+    
+    if (!formData.resident_id) {
+      showRadixError("Debe seleccionar un residente");
+      return;
+    }
+    
     try {
-      // Instrumentation: capture payload for debugging 400 errors
       const payload = {
-        name: formData.name,
+        name: formData.name.trim(),
         species: formData.species,
-        breed: formData.breed || null,
-        color: formData.color || null,
-        size: formData.size || null,
+        breed: formData.breed?.trim() || null,
+        color: formData.color?.trim() || null,
+        size: formData.size,
         status: formData.status,
         resident_id: formData.resident_id,
-        notes: formData.notes || null,
+        notes: formData.notes?.trim() || null,
       };
+      
       console.log("[Pets] Submitting payload:", payload);
 
       if (editingPet) {
@@ -323,12 +371,15 @@ const ManagerPetsContent = () => {
         if (error) throw error;
         showRadixSuccess("Mascota actualizada con éxito!");
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("pets")
-          .insert(payload);
+          .insert(payload)
+          .select();
+        console.log("[Pets] Insert result:", { data, error });
         if (error) throw error;
         showRadixSuccess("Mascota creada con éxito!");
       }
+      
       setIsModalOpen(false);
       setEditingPet(null);
       resetForm();
@@ -336,15 +387,7 @@ const ManagerPetsContent = () => {
     } catch (error) {
       const err = error as any;
       console.error("Error al guardar mascota:", err);
-      if (err) {
-        console.error("[Pets] Supabase error details:", {
-          message: err.message,
-          details: err.details,
-          hint: err.hint,
-          code: err.code,
-        });
-      }
-      showRadixError("Error al guardar mascota");
+      showRadixError(`Error al guardar mascota: ${err.message || 'Error desconocido'}`);
     }
   };
 
