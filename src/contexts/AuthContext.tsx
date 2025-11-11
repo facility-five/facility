@@ -55,7 +55,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profileLoaded, setProfileLoaded] = useState(false);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    try {
+      console.log('🔓 AuthContext: Executando signOut...');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('❌ AuthContext: Erro no signOut:', error);
+        throw error;
+      }
+      
+      console.log('✅ AuthContext: SignOut executado com sucesso');
+      
+      // Limpar estados locais
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setAppUser(null);
+      
+    } catch (error) {
+      console.error('❌ AuthContext: Erro completo no signOut:', error);
+      throw error;
+    }
   }, []);
 
   useEffect(() => {

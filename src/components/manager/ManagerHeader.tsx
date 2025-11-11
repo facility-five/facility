@@ -44,8 +44,14 @@ export const ManagerHeader = () => {
   };
 
   const handleLogout = async () => {
-    await signOut();
-    navigate("/");
+    try {
+      console.log('🔐 Manager: Iniciando processo de logout...');
+      await signOut();
+      console.log('✅ Manager: Logout realizado com sucesso');
+      navigate("/");
+    } catch (error) {
+      console.error('❌ Manager: Erro no logout:', error);
+    }
   };
 
   return (
@@ -126,7 +132,11 @@ export const ManagerHeader = () => {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
-              onClick={handleLogout}
+              onClick={(e) => {
+                console.log('🖱️ Manager: Clique no botão Sair detectado');
+                e.preventDefault();
+                handleLogout();
+              }}
             >
               <LogOut className="h-4 w-4" />
               Sair
