@@ -19,8 +19,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { showRadixSuccess } from "@/utils/toast";
+import { showRadixSuccess, showRadixError } from "@/utils/toast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { Pencil, Trash2, Plus, UserPlus } from "lucide-react";
 import { NewResidentModal, ResidentForEdit } from "@/components/manager/NewResidentModal";
@@ -527,6 +537,30 @@ const ManagerResidentesContent = () => {
         onSuccess={fetchResidents}
         condominiumId={selectedCondoId || undefined}
       />
+      <AlertDialog
+        open={Boolean(residentToDelete)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setResidentToDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="border-admin-border bg-admin-card text-admin-foreground">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar residente</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Seguro que quieres eliminar a{" "}
+              <strong>{residentToDelete?.full_name ?? "este residente"}</strong>? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setResidentToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteResident} className="bg-red-600 hover:bg-red-700">
+              Eliminar residente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
