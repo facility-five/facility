@@ -102,6 +102,27 @@ const statusBadge = (status: string) => {
   }
 };
 
+// Function to translate species from English to Spanish
+const getSpeciesLabel = (species: string) => {
+  const speciesMap: Record<string, string> = {
+    dog: "Perro",
+    cat: "Gato", 
+    bird: "Ave",
+    other: "Otro"
+  };
+  return speciesMap[species] || species;
+};
+
+// Function to translate size from English to Spanish
+const getSizeLabel = (size: string) => {
+  const sizeMap: Record<string, string> = {
+    small: "Pequeño",
+    medium: "Mediano", 
+    large: "Grande"
+  };
+  return sizeMap[size] || size;
+};
+
 const ManagerPetsContent = () => {
   const { activeAdministratorId } = useManagerAdministradoras();
   const [pets, setPets] = useState<PetRow[]>([]);
@@ -610,10 +631,10 @@ const ManagerPetsContent = () => {
                     </div>
                   </ManagerTableCell>
                   <ManagerTableCell>
-                    {pet.species}
+                    {getSpeciesLabel(pet.species)}
                   </ManagerTableCell>
                   <ManagerTableCell>
-                    {pet.size || "-"}
+                    {getSizeLabel(pet.size || "medium")}
                   </ManagerTableCell>
                   <ManagerTableCell>
                     {pet.owner_name}
@@ -671,7 +692,7 @@ const ManagerPetsContent = () => {
                   onValueChange={(value) => setFormData({ ...formData, species: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Seleccione especie" />
                   </SelectTrigger>
                   <SelectContent>
                     {PET_SPECIES.map((type) => (
@@ -707,7 +728,7 @@ const ManagerPetsContent = () => {
                   onValueChange={(value) => setFormData({ ...formData, size: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Seleccione tamaño" />
                   </SelectTrigger>
                   <SelectContent>
                     {PET_SIZES.map((sz) => (
@@ -725,7 +746,7 @@ const ManagerPetsContent = () => {
                   onValueChange={(value) => setFormData({ ...formData, status: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Seleccione estado" />
                   </SelectTrigger>
                   <SelectContent>
                     {PET_STATUS.map((status) => (
@@ -743,7 +764,7 @@ const ManagerPetsContent = () => {
                   onValueChange={(value) => setFormData({ ...formData, resident_id: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Seleccione residente" />
                   </SelectTrigger>
                   <SelectContent>
                     {residents.map((res) => (
