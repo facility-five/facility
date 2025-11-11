@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixSuccess } from "@/utils/toast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { generateResidentCode, splitFullName, normalizeResidentData, RESIDENT_LABELS } from "@/utils/residentUtils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -42,8 +43,8 @@ import {
 } from "@/components/ui/tabs";
 
 const residentSchema = z.object({
-  full_name: z.string().min(1, "El nombre es obligatorio."),
-  email: z.string().email("Correo invalido.").optional().or(z.literal("")),
+  full_name: z.string().min(1, "O nome é obrigatório."),
+  email: z.string().email("Email inválido.").optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   document: z.string().optional().or(z.literal("")),
   birth_date: z.string().optional().or(z.literal("")),
@@ -52,12 +53,52 @@ const residentSchema = z.object({
   is_owner: z.boolean(),
   is_tenant: z.boolean(),
   status: z.enum(["active", "inactive"]),
-  condo_id: z.string().min(1, "Seleccione el condominio."),
+  condo_id: z.string().min(1, "Selecione o condomínio."),
   block_id: z.string().optional().or(z.literal("")),
   unit_id: z.string().optional().or(z.literal("")),
   notes: z.string().optional().or(z.literal("")),
   create_user_account: z.boolean().optional(),
 });
+
+type ResidentFormValues = z.infer<typeof residentSchema>;
+
+type SelectOption = { id: string; name: string; condo_id?: string | null; };
+
+type UnitOption = {
+  id: string;
+  label: string;
+  block_id: string;
+};
+
+export type ResidentForEdit = {
+  id: string;
+  code: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  document: string | null;
+  birth_date: string | null;
+  entry_date: string | null;
+  exit_date: string | null;
+  is_owner: boolean;
+  is_tenant: boolean;
+  status: string;
+  condo_id: string;
+  block_id: string | null;
+  unit_id: string | null;
+  notes: string | null;
+};
+
+interface NewResidentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  resident?: ResidentForEdit | null;
+  condos: SelectOption[];
+  blocks: SelectOption[];
+  units: UnitOption[];
+  defaultCondoId?: string | null;
+}
 
 type ResidentFormValues = z.infer<typeof residentSchema>;
 
@@ -137,13 +178,6 @@ export const NewResidentModal = ({
   });
 
   const isEditing = Boolean(resident);
-  const watchHasParking = form.watch("has_parking");
-
-  useEffect(() => {
-    if (!watchHasParking) {
-      form.setValue("parking_spaces", "");
-    }
-  }, [watchHasParking, form]);
 
   const watchedCondoId = form.watch("condo_id");
   const watchedBlockId = form.watch("block_id");
@@ -212,22 +246,7 @@ export const NewResidentModal = ({
   };
 
   const onSubmit = async (values: ResidentFormValues) => {
-    const payload = {
-      full_name: values.full_name.trim(),
-      email: values.email?.trim() || null,
-      phone: values.phone?.trim() || null,
-      document: values.document?.trim() || null,
-      birth_date: values.birth_date ? values.birth_date : null,
-      entry_date: values.entry_date ? values.entry_date : null,
-      exit_date: values.exit_date ? values.exit_date : null,
-      is_owner: values.is_owner,
-      is_tenant: values.is_tenant,
-      status: values.status,
-      condo_id: values.condo_id,
-      block_id: values.block_id || null,
-      unit_id: values.unit_id || null,
-      notes: values.notes?.trim() || null,
-    };
+    const payload = normalizeResidentData(values);
 
     const requestPayload = {
       ...payload,
@@ -254,7 +273,7 @@ export const NewResidentModal = ({
     }
 
     if (error) {
-      showError(error.message || "No fue posible guardar el residente.", "resident_save_error");
+      showError(error.message || RESIDENT_LABELS.ERROR_SAVE, "resident_save_error");
       return;
     }
 
@@ -269,17 +288,15 @@ export const NewResidentModal = ({
           .single();
 
         // Chamar a Edge Function para criar conta de usuário
-        const nameParts = values.full_name.trim().split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
+        const { firstName, lastName } = splitFullName(values.full_name);
 
         const { data: userResponse, error: userError } = await supabase.functions.invoke(
           'create-resident-user',
           {
             body: {
               email: values.email,
-              firstName: firstName,
-              lastName: lastName,
+              firstName,
+              lastName,
               condoName: condoData?.name || 'Condomínio'
             }
           }
@@ -299,7 +316,7 @@ export const NewResidentModal = ({
             console.error('Erro ao vincular usuário ao residente:', updateError);
             showError('Usuário criado, mas houve erro ao vincular ao residente.', "user_link_error");
           } else {
-            showRadixSuccess(`Residente registrado com sucesso! Email de boas-vindas enviado para ${values.email}.`);
+            showRadixSuccess(`${RESIDENT_LABELS.SUCCESS_CREATE} ${RESIDENT_LABELS.SUCCESS_WITH_EMAIL} para ${values.email}.`);
           }
         }
       } catch (err) {
@@ -307,7 +324,7 @@ export const NewResidentModal = ({
         showError('Residente cadastrado, mas houve erro ao criar conta de usuário.', "account_processing_error");
       }
     } else {
-      showRadixSuccess(`Residente ${isEditing ? "actualizado" : "registrado"} con exito.`);
+      showRadixSuccess(isEditing ? RESIDENT_LABELS.SUCCESS_UPDATE : RESIDENT_LABELS.SUCCESS_CREATE);
     }
 
     onSuccess();
@@ -335,16 +352,16 @@ export const NewResidentModal = ({
     <Dialog open={isOpen} onOpenChange={(open) => (!open ? handleClose() : undefined)}>
       <DialogContent className="sm:max-w-[720px] bg-admin-card border-admin-border text-admin-foreground max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Editar Residente" : "Agregar Residente"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Editar Residente" : "Adicionar Residente"}</DialogTitle>
           <DialogDescription className="text-admin-foreground-muted">
-            Complete los datos del residente. Estos datos se utilizaran para el acceso del morador.
+            Complete os dados do residente. Estes dados serão utilizados para o acesso do morador.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid grid-cols-2 bg-admin-background">
-            <TabsTrigger value="personal">Personal</TabsTrigger>
-            <TabsTrigger value="location">Ubicacion</TabsTrigger>
+            <TabsTrigger value="personal">Pessoal</TabsTrigger>
+            <TabsTrigger value="location">Localização</TabsTrigger>
           </TabsList>
 
           <Form {...form}>
@@ -356,10 +373,10 @@ export const NewResidentModal = ({
                     name="full_name"
                     render={({ field }) => (
                       <FormItem className="sm:col-span-2">
-                        <FormLabel>Nombre completo</FormLabel>
+                        <FormLabel>Nome completo</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Nombre del residente"
+                            placeholder="Nome do residente"
                             {...field}
                             className="bg-admin-background border-admin-border"
                           />
@@ -373,10 +390,10 @@ export const NewResidentModal = ({
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Correo electronico</FormLabel>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="correo@ejemplo.com"
+                            placeholder="email@exemplo.com"
                             {...field}
                             className="bg-admin-background border-admin-border"
                           />
@@ -390,10 +407,10 @@ export const NewResidentModal = ({
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Telefono</FormLabel>
+                        <FormLabel>Telefone</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Telefono"
+                            placeholder="Telefone"
                             {...field}
                             className="bg-admin-background border-admin-border"
                           />
@@ -424,7 +441,7 @@ export const NewResidentModal = ({
                     name="birth_date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Fecha de nacimiento</FormLabel>
+                        <FormLabel>Data de nascimento</FormLabel>
                         <FormControl>
                           <Input
                             type="date"
@@ -441,7 +458,7 @@ export const NewResidentModal = ({
                     name="entry_date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Fecha de entrada</FormLabel>
+                        <FormLabel>Data de entrada</FormLabel>
                         <FormControl>
                           <Input
                             type="date"
@@ -458,7 +475,7 @@ export const NewResidentModal = ({
                     name="exit_date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Fecha de salida</FormLabel>
+                        <FormLabel>Data de saída</FormLabel>
                         <FormControl>
                           <Input
                             type="date"
@@ -478,7 +495,7 @@ export const NewResidentModal = ({
                     name="is_owner"
                     render={({ field }) => (
                       <FormItem className="flex items-center justify-between rounded-md border border-admin-border bg-admin-background px-3 py-2">
-                        <FormLabel className="text-sm font-medium">Propietario</FormLabel>
+                        <FormLabel className="text-sm font-medium">Proprietário</FormLabel>
                         <FormControl>
                           <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
@@ -502,16 +519,16 @@ export const NewResidentModal = ({
                     name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Estado</FormLabel>
+                        <FormLabel>Status</FormLabel>
                         <Select value={field.value || ""} onValueChange={field.onChange}>
                           <FormControl>
                             <SelectTrigger className="bg-admin-background border-admin-border">
-                              <SelectValue placeholder="Seleccione el estado" />
+                              <SelectValue placeholder="Selecione o status" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="active">Activo</SelectItem>
-                            <SelectItem value="inactive">Inactivo</SelectItem>
+                            <SelectItem value="active">Ativo</SelectItem>
+                            <SelectItem value="inactive">Inativo</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -528,7 +545,7 @@ export const NewResidentModal = ({
                       <FormLabel>Notas</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Observaciones adicionales"
+                          placeholder="Observações adicionais"
                           {...field}
                           className="bg-admin-background border-admin-border"
                         />
@@ -537,6 +554,19 @@ export const NewResidentModal = ({
                     </FormItem>
                   )}
                 />
+
+                {/* Informação sobre criação de usuário */}
+                {!isEditing && (
+                  <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
+                    <div className="text-sm">
+                      <p className="font-medium text-blue-800">💡 Criação automática de conta</p>
+                      <p className="text-blue-700 mt-1">
+                        Se um email for fornecido, uma conta de usuário será criada automaticamente 
+                        e um email de boas-vindas será enviado com instruções para definir a senha.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {!isEditing && (
                   <div className="rounded-md border border-admin-border bg-admin-background px-3 py-2">
@@ -557,17 +587,17 @@ export const NewResidentModal = ({
                     name="condo_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Condominio</FormLabel>
+                        <FormLabel>Condomínio</FormLabel>
                         <Select value={field.value || ""} onValueChange={field.onChange}>
                           <FormControl>
                             <SelectTrigger className="bg-admin-background border-admin-border">
-                              <SelectValue placeholder="Seleccione el condominio" />
+                              <SelectValue placeholder="Selecione o condomínio" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {condos.length === 0 ? (
                               <SelectItem value="" disabled>
-                                Ningun condominio disponible
+                                Nenhum condomínio disponível
                               </SelectItem>
                             ) : (
                               condos.map((condo) => (
@@ -588,7 +618,7 @@ export const NewResidentModal = ({
                     name="block_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bloque</FormLabel>
+                        <FormLabel>Bloco</FormLabel>
                         <Select
                           value={field.value || ""}
                           onValueChange={field.onChange}
@@ -596,13 +626,13 @@ export const NewResidentModal = ({
                         >
                           <FormControl>
                             <SelectTrigger className="bg-admin-background border-admin-border">
-                              <SelectValue placeholder="Seleccione el bloque" />
+                              <SelectValue placeholder="Selecione o bloco" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {filteredBlocks.length === 0 ? (
                               <SelectItem value="" disabled>
-                                Ningun bloque disponible
+                                Nenhum bloco disponível
                               </SelectItem>
                             ) : (
                               filteredBlocks.map((block) => (
@@ -624,7 +654,7 @@ export const NewResidentModal = ({
                   name="unit_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Unidad</FormLabel>
+                      <FormLabel>Unidade</FormLabel>
                       <Select
                         value={field.value || ""}
                         onValueChange={field.onChange}
@@ -632,13 +662,13 @@ export const NewResidentModal = ({
                       >
                         <FormControl>
                           <SelectTrigger className="bg-admin-background border-admin-border">
-                            <SelectValue placeholder="Seleccione la unidad" />
+                            <SelectValue placeholder="Selecione a unidade" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {filteredUnits.length === 0 ? (
                             <SelectItem value="" disabled>
-                              Ninguna unidad disponible
+                              Nenhuma unidade disponível
                             </SelectItem>
                           ) : (
                             filteredUnits.map((unit) => (
@@ -660,7 +690,7 @@ export const NewResidentModal = ({
                   Cancelar
                 </Button>
                 <Button type="submit" className="bg-purple-600 hover:bg-purple-700" disabled={isSubmitting}>
-                  {isEditing ? "Guardar cambios" : "Registrar"}
+                  {isEditing ? "Salvar alterações" : "Cadastrar"}
                 </Button>
               </DialogFooter>
             </form>
