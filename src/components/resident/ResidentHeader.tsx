@@ -9,8 +9,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { User, Settings, LogOut, Bell, HelpCircle } from "lucide-react";
+import { User, Settings, LogOut, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ResidentNotificationsDropdown } from "@/components/resident/ResidentNotificationsDropdown";
 
 export const ResidentHeader = () => {
   const { profile, signOut } = useAuth();
@@ -35,12 +36,7 @@ export const ResidentHeader = () => {
       
       <div className="flex items-center gap-4">
         {/* Notificações */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
-            3
-          </span>
-        </Button>
+        <ResidentNotificationsDropdown />
 
         {/* Menu do Usuário */}
         <DropdownMenu>

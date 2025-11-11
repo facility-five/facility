@@ -22,8 +22,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixSuccess } from "@/utils/toast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, UserPlus } from "lucide-react";
 import { NewResidentModal, ResidentForEdit } from "@/components/manager/NewResidentModal";
+import { InviteResidentModal } from "@/components/manager/InviteResidentModal";
 
 import { usePlan } from "@/hooks/usePlan";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
@@ -96,6 +97,7 @@ const ManagerResidentesContent = () => {
   const [search, setSearch] = useState("");
 
   const [isResidentModalOpen, setIsResidentModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [editingResident, setEditingResident] = useState<ResidentForEdit | null>(null);
   const [residentToDelete, setResidentToDelete] = useState<ResidentRow | null>(null);
 
@@ -399,10 +401,21 @@ const ManagerResidentesContent = () => {
             onChange={(event) => setSearch(event.target.value)}
             className="w-full bg-white sm:w-64"
           />
-          <Button className="bg-purple-600 hover:bg-purple-700" onClick={openCreateModal} disabled={!selectedCondoId}>
-            <Plus className="mr-2 h-4 w-4" />
-            Agregar Residente
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsInviteModalOpen(true)} 
+              disabled={!selectedCondoId}
+              className="border-purple-600 text-purple-600 hover:bg-purple-50"
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Convidar Morador
+            </Button>
+            <Button className="bg-purple-600 hover:bg-purple-700" onClick={openCreateModal} disabled={!selectedCondoId}>
+              <Plus className="mr-2 h-4 w-4" />
+              Agregar Residente
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -506,6 +519,13 @@ const ManagerResidentesContent = () => {
         blocks={blockOptions}
         units={unitOptions}
         defaultCondoId={selectedCondoId}
+      />
+
+      <InviteResidentModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onSuccess={fetchResidents}
+        condominiumId={selectedCondoId || undefined}
       />
     </div>
   );

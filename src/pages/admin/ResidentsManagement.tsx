@@ -33,12 +33,14 @@ import {
   Trash2,
   Eye,
   Download,
-  Plus
+  Plus,
+  UserPlus
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateResidentModal } from "@/components/admin/CreateResidentModal";
+import { InviteResidentModal } from "@/components/admin/InviteResidentModal";
 
 export type Resident = {
   id: string;
@@ -95,6 +97,7 @@ const ResidentsManagement = () => {
   const [selectedBlock, setSelectedBlock] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   // Fetch data functions
   const fetchResidents = async () => {
@@ -328,6 +331,14 @@ const ResidentsManagement = () => {
           </div>
           <div className="flex gap-2">
             <Button 
+              variant="outline"
+              onClick={() => setIsInviteModalOpen(true)}
+              className="gap-2 border-purple-600 text-purple-600 hover:bg-purple-50"
+            >
+              <UserPlus className="h-4 w-4" />
+              Convidar Morador
+            </Button>
+            <Button 
               onClick={() => setIsCreateModalOpen(true)}
               className="gap-2"
             >
@@ -539,6 +550,12 @@ const ResidentsManagement = () => {
           fetchResidents(); // Recarrega a lista após cadastro
           showRadixSuccess("Morador cadastrado com sucesso!");
         }}
+      />
+      
+      <InviteResidentModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onSuccess={fetchResidents}
       />
     </AdminLayout>
   );
