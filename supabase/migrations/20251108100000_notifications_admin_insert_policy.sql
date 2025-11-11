@@ -8,11 +8,6 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "notifications_admin_insert_any" ON public.notifications;
 CREATE POLICY "notifications_admin_insert_any" ON public.notifications
   FOR INSERT
-  USING (
-    auth.uid() IN (
-      SELECT id FROM public.profiles WHERE role = 'Admin do SaaS'
-    )
-  )
   WITH CHECK (
     auth.uid() IN (
       SELECT id FROM public.profiles WHERE role = 'Admin do SaaS'

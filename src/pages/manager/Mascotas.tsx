@@ -291,7 +291,7 @@ const ManagerMascotasContent = () => {
       const { data: unitsData, error: unitsError } = await supabase
         .from("units")
         .select("id")
-        .in("condominium_id", condoIds);
+        .in("condo_id", condoIds);
 
       if (unitsError) {
         console.error("❌ Mascotas - Erro ao buscar unidades:", unitsError);

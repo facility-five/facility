@@ -63,10 +63,7 @@ type VehicleFormData = {
   year: number | null;
   vehicle_type: string;
   status: string;
-  owner_name: string;
-  owner_document: string;
-  unit_id: string;
-  notes: string;
+  resident_id: string; // Changed from unit_id to resident_id
 };
 
 type CondoSummary = {
@@ -79,6 +76,14 @@ type UnitSummary = {
   number: string;
   block_name: string;
   condo_id: string;
+};
+
+type ResidentSummary = {
+  id: string;
+  full_name: string;
+  unit_id: string;
+  unit_number: string;
+  condo_name: string;
 };
 
 const VEHICLE_TYPES = [
@@ -125,6 +130,7 @@ const ManagerVehiculosContent = () => {
   const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
   const [condos, setCondos] = useState<CondoSummary[]>([]);
   const [units, setUnits] = useState<UnitSummary[]>([]);
+  const [residents, setResidents] = useState<ResidentSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCondo, setSelectedCondo] = useState<string>("all");
@@ -140,10 +146,7 @@ const ManagerVehiculosContent = () => {
     year: null,
     vehicle_type: "car",
     status: "active",
-    owner_name: "",
-    owner_document: "",
-    unit_id: "",
-    notes: "",
+    resident_id: "",
   });
 
   const fetchCondos = useCallback(async () => {
@@ -187,27 +190,38 @@ const ManagerVehiculosContent = () => {
     try {
       setLoading(true);
       console.log("🚗 fetchVehicles - Fazendo consulta ao Supabase");
+      
+      // Use proper multi-tenant filtering: vehicles -> residents -> units -> condominiums -> administrator_id
       const { data, error } = await supabase
         .from("vehicles")
         .select(`
           id,
-          license_plate,
+          plate,
           brand,
           model,
           color,
           year,
+          vehicle_type,
           status,
-          condo_id,
+          resident_id,
           created_at,
           updated_at,
-          condominiums!inner(
+          residents!inner(
             id,
-            name,
-            administrator_id
+            full_name,
+            units!inner(
+              id,
+              number,
+              condominiums!inner(
+                id,
+                name,
+                administrator_id
+              )
+            )
           )
         `)
-        .eq("condominiums.administrator_id", activeAdministratorId)
-        .order("license_plate");
+        .eq("residents.units.condominiums.administrator_id", activeAdministratorId)
+        .order("plate");
 
       console.log("🚗 fetchVehicles - Resposta do Supabase:", { data, error });
 
@@ -215,19 +229,19 @@ const ManagerVehiculosContent = () => {
 
       const vehiclesData: VehicleRow[] = (data || []).map((vehicle: any) => ({
         id: vehicle.id,
-        license_plate: vehicle.license_plate,
+        license_plate: vehicle.plate, // Map plate to license_plate for UI consistency
         brand: vehicle.brand,
         model: vehicle.model,
         color: vehicle.color,
         year: vehicle.year,
         vehicle_type: vehicle.vehicle_type,
         status: vehicle.status,
-        owner_name: vehicle.owner_name,
-        owner_document: vehicle.owner_document,
-        unit_number: vehicle.unit_number,
-        block_name: vehicle.block_name,
-        condo_name: vehicle.condominios.name,
-        notes: vehicle.notes,
+        owner_name: vehicle.residents?.full_name || "N/A",
+        owner_document: null, // Not available in current schema
+        unit_number: vehicle.residents?.units?.number || "N/A",
+        block_name: null, // Not available in current schema
+        condo_name: vehicle.residents?.units?.condominiums?.name || "N/A",
+        notes: null, // Not available in current schema
         created_at: vehicle.created_at,
       }));
 
@@ -241,38 +255,72 @@ const ManagerVehiculosContent = () => {
     }
   }, [activeAdministratorId]);
 
-  const fetchUnits = useCallback(async () => {
+  const fetchResidents = useCallback(async () => {
     if (!activeAdministratorId) return;
 
     try {
-      const { data, error } = await supabase
+      // First get condominiums for this administrator
+      const { data: condosData, error: condosError } = await supabase
+        .from("condominiums")
+        .select("id")
+        .eq("administrator_id", activeAdministratorId);
+
+      if (condosError) throw condosError;
+
+      const condoIds = condosData?.map(c => c.id) || [];
+      if (condoIds.length === 0) {
+        setResidents([]);
+        return;
+      }
+
+      // Get units for these condominiums
+      const { data: unitsData, error: unitsError } = await supabase
         .from("units")
+        .select("id")
+        .in("condominium_id", condoIds);
+
+      if (unitsError) throw unitsError;
+
+      const unitIds = unitsData?.map(u => u.id) || [];
+      if (unitIds.length === 0) {
+        setResidents([]);
+        return;
+      }
+
+      // Get residents for these units
+      const { data, error } = await supabase
+        .from("residents")
         .select(`
           id,
-          number,
-          blocks!inner(
-            name,
+          full_name,
+          unit_id,
+          units!inner(
+            id,
+            number,
+            condominium_id,
             condominiums!inner(
               id,
-              administrator_id
+              name
             )
           )
         `)
-        .eq("blocks.condominiums.administrator_id", activeAdministratorId)
-        .order("number");
+        .in("unit_id", unitIds)
+        .order("full_name");
 
       if (error) throw error;
 
-      const formattedUnits: UnitSummary[] = data?.map((unit: any) => ({
-        id: unit.id,
-        number: unit.number,
-        block_name: unit.blocks?.name,
-        condo_id: unit.blocks?.condominiums?.id,
+      const formattedResidents: ResidentSummary[] = data?.map((resident: any) => ({
+        id: resident.id,
+        full_name: resident.full_name,
+        unit_id: resident.unit_id,
+        unit_number: resident.units?.number || "N/A",
+        condo_name: resident.units?.condominiums?.name || "N/A",
       })) || [];
 
-      setUnits(formattedUnits);
+      setResidents(formattedResidents);
     } catch (error) {
-      console.error("Erro ao buscar unidades:", error);
+      console.error("Erro ao buscar residentes:", error);
+      setResidents([]);
     }
   }, [activeAdministratorId]);
 
@@ -280,12 +328,12 @@ const ManagerVehiculosContent = () => {
     if (activeAdministratorId) {
       fetchVehicles();
       fetchCondos();
-      fetchUnits();
+      fetchResidents();
     } else {
       // Se não há administradora_id, definir loading como false para mostrar a interface
       setLoading(false);
     }
-  }, [fetchVehicles, fetchCondos, fetchUnits, activeAdministratorId]);
+  }, [fetchVehicles, fetchCondos, fetchResidents, activeAdministratorId]);
 
   // Fallback visual quando não há administradora selecionada
   if (!activeAdministratorId) {
@@ -323,17 +371,14 @@ const ManagerVehiculosContent = () => {
         const { error } = await supabase
           .from("vehicles")
           .update({
-            license_plate: formData.license_plate,
+            plate: formData.license_plate,
             brand: formData.brand,
             model: formData.model,
             color: formData.color,
             year: formData.year,
             vehicle_type: formData.vehicle_type,
             status: formData.status,
-            owner_name: formData.owner_name,
-            owner_document: formData.owner_document,
-            unit_id: formData.unit_id,
-            notes: formData.notes,
+            resident_id: formData.resident_id, // Use resident_id instead of unit_id
           })
           .eq("id", editingVehicle.id);
 
@@ -343,17 +388,14 @@ const ManagerVehiculosContent = () => {
         const { error } = await supabase
           .from("vehicles")
           .insert({
-            license_plate: formData.license_plate,
+            plate: formData.license_plate,
             brand: formData.brand,
             model: formData.model,
             color: formData.color,
             year: formData.year,
             vehicle_type: formData.vehicle_type,
             status: formData.status,
-            owner_name: formData.owner_name,
-            owner_document: formData.owner_document,
-            unit_id: formData.unit_id,
-            notes: formData.notes,
+            resident_id: formData.resident_id, // Use resident_id instead of unit_id
           });
 
         if (error) throw error;
