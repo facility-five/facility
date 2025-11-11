@@ -338,45 +338,81 @@ const ManagerPetsContent = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation checks
+    // Comprehensive validation
+    console.log("[Pets] Starting form validation...");
+    console.log("[Pets] Form data:", formData);
+    
     if (!formData.name.trim()) {
+      console.error("[Pets] Validation failed: name is empty");
       showRadixError("El nombre es obligatorio");
       return;
     }
     
     if (!formData.resident_id) {
+      console.error("[Pets] Validation failed: no resident selected");
       showRadixError("Debe seleccionar un residente");
       return;
     }
     
+    if (!formData.species) {
+      console.error("[Pets] Validation failed: no species selected");
+      showRadixError("Debe seleccionar una especie");
+      return;
+    }
+    
     try {
+      // Create clean payload with only the fields that exist in the table
       const payload = {
         name: formData.name.trim(),
-        species: formData.species,
+        species: formData.species || 'other',
         breed: formData.breed?.trim() || null,
         color: formData.color?.trim() || null,
-        size: formData.size,
-        status: formData.status,
+        size: formData.size || 'medium',
+        status: formData.status || 'active',
         resident_id: formData.resident_id,
         notes: formData.notes?.trim() || null,
       };
       
-      console.log("[Pets] Submitting payload:", payload);
+      // Remove any undefined or empty string values
+      Object.keys(payload).forEach(key => {
+        if (payload[key as keyof typeof payload] === undefined || payload[key as keyof typeof payload] === '') {
+          if (key === 'breed' || key === 'color' || key === 'notes') {
+            payload[key as keyof typeof payload] = null;
+          }
+        }
+      });
+      
+      console.log("[Pets] Clean payload being sent:", payload);
+      console.log("[Pets] Payload JSON:", JSON.stringify(payload, null, 2));
 
       if (editingPet) {
-        const { error } = await supabase
+        console.log("[Pets] Updating existing pet:", editingPet.id);
+        const { data, error } = await supabase
           .from("pets")
           .update(payload)
-          .eq("id", editingPet.id);
+          .eq("id", editingPet.id)
+          .select();
+          
+        console.log("[Pets] Update result:", { data, error });
         if (error) throw error;
         showRadixSuccess("Mascota actualizada con éxito!");
       } else {
+        console.log("[Pets] Creating new pet...");
         const { data, error } = await supabase
           .from("pets")
           .insert(payload)
           .select();
+          
         console.log("[Pets] Insert result:", { data, error });
-        if (error) throw error;
+        if (error) {
+          console.error("[Pets] Insert error details:", {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+          });
+          throw error;
+        }
         showRadixSuccess("Mascota creada con éxito!");
       }
       
@@ -386,8 +422,26 @@ const ManagerPetsContent = () => {
       fetchPets();
     } catch (error) {
       const err = error as any;
-      console.error("Error al guardar mascota:", err);
-      showRadixError(`Error al guardar mascota: ${err.message || 'Error desconocido'}`);
+      console.error("[Pets] Complete error:", err);
+      console.error("[Pets] Error message:", err.message);
+      console.error("[Pets] Error code:", err.code);
+      console.error("[Pets] Error details:", err.details);
+      console.error("[Pets] Error hint:", err.hint);
+      
+      let errorMessage = "Error desconocido al guardar mascota";
+      
+      if (err.message?.includes("null value in column")) {
+        const match = err.message.match(/null value in column "([^"]+)"/);
+        if (match) {
+          errorMessage = `Campo obligatorio faltante: ${match[1]}`;
+        }
+      } else if (err.message?.includes("violates not-null constraint")) {
+        errorMessage = "Faltan campos obligatorios. Verifique que todos los campos requeridos estén completos.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      showRadixError(errorMessage);
     }
   };
 
