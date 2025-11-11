@@ -57,16 +57,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = useCallback(async () => {
     try {
       console.log('🔓 AuthContext: Executando signOut...');
+      
+      // Verificar se há sessão ativa antes de tentar logout
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log('⚠️ AuthContext: Nenhuma sessão ativa encontrada');
+        // Limpar estados locais mesmo sem sessão ativa
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setAppUser(null);
+        return;
+      }
+      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('❌ AuthContext: Erro no signOut:', error);
-        throw error;
+        // Se o erro é de sessão ausente, não é crítico
+        if (error.message && error.message.includes('Auth session missing')) {
+          console.log('⚠️ AuthContext: Sessão já expirada, apenas limpando estados...');
+        } else {
+          console.error('❌ AuthContext: Erro no signOut:', error);
+          throw error;
+        }
       }
       
       console.log('✅ AuthContext: SignOut executado com sucesso');
       
-      // Limpar estados locais
+      // Limpar estados locais sempre
       setSession(null);
       setUser(null);
       setProfile(null);
@@ -74,7 +93,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
     } catch (error) {
       console.error('❌ AuthContext: Erro completo no signOut:', error);
-      throw error;
+      
+      // Mesmo com erro, limpar estados locais para evitar inconsistência
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setAppUser(null);
+      
+      // Re-throw apenas se não for erro de sessão ausente
+      if (!error.message || !error.message.includes('Auth session missing')) {
+        throw error;
+      }
     }
   }, []);
 

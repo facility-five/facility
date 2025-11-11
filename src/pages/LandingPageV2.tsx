@@ -51,10 +51,43 @@ const LandingPageV2 = () => {
 
   const handleLogout = async () => {
     try {
+      console.log('🔓 Landing Page: Iniciando logout...');
+      console.log('🔍 Landing Page: Session exists:', !!session);
+      console.log('🔍 Landing Page: Profile exists:', !!profile);
+      
+      // Se não há sessão, apenas limpe o estado local e redirecione
+      if (!session) {
+        console.log('⚠️ Landing Page: Nenhuma sessão ativa, redirecionando...');
+        navigate('/', { replace: true });
+        return;
+      }
+      
+      // Tentar fazer signOut apenas se há sessão
       await signOut();
+      console.log('✅ Landing Page: Logout realizado com sucesso');
       navigate('/', { replace: true });
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      console.error('❌ Landing Page: Erro ao fazer logout:', error);
+      
+      // Se o erro é de sessão ausente, apenas redirecione
+      if (error.message && error.message.includes('Auth session missing')) {
+        console.log('⚠️ Landing Page: Sessão já expirada, redirecionando...');
+        navigate('/', { replace: true });
+        return;
+      }
+      
+      // Para outros erros, force limpeza local
+      try {
+        // Limpar storage local como fallback
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log('🧹 Landing Page: Storage limpo forçadamente');
+      } catch (storageError) {
+        console.error('❌ Landing Page: Erro ao limpar storage:', storageError);
+      }
+      
+      // Redirecionar sempre, independente do erro
+      navigate('/', { replace: true });
     }
   };
 
