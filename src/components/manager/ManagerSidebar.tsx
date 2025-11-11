@@ -5,7 +5,6 @@ import {
   Home,
   Layers,
   Users,
-  Car,
   Settings,
   CreditCard,
   Building2,
@@ -15,6 +14,7 @@ import {
   Calendar,
   Crown,
   Sparkles,
+  PawPrint,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
@@ -29,7 +29,7 @@ const navItems = [
   { href: "/gestor/areas-comuns", icon: MapPin, labelKey: "navigation.commonAreas" },
   { href: "/gestor/reservas", icon: Calendar, labelKey: "navigation.reservations" },
   { href: "/gestor/residentes", icon: Users, labelKey: "navigation.residents" },
-  { href: "/gestor/vehiculos", icon: Car, labelKey: "navigation.vehicles" },
+  { href: "/gestor/mascotas", icon: PawPrint, labelKey: "navigation.pets" },
   { href: "/gestor/comunicados", icon: MessageSquare, labelKey: "navigation.communications" },
   { href: "/gestor/mi-plan", icon: CreditCard, labelKey: "navigation.plans" },
   { href: "/gestor/configuracoes", icon: Settings, labelKey: "navigation.settings" },
