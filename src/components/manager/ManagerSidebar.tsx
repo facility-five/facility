@@ -30,7 +30,7 @@ const navItems = [
   { href: "/gestor/areas-comuns", icon: MapPin, labelKey: "navigation.commonAreas" },
   { href: "/gestor/reservas", icon: Calendar, labelKey: "navigation.reservations" },
   { href: "/gestor/residentes", icon: Users, labelKey: "navigation.residents" },
-  { href: "/gestor/mascotas", icon: PawPrint, labelKey: "navigation.pets" },
+  { href: "/gestor/mascotas", icon: Users, labelKey: "navigation.residents" },
   { href: "/gestor/vehiculos", icon: Car, labelKey: "navigation.vehicles" },
   { href: "/gestor/comunicados", icon: MessageSquare, labelKey: "navigation.communications" },
   { href: "/gestor/mi-plan", icon: CreditCard, labelKey: "navigation.plans" },

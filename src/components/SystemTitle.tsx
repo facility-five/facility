@@ -22,7 +22,7 @@ const routeTitles: Record<string, string> = {
   "/gestor/blocos": "Blocos",
   "/gestor/unidades": "Unidades",
   "/gestor/residentes": "Residentes",
-  "/gestor/mascotas": "Mascotas",
+  "/gestor/mascotas": "Residentes",
   "/gestor/vehiculos": "Vehículos",
   "/gestor/configuracoes": "Configurações",
   "/gestor/comunicados": "Comunicados",
