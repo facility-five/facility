@@ -284,7 +284,7 @@ export const NewResidentModal = ({
 
       const redirectTo = `${window.location.origin.replace(/\/$/, "")}/nova-senha`;
 
-      const { error } = await supabase.functions.invoke("invite-user", {
+      const { data, error } = await supabase.functions.invoke("invite-user", {
         body: {
           email: resident.email,
           data: {
@@ -298,6 +298,10 @@ export const NewResidentModal = ({
 
       if (error) {
         throw error;
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || "No se pudo reenviar la invitación.");
       }
 
       showRadixSuccess("Invitación reenviada con éxito. El residente recibirá nuevamente el Invite user.");

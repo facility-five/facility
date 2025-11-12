@@ -28,13 +28,28 @@ serve(async (req) => {
     });
 
     if (error) {
-      throw error
+      console.error("Erro ao convidar usuário:", error);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: error.message,
+          status: error.status,
+          details: error.details,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      )
     }
 
-    return new Response(JSON.stringify({ message: "User invited successfully" }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    })
+    return new Response(
+      JSON.stringify({ success: true, message: "User invited successfully" }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    )
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
