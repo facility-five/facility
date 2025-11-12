@@ -77,7 +77,7 @@ const Unit = () => {
       const { data: residentData, error: residentError } = await supabase
         .from("residents")
         .select("*")
-        .eq("id", user.id)
+        .eq("profile_id", user.id)
         .single();
 
       if (residentError) {

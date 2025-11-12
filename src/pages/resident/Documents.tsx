@@ -58,23 +58,13 @@ const Documents = () => {
       // Primeiro, buscar o condomínio do morador
       const { data: residentData, error: residentError } = await supabase
         .from('residents')
-        .select(`
-          units!inner(
-            blocks!inner(
-              condominium_id,
-              condominiums!inner(
-                id,
-                name
-              )
-            )
-          )
-        `)
-        .eq('id', user?.id)
+        .select('condo_id, condominiums(id, name)')
+        .eq('profile_id', user?.id)
         .single();
 
       if (residentError) throw residentError;
 
-      const condominiumId = residentData.units?.blocks?.condominium_id;
+      const condominiumId = residentData.condo_id;
 
       // Buscar documentos do condomínio
       const { data, error } = await supabase
