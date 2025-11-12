@@ -234,7 +234,7 @@ const ManagerResidentesContent = () => {
     const { data, error } = await supabase
       .from("residents")
       .select(
-        "id, code, full_name, email, phone, document, status, is_owner, is_tenant, condo_id, block_id, unit_id, birth_date, entry_date, exit_date, notes, profile_id, profiles(last_sign_in_at), blocks(id, name), units(id, number)"
+        "id, code, full_name, email, phone, document, status, is_owner, is_tenant, condo_id, block_id, unit_id, birth_date, entry_date, exit_date, notes, profile_id, blocks(id, name), units(id, number)"
       )
       .eq("condo_id", selectedCondoId)
       .order("full_name", { ascending: true });
@@ -245,6 +245,28 @@ const ManagerResidentesContent = () => {
       setResidents([]);
       setLoadingResidents(false);
       return;
+    }
+
+    const profileIds = (data ?? [])
+      .map((resident) => resident.profile_id)
+      .filter((id): id is string => Boolean(id));
+
+    let profileSignInMap: Record<string, string | null> = {};
+
+    if (profileIds.length > 0) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, last_sign_in_at")
+        .in("id", profileIds);
+
+      if (profilesError) {
+        console.error("ManagerResidentes: error loading profile metadata", profilesError);
+      } else if (profilesData) {
+        profileSignInMap = profilesData.reduce<Record<string, string | null>>((acc, profile) => {
+          acc[profile.id] = profile.last_sign_in_at ?? null;
+          return acc;
+        }, {});
+      }
     }
 
     const normalized =
@@ -268,7 +290,7 @@ const ManagerResidentesContent = () => {
         exit_date: resident.exit_date,
         notes: resident.notes,
         profile_id: resident.profile_id ?? null,
-        last_sign_in_at: resident.profiles?.last_sign_in_at ?? null,
+        last_sign_in_at: resident.profile_id ? profileSignInMap[resident.profile_id] ?? null : null,
       })) ?? [];
 
     setResidents(normalized);
