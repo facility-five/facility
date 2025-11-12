@@ -57,7 +57,7 @@ const Reservations = () => {
     const { data: residentData, error: residentError } = await supabase
       .from("residents")
       .select("id")
-      .eq("user_id", user.id)
+      .eq("profile_id", user.id)
       .single();
 
     if (residentError || !residentData) {
