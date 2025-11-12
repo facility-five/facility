@@ -284,24 +284,42 @@ export const NewResidentModal = ({
 
       const redirectTo = `${window.location.origin.replace(/\/$/, "")}/nova-senha`;
 
-      const { data, error } = await supabase.functions.invoke("invite-user", {
-        body: {
-          email: resident.email,
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            condo_name: condoName,
-          },
-          redirectTo,
+      // Debug logging for production debugging
+      const requestPayload = {
+        email: resident.email,
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          condo_name: condoName,
         },
+        redirectTo,
+      };
+
+      console.log("=== INVITE USER DEBUG ===");
+      console.log("Request payload:", requestPayload);
+      console.log("Email:", resident.email);
+      console.log("RedirectTo:", redirectTo);
+      console.log("Data:", requestPayload.data);
+      console.log("========================");
+
+      const { data, error } = await supabase.functions.invoke("invite-user", {
+        body: requestPayload,
       });
 
+      console.log("=== INVITE USER RESPONSE ===");
+      console.log("Response data:", data);
+      console.log("Response error:", error);
+      console.log("============================");
+
       if (error) {
+        console.error("Edge Function error details:", error);
         throw error;
       }
 
       if (!data?.success) {
-        throw new Error(data?.error || "No se pudo reenviar la invitación.");
+        const errorMessage = data?.error || "No se pudo reenviar la invitación.";
+        console.error("Edge Function returned non-success:", data);
+        throw new Error(errorMessage);
       }
 
       showRadixSuccess("Invitación reenviada con éxito. El residente recibirá nuevamente el Invite user.");
