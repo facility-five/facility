@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, data, emailRedirectTo } = await req.json()
+    const { email, data, redirectTo } = await req.json()
 
     // Create a Supabase client with the service role key
     const supabaseAdmin = createClient(
@@ -24,7 +24,7 @@ serve(async (req) => {
 
     const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       data,
-      emailRedirectTo,
+      redirectTo,
     });
 
     if (error) {

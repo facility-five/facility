@@ -291,7 +291,7 @@ export const NewResidentModal = ({
             last_name: lastName,
             condo_name: condoName,
           },
-          emailRedirectTo: redirectTo,
+          redirectTo,
         },
       });
 
