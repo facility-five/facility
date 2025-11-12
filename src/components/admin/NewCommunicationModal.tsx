@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
+import { NotificationService } from "@/utils/notificationService";
 import { Communication } from "@/pages/admin/Communications";
 
 import { Button } from "@/components/ui/button";
@@ -111,10 +112,22 @@ export const NewCommunicationModal = ({
         .eq("id", communication.id);
       error = updateError;
     } else {
-      const { error: insertError } = await supabase
+      const { data: created, error: insertError } = await supabase
         .from("communications")
-        .insert([{ ...submissionData, code: generateCode() }]);
+        .insert([{ ...submissionData, code: generateCode() }])
+        .select("id, condo_id");
       error = insertError;
+
+      if (!insertError && created && created[0]?.condo_id) {
+        await NotificationService.notifyCondominiumResidents(
+          created[0].condo_id,
+          "Nuevo comunicado",
+          submissionData.title,
+          "communication",
+          "communications",
+          created[0].id
+        );
+      }
     }
 
     if (error) {
