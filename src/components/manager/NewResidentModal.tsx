@@ -203,6 +203,7 @@ export const NewResidentModal = ({
       ? `Primer acceso registrado el ${firstAccessLabel}`
       : "El residente aún no hizo el primer acceso."
     : "Cuenta no vinculada; guarda el registro y genera la invitación inicial.";
+  const canResendInvite = Boolean(resident?.profile_id && !resident?.last_sign_in_at);
 
   const watchedCondoId = form.watch("condo_id");
   const watchedBlockId = form.watch("block_id");
@@ -651,18 +652,25 @@ export const NewResidentModal = ({
                   <div className="mt-4 rounded-md border border-purple-200 bg-purple-50 px-4 py-4">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-purple-900">Invite user &amp; primeiro acesso</p>
+                        <p className="text-sm font-semibold text-purple-900">Invite user &amp; primer acceso</p>
                         <p className="text-xs text-purple-800">{firstAccessStatus}</p>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleResendInvite}
-                        disabled={isResendingInvite || !hasAccount}
-                      >
-                        <Mail className="mr-2 h-4 w-4" />
-                        Reenviar Invite user
-                      </Button>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleResendInvite}
+                          disabled={isResendingInvite || !canResendInvite}
+                        >
+                          <Mail className="mr-2 h-4 w-4" />
+                          Reenviar Invite user
+                        </Button>
+                        {!canResendInvite && (
+                          <span className="text-xs text-muted-foreground">
+                            No se puede reenviar: el residente ya hizo su primer acceso.
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
