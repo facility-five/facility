@@ -105,30 +105,21 @@ export const NewReservationModal = ({
     const hours = Math.max(0, (eh + em / 60) - (sh + sm / 60));
     const total_value = (selectedArea.booking_fee || 0) * hours;
 
-    const { data: inserted, error } = await supabase
-      .from("reservas")
-      .insert([
-        {
-          code: generateCode(),
-          resident_id: resident.id,
-          common_area_id: values.common_area_id,
-          condo_id: selectedArea.condo_id,
-          reservation_date: values.reservation_date,
-          start_time: values.start_time,
-          end_time: values.end_time,
-          status: 'Pendente',
-          total_value,
-          created_by: user.id,
-        },
-      ])
-      .select("id");
+    const { data: fnResp, error: fnError } = await supabase.functions.invoke('create-resident-reservation', {
+      body: {
+        common_area_id: values.common_area_id,
+        reservation_date: values.reservation_date,
+        start_time: values.start_time,
+        end_time: values.end_time,
+      }
+    });
 
-    if (error) {
-      showRadixError(error.message);
+    if (fnError) {
+      showRadixError(fnError.message);
       return;
     }
 
-    const reservationId = inserted?.[0]?.id as string | undefined;
+    const reservationId = (fnResp as any)?.id as string | undefined;
 
     // Notificar administradora responsável pelo condomínio da área comum
     if (selectedArea.condo_id) {
