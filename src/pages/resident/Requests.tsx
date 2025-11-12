@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ResidentLayout } from "@/components/resident/ResidentLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -147,12 +147,23 @@ const Requests = () => {
       return;
     }
 
+    const { data: resident } = await supabase
+      .from('residents')
+      .select('id, condo_id')
+      .eq('profile_id', user.id)
+      .single();
+
+    if (!resident?.condo_id) {
+      showError("Seu perfil de morador não está vinculado a um condomínio.", "REQUESTS_NO_CONDO_ERROR");
+      return;
+    }
+
     const { error } = await supabase
       .from("resident_requests")
       .insert([{
         ...newRequest,
         resident_id: user.id,
-        condominium_id: "00000000-0000-0000-0000-000000000000" // Placeholder - should be actual condominium_id
+        condominium_id: resident.condo_id
       }]);
 
     if (error) {
