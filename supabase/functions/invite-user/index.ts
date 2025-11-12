@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, data } = await req.json()
+    const { email, data, emailRedirectTo } = await req.json()
 
     // Create a Supabase client with the service role key
     const supabaseAdmin = createClient(
@@ -20,7 +20,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, { data });
+    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      data,
+      emailRedirectTo,
+    });
 
     if (error) {
       throw error

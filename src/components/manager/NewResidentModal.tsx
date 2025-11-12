@@ -200,9 +200,9 @@ export const NewResidentModal = ({
   const firstAccessLabel = resident?.last_sign_in_at ? formatFirstAccessDate(resident.last_sign_in_at) : null;
   const firstAccessStatus = hasAccount
     ? resident?.last_sign_in_at
-      ? `Primeiro acesso registrado em ${firstAccessLabel}`
-      : "Morador ainda não fez o primeiro acesso."
-    : "Conta ainda não vinculada; salve o cadastro e gere o convite inicial.";
+      ? `Primer acceso registrado el ${firstAccessLabel}`
+      : "El residente aún no hizo el primer acceso."
+    : "Cuenta no vinculada; guarda el registro y genera la invitación inicial.";
 
   const watchedCondoId = form.watch("condo_id");
   const watchedBlockId = form.watch("block_id");
@@ -281,6 +281,8 @@ export const NewResidentModal = ({
       const condoId = form.getValues("condo_id") || resident.condo_id;
       const condoName = condos.find((condo) => condo.id === condoId)?.name || "Condomínio";
 
+      const redirectTo = `${window.location.origin.replace(/\/$/, "")}/nova-senha`;
+
       const { error } = await supabase.functions.invoke("invite-user", {
         body: {
           email: resident.email,
@@ -289,6 +291,7 @@ export const NewResidentModal = ({
             last_name: lastName,
             condo_name: condoName,
           },
+          emailRedirectTo: redirectTo,
         },
       });
 
@@ -296,10 +299,16 @@ export const NewResidentModal = ({
         throw error;
       }
 
-      showRadixSuccess("Convite reenviado com sucesso. O morador receberá o Invite user novamente.");
+      showRadixSuccess("Invitación reenviada con éxito. El residente recibirá nuevamente el Invite user.");
     } catch (err) {
       console.error("Erro ao reenviar convite:", err);
-      showRadixError("Não foi possível reenviar o convite.", "resend_invite_error");
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+          ? err
+          : "No fue posible reenviar la invitación.";
+      showRadixError(`No fue posible reenviar la invitación: ${message}`, "resend_invite_error");
     } finally {
       setIsResendingInvite(false);
     }
