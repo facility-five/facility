@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
+import { NotificationService } from "@/utils/notificationService";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { Button } from "@/components/ui/button";
@@ -104,28 +105,63 @@ export const NewReservationModal = ({
     const hours = Math.max(0, (eh + em / 60) - (sh + sm / 60));
     const total_value = (selectedArea.booking_fee || 0) * hours;
 
-    const { error } = await supabase.from("reservas").insert([
-      {
-        code: generateCode(),
-        resident_id: resident.id,
-        common_area_id: values.common_area_id,
-        condo_id: selectedArea.condo_id,
-        reservation_date: values.reservation_date,
-        start_time: values.start_time,
-        end_time: values.end_time,
-        status: 'Pendente',
-        total_value,
-        created_by: user.id,
-      },
-    ]);
+    const { data: inserted, error } = await supabase
+      .from("reservas")
+      .insert([
+        {
+          code: generateCode(),
+          resident_id: resident.id,
+          common_area_id: values.common_area_id,
+          condo_id: selectedArea.condo_id,
+          reservation_date: values.reservation_date,
+          start_time: values.start_time,
+          end_time: values.end_time,
+          status: 'Pendente',
+          total_value,
+          created_by: user.id,
+        },
+      ])
+      .select("id");
 
     if (error) {
       showRadixError(error.message);
-    } else {
-      showRadixSuccess("Reserva solicitada com sucesso!");
-      onSuccess();
-      onClose();
+      return;
     }
+
+    const reservationId = inserted?.[0]?.id as string | undefined;
+
+    // Notificar administradora responsável pelo condomínio da área comum
+    if (selectedArea.condo_id) {
+      const { data: condoAdmin } = await supabase
+        .from("condominiums")
+        .select("id, administrators(user_id,responsible_id)")
+        .eq("id", selectedArea.condo_id)
+        .single();
+
+      const adminUserIds: string[] = [];
+      const adminRel: any = condoAdmin?.administrators || null;
+      if (adminRel?.user_id) adminUserIds.push(adminRel.user_id);
+      if (adminRel?.responsible_id) adminUserIds.push(adminRel.responsible_id);
+
+      if (adminUserIds.length > 0) {
+        await Promise.all(
+          adminUserIds.map((uid) =>
+            NotificationService.createNotification({
+              user_id: uid,
+              title: "Nueva reserva solicitada",
+              message: "Un residente ha solicitado una reserva. Revise y apruebe si corresponde.",
+              type: "reservation",
+              entity_type: "reservas",
+              entity_id: reservationId,
+            })
+          )
+        );
+      }
+    }
+
+    showRadixSuccess("Reserva solicitada com sucesso!");
+    onSuccess();
+    onClose();
   }
 
   return (
