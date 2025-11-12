@@ -316,13 +316,13 @@ export const NewResidentModal = ({
         throw error;
       }
 
-      if (!data?.success) {
-        const errorMessage = data?.error || "No se pudo reenviar la invitación.";
+      if (data && typeof data === 'object' && data.success === false) {
+        const errorMessage = data.error || "Não foi possível reenviar a convite.";
         console.error("Edge Function returned non-success:", data);
         throw new Error(errorMessage);
       }
 
-      showRadixSuccess("Invitación reenviada con éxito. El residente recibirá nuevamente el Invite user.");
+      showRadixSuccess("Convite reenviado com sucesso. O morador receberá novamente o email de convite.");
     } catch (err) {
       console.error("Erro ao reenviar convite:", err);
       const message =

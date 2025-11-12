@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Credentials': 'true',
 }
 
 serve(async (req) => {
@@ -18,10 +17,28 @@ serve(async (req) => {
     console.log('Request headers:', Object.fromEntries(req.headers.entries()))
     
     // Parse request body
-    const body = await req.json()
+    let body: any
+    try {
+      body = await req.json()
+    } catch (parseErr) {
+      console.error('Failed to parse JSON body:', parseErr)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Corpo da requisição inválido. Envie JSON válido.',
+          details: String(parseErr),
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
     console.log('Request body:', JSON.stringify(body, null, 2))
     
     const { email, data, redirectTo } = body
+
+    // Sanitize redirectTo (trim spaces/backticks) and basic validation
+    const sanitizedRedirectTo = typeof redirectTo === 'string'
+      ? redirectTo.trim().replace(/^`+|`+$/g, '')
+      : ''
 
     // Validate required fields
     if (!email) {
@@ -34,12 +51,12 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
+          status: 200,
         }
       )
     }
 
-    if (!redirectTo) {
+    if (!sanitizedRedirectTo) {
       console.error('Missing required field: redirectTo')
       return new Response(
         JSON.stringify({
@@ -49,8 +66,22 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
+          status: 200,
         }
+      )
+    }
+
+    // Require http/https scheme for security
+    if (!/^https?:\/\//.test(sanitizedRedirectTo)) {
+      console.error('Invalid redirectTo format:', sanitizedRedirectTo)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "redirectTo deve iniciar com http:// ou https://",
+          field: "redirectTo",
+          value: sanitizedRedirectTo,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }
 
@@ -60,11 +91,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    console.log('Calling inviteUserByEmail with:', { email, data, redirectTo })
+    console.log('Calling inviteUserByEmail with:', { email, data, redirectTo: sanitizedRedirectTo })
 
     const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       data,
-      redirectTo,
+      redirectTo: sanitizedRedirectTo,
     });
 
     if (error) {
@@ -101,7 +132,7 @@ serve(async (req) => {
       }), 
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 200,
       }
     )
   }

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -64,6 +64,8 @@ export const AddUserModal = ({
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(' ');
 
+    const redirectTo = `${window.location.origin.replace(/\/$/, "")}/nova-senha`;
+
     const { error } = await supabase.functions.invoke('invite-user', {
       body: {
         email: values.email,
@@ -72,7 +74,8 @@ export const AddUserModal = ({
           last_name: lastName,
           role: values.role,
           status: values.status,
-        }
+        },
+        redirectTo,
       }
     });
 
