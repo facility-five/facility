@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { ResidentLayout } from "@/components/resident/ResidentLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarCheck, Megaphone, Wrench, Plus, Dot } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const StatCard = ({ icon: Icon, title, description, action, actionText, count }: any) => (
   <Card>
@@ -19,7 +21,50 @@ const StatCard = ({ icon: Icon, title, description, action, actionText, count }:
 );
 
 const ResidentDashboard = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const [stats, setStats] = useState({ reservationsTotal: 0, reservationsPending: 0, communicationsNew: 0, requestsTotal: 0 });
+  const [nextReservation, setNextReservation] = useState<{ area?: string; date?: string; start?: string; end?: string } | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      const { data: resident } = await supabase.from('residents').select('id, condo_id').eq('profile_id', user.id).single();
+      if (!resident) return;
+
+      const { data: reservas } = await supabase
+        .from('reservas')
+        .select('id, status, reservation_date, start_time, end_time, common_areas(name)')
+        .eq('resident_id', resident.id)
+        .order('reservation_date', { ascending: true });
+      const total = reservas?.length || 0;
+      const pending = (reservas || []).filter(r => r.status === 'Pendente').length;
+      const upcoming = (reservas || []).find(r => new Date(r.reservation_date) >= new Date());
+      if (upcoming) {
+        setNextReservation({ area: upcoming.common_areas?.name || '', date: new Date(upcoming.reservation_date).toLocaleDateString('pt-BR'), start: upcoming.start_time?.substring(0,5), end: upcoming.end_time?.substring(0,5) });
+      } else {
+        setNextReservation(null);
+      }
+
+      let communicationsNew = 0;
+      if (resident.condo_id) {
+        const { data: comms } = await supabase
+          .from('communications')
+          .select('id, created_at')
+          .eq('condo_id', resident.condo_id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        communicationsNew = (comms || []).filter(c => Date.now() - new Date(c.created_at).getTime() <= 7 * 24 * 60 * 60 * 1000).length;
+      }
+
+      const { data: requests } = await supabase
+        .from('resident_requests')
+        .select('id')
+        .eq('resident_id', user.id);
+
+      setStats({ reservationsTotal: total, reservationsPending: pending, communicationsNew, requestsTotal: (requests || []).length });
+    };
+    load();
+  }, [user]);
 
   return (
     <ResidentLayout>
@@ -33,7 +78,8 @@ const ResidentDashboard = () => {
           <StatCard 
             icon={CalendarCheck}
             title="Minhas Reservas"
-            description="Veja e gestione suas reservas de áreas comunes."
+            description="Veja e gestione suas reservas de áreas comuns."
+            count={`${stats.reservationsTotal} reservas (${stats.reservationsPending} pendentes)`}
             action={() => {}}
             actionText="Nova Reserva"
           />
@@ -41,12 +87,13 @@ const ResidentDashboard = () => {
             icon={Megaphone}
             title="Comunicados"
             description="Mantenha-se a par dos últimos avisos e comunicados."
-            count="Você tem 2 novos comunicados."
+            count={`Você tem ${stats.communicationsNew} novos comunicados.`}
           />
           <StatCard 
             icon={Wrench}
             title="Minhas Solicitações"
             description="Acompanhe suas reclamações e solicitações de serviço."
+            count={`${stats.requestsTotal} solicitações`}
           />
         </div>
 
@@ -57,12 +104,15 @@ const ResidentDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div>
-                  <p className="font-semibold">Salão de Festas</p>
-                  <p className="text-sm text-gray-500">Sábado, 22 de Junho</p>
-                  <p className="text-sm text-gray-500">19h - 23h</p>
-                </div>
-                <p className="text-sm text-center text-gray-400 pt-4">Você não tem outras reservas.</p>
+                {nextReservation ? (
+                  <div>
+                    <p className="font-semibold">{nextReservation.area}</p>
+                    <p className="text-sm text-gray-500">{nextReservation.date}</p>
+                    <p className="text-sm text-gray-500">{nextReservation.start} - {nextReservation.end}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-center text-gray-400">Você não tem próximas reservas.</p>
+                )}
               </div>
             </CardContent>
           </Card>
