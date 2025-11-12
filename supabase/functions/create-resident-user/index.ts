@@ -26,47 +26,31 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     )
 
-    // Gerar uma senha temporária
-    const tempPassword = Math.random().toString(36).slice(-12) + "A1!"
+    const inviteRedirectBase = Deno.env.get("SITE_URL") ?? "https://facilityfincas.es"
+    const redirectTo = `${inviteRedirectBase.replace(/\/$/, "")}/nova-senha`
 
-    // Criar usuário no Supabase Auth
-    const { data: user, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: {
+    const { data: invitedUser, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      data: {
         first_name: firstName,
         last_name: lastName,
         role: 'Morador',
-        status: 'Ativo'
+        status: 'Ativo',
+        condo_name: condoName,
       },
+      emailRedirectTo: redirectTo,
     })
 
-    if (createError) {
-      console.error('Erro ao criar usuário:', createError)
-      return new Response(JSON.stringify({ error: createError.message }), {
+    if (inviteError) {
+      console.error('Erro ao convidar usuário:', inviteError)
+      return new Response(JSON.stringify({ error: inviteError.message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
 
-    // Enviar email de boas-vindas com instruções para definir senha
-    try {
-      const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'recovery',
-        email: email,
-      })
-
-      if (resetError) {
-        console.error('Erro ao gerar link de recuperação:', resetError)
-      }
-    } catch (resetErr) {
-      console.error('Erro ao processar link de recuperação:', resetErr)
-    }
-
     return new Response(JSON.stringify({ 
-      user: user.user,
-      message: `Usuário criado com sucesso. Email de boas-vindas enviado para ${email}.`
+      user: invitedUser,
+      message: `Convite enviado para ${email}. O morador receberá o email de boas-vindas com instruções para criar a senha.`
     }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
