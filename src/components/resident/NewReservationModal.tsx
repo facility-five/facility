@@ -134,7 +134,7 @@ export const NewReservationModal = ({
     if (selectedArea.condo_id) {
       const { data: condoAdmin } = await supabase
         .from("condominiums")
-        .select("id, administrators(user_id,responsible_id)")
+        .select("id, administrator_id, administrators(user_id,responsible_id)")
         .eq("id", selectedArea.condo_id)
         .single();
 
@@ -142,6 +142,16 @@ export const NewReservationModal = ({
       const adminRel: any = condoAdmin?.administrators || null;
       if (adminRel?.user_id) adminUserIds.push(adminRel.user_id);
       if (adminRel?.responsible_id) adminUserIds.push(adminRel.responsible_id);
+
+      if (adminUserIds.length === 0 && condoAdmin?.administrator_id) {
+        const { data: adminRow } = await supabase
+          .from("administrators")
+          .select("user_id,responsible_id")
+          .eq("id", condoAdmin.administrator_id)
+          .single();
+        if (adminRow?.user_id) adminUserIds.push(adminRow.user_id);
+        if (adminRow?.responsible_id) adminUserIds.push(adminRow.responsible_id);
+      }
 
       if (adminUserIds.length > 0) {
         await Promise.all(
