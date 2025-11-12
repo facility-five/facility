@@ -38,14 +38,25 @@ type Document = {
   condominium_name: string;
 };
 
+type ResidentAttachment = {
+  id: string;
+  type: string;
+  file_url: string;
+  created_at: string;
+};
+
 const Documents = () => {
   const { user } = useAuth();
   const { showError } = useErrorHandler();
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [attachments, setAttachments] = useState<ResidentAttachment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadType, setUploadType] = useState<string>("outros");
 
   useEffect(() => {
     if (user) {
@@ -96,10 +107,66 @@ const Documents = () => {
       }));
 
       setDocuments(documentsData);
+
+      // Buscar anexos do morador
+      const { data: resident } = await supabase
+        .from('residents')
+        .select('id')
+        .eq('profile_id', user?.id)
+        .single();
+
+      if (resident) {
+        const { data: myDocs } = await supabase
+          .from('resident_documents')
+          .select('id, type, file_url, created_at')
+          .eq('resident_id', resident.id)
+          .order('created_at', { ascending: false });
+        setAttachments((myDocs || []) as ResidentAttachment[]);
+      }
     } catch (error: any) {
       showError("Erro ao carregar documentos: " + error.message, "DOCUMENTS_LOAD_ERROR");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!user || !uploadFile) {
+      showError("Selecione um arquivo para enviar.", "DOCUMENTS_UPLOAD_VALIDATION");
+      return;
+    }
+    setUploading(true);
+    try {
+      const { data: resident } = await supabase
+        .from('residents')
+        .select('id')
+        .eq('profile_id', user.id)
+        .single();
+      if (!resident) throw new Error('Perfil de morador não encontrado');
+
+      const path = `${resident.id}/${Date.now()}-${uploadFile.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('resident-documents')
+        .upload(path, uploadFile, { upsert: false });
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrl } = supabase.storage
+        .from('resident-documents')
+        .getPublicUrl(path);
+
+      const { error: insertError } = await supabase
+        .from('resident_documents')
+        .insert([{ resident_id: resident.id, type: uploadType, file_url: publicUrl.publicUrl }]);
+      if (insertError) throw insertError;
+
+      showRadixSuccess('Documento anexado com sucesso!');
+      setUploadFile(null);
+      setUploadType('outros');
+      fetchDocuments();
+    } catch (err: any) {
+      showError("Erro ao anexar documento: " + err.message, "DOCUMENTS_UPLOAD_ERROR");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -203,6 +270,47 @@ const Documents = () => {
             Acesse atas de reunião, regulamentos e outros documentos importantes.
           </p>
         </div>
+
+        {/* Upload de documentos do morador */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Meus Anexos</CardTitle>
+            <CardDescription>Envie documentos pessoais para a administração.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <Input type="file" onChange={(e) => setUploadFile(e.target.files?.[0] || null)} className="sm:w-1/2" />
+              <Select value={uploadType} onValueChange={setUploadType}>
+                <SelectTrigger className="sm:w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ata">Ata</SelectItem>
+                  <SelectItem value="regulamento">Regulamento</SelectItem>
+                  <SelectItem value="financeiro">Financeiro</SelectItem>
+                  <SelectItem value="juridico">Jurídico</SelectItem>
+                  <SelectItem value="outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={handleUpload} disabled={uploading || !uploadFile}>
+                {uploading ? "Enviando..." : "Enviar"}
+              </Button>
+            </div>
+            {attachments.length > 0 && (
+              <div className="space-y-2">
+                {attachments.map((att) => (
+                  <div key={att.id} className="flex items-center justify-between border rounded p-3">
+                    <div className="flex items-center gap-2">
+                      <Badge className={getDocumentTypeColor(att.type)}>{getDocumentTypeLabel(att.type)}</Badge>
+                      <span className="text-sm text-muted-foreground">{formatDate(att.created_at)}</span>
+                    </div>
+                    <a href={att.file_url} target="_blank" rel="noreferrer" className="text-sm text-purple-600">Abrir</a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-4">
