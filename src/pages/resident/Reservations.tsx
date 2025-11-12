@@ -57,7 +57,7 @@ const Reservations = () => {
     const { data: residentData, error: residentError } = await supabase
       .from("residents")
       .select("id")
-      .eq("profile_id", user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (residentError || !residentData) {
@@ -108,7 +108,7 @@ const Reservations = () => {
 
   const handleDelete = async () => {
     if (!selectedReservation) return;
-    const { error } = await supabase.from("reservations").delete().eq("id", selectedReservation.id);
+    const { error } = await supabase.from("reservas").delete().eq("id", selectedReservation.id);
     if (error) {
       showError("Erro ao cancelar reserva: " + error.message, "reservation_cancel_error");
     } else {

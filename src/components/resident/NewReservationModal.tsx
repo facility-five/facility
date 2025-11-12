@@ -47,7 +47,7 @@ interface NewReservationModalProps {
   onSuccess: () => void;
 }
 
-type CommonArea = { id: string; name: string; condo_id: string; booking_fee: number };
+type CommonArea = { id: string; name: string; condo_id?: string; booking_fee?: number };
 
 export const NewReservationModal = ({
   isOpen,
@@ -86,14 +86,36 @@ export const NewReservationModal = ({
       return;
     }
 
-    const { error } = await supabase.from("reservations").insert([
+    // Obter o morador (id) a partir do usuário autenticado
+    const { data: resident, error: residentError } = await supabase
+      .from("residents")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (residentError || !resident) {
+      showRadixError("Perfil de morador não encontrado. Contate a administração.");
+      return;
+    }
+
+    // Calcular valor com base na taxa/booking_fee, quando disponível
+    const [sh, sm] = values.start_time.split(":").map(Number);
+    const [eh, em] = values.end_time.split(":").map(Number);
+    const hours = Math.max(0, (eh + em / 60) - (sh + sm / 60));
+    const total_value = (selectedArea.booking_fee || 0) * hours;
+
+    const { error } = await supabase.from("reservas").insert([
       {
-        ...values,
-        resident_id: user.id, // Changed from user_id to resident_id
-        created_by: user.id, // Added created_by
-        condo_id: selectedArea.condo_id,
-        total_value: selectedArea.booking_fee,
         code: generateCode(),
+        resident_id: resident.id,
+        common_area_id: values.common_area_id,
+        condo_id: selectedArea.condo_id,
+        reservation_date: values.reservation_date,
+        start_time: values.start_time,
+        end_time: values.end_time,
+        status: 'Pendente',
+        total_value,
+        created_by: user.id,
       },
     ]);
 
