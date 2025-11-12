@@ -97,7 +97,7 @@ const Unit = () => {
       // Get unit information
       const { data: unitData, error: unitError } = await supabase
         .from("units")
-        .select("*, blocks(name), condominiums(name)")
+        .select("*, blocks(name, condominiums(name))")
         .eq("id", residentData.unit_id)
         .single();
 
@@ -105,7 +105,7 @@ const Unit = () => {
         console.error("Error fetching unit:", unitError);
         showError("Erro ao buscar informações da unidade: " + unitError.message, "UNIT_INFO_FETCH_ERROR");
       } else {
-        setUnitInfo(unitData);
+        setUnitInfo({ ...unitData, condominiums: unitData?.blocks?.condominiums || null });
       }
 
       // Get all residents of the same unit
