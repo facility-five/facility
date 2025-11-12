@@ -77,6 +77,8 @@ type ResidentRow = {
   entry_date: string | null;
   exit_date: string | null;
   notes: string | null;
+  profile_id: string | null;
+  last_sign_in_at: string | null;
 };
 
 const statusBadge = (status: string) => {
@@ -232,7 +234,7 @@ const ManagerResidentesContent = () => {
     const { data, error } = await supabase
       .from("residents")
       .select(
-        "id, code, full_name, email, phone, document, status, is_owner, is_tenant, condo_id, block_id, unit_id, birth_date, entry_date, exit_date, notes, blocks(id, name), units(id, number)"
+        "id, code, full_name, email, phone, document, status, is_owner, is_tenant, condo_id, block_id, unit_id, birth_date, entry_date, exit_date, notes, profile_id, profiles(last_sign_in_at), blocks(id, name), units(id, number)"
       )
       .eq("condo_id", selectedCondoId)
       .order("full_name", { ascending: true });
@@ -265,6 +267,8 @@ const ManagerResidentesContent = () => {
         entry_date: resident.entry_date,
         exit_date: resident.exit_date,
         notes: resident.notes,
+        profile_id: resident.profile_id ?? null,
+        last_sign_in_at: resident.profiles?.last_sign_in_at ?? null,
       })) ?? [];
 
     setResidents(normalized);
@@ -303,6 +307,8 @@ const ManagerResidentesContent = () => {
       block_id: resident.block_id,
       unit_id: resident.unit_id,
       notes: resident.notes,
+      profile_id: resident.profile_id,
+      last_sign_in_at: resident.last_sign_in_at,
     });
     setIsResidentModalOpen(true);
   };

@@ -5,9 +5,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
-import { showRadixSuccess } from "@/utils/toast";
+import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { generateResidentCode, splitFullName, normalizeResidentData, RESIDENT_LABELS } from "@/utils/residentUtils";
+import { Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -70,6 +71,18 @@ type UnitOption = {
   block_id: string;
 };
 
+const formatFirstAccessDate = (timestamp?: string | null) => {
+  if (!timestamp) return null;
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(new Date(timestamp));
+  } catch {
+    return timestamp;
+  }
+};
+
 export type ResidentForEdit = {
   id: string;
   code: string;
@@ -87,6 +100,8 @@ export type ResidentForEdit = {
   block_id: string | null;
   unit_id: string | null;
   notes: string | null;
+  profile_id?: string | null;
+  last_sign_in_at?: string | null;
 };
 
 interface NewResidentModalProps {
@@ -127,6 +142,8 @@ export type ResidentForEdit = {
   block_id: string | null;
   unit_id: string | null;
   notes: string | null;
+  profile_id?: string | null;
+  last_sign_in_at?: string | null;
 };
 
 interface NewResidentModalProps {
@@ -154,6 +171,7 @@ export const NewResidentModal = ({
   defaultCondoId,
 }: NewResidentModalProps) => {
   const [activeTab, setActiveTab] = useState("personal");
+  const [isResendingInvite, setIsResendingInvite] = useState(false);
   const { showError } = useErrorHandler();
 
   const form = useForm<ResidentFormValues>({
@@ -178,6 +196,13 @@ export const NewResidentModal = ({
   });
 
   const isEditing = Boolean(resident);
+  const hasAccount = Boolean(resident?.profile_id);
+  const firstAccessLabel = resident?.last_sign_in_at ? formatFirstAccessDate(resident.last_sign_in_at) : null;
+  const firstAccessStatus = hasAccount
+    ? resident?.last_sign_in_at
+      ? `Primeiro acesso registrado em ${firstAccessLabel}`
+      : "Morador ainda não fez o primeiro acesso."
+    : "Conta ainda não vinculada; salve o cadastro e gere o convite inicial.";
 
   const watchedCondoId = form.watch("condo_id");
   const watchedBlockId = form.watch("block_id");
@@ -243,6 +268,41 @@ export const NewResidentModal = ({
   const handleClose = () => {
     onClose();
     form.reset();
+  };
+
+  const handleResendInvite = async () => {
+    if (!resident?.email || !resident?.profile_id) return;
+
+    setIsResendingInvite(true);
+    try {
+      const formFullName = form.getValues("full_name").trim();
+      const nameToUse = formFullName || resident.full_name;
+      const { firstName, lastName } = splitFullName(nameToUse);
+      const condoId = form.getValues("condo_id") || resident.condo_id;
+      const condoName = condos.find((condo) => condo.id === condoId)?.name || "Condomínio";
+
+      const { error } = await supabase.functions.invoke("invite-user", {
+        body: {
+          email: resident.email,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            condo_name: condoName,
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      showRadixSuccess("Convite reenviado com sucesso. O morador receberá o Invite user novamente.");
+    } catch (err) {
+      console.error("Erro ao reenviar convite:", err);
+      showRadixError("Não foi possível reenviar o convite.", "resend_invite_error");
+    } finally {
+      setIsResendingInvite(false);
+    }
   };
 
   const onSubmit = async (values: ResidentFormValues) => {
@@ -578,6 +638,25 @@ export const NewResidentModal = ({
                     </div>
                   </div>
                 )}
+                {isEditing && resident?.email && (
+                  <div className="mt-4 rounded-md border border-purple-200 bg-purple-50 px-4 py-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-purple-900">Invite user &amp; primeiro acesso</p>
+                        <p className="text-xs text-purple-800">{firstAccessStatus}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleResendInvite}
+                        disabled={isResendingInvite || !hasAccount}
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        Reenviar Invite user
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="location" className="space-y-4">
@@ -700,4 +779,3 @@ export const NewResidentModal = ({
     </Dialog>
   );
 };
-
