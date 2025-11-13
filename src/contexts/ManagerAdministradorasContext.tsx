@@ -164,15 +164,15 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       // console.log("🔍 ManagerAdministradorasContext: Resposta da query", { data, error, count });
 
       if (error) {
-        console.error("❌ ManagerAdministradorasContext: Erro na query", {
-          message: error.message,
-          details: (error as any)?.details,
-          hint: (error as any)?.hint,
-          code: (error as any)?.code,
-        });
+      console.error("❌ ManagerAdministradorasContext: Erro na query", {
+        message: error.message,
+        details: (error as { details?: string })?.details,
+        hint: (error as { hint?: string })?.hint,
+        code: (error as { code?: string })?.code,
+      });
 
-        setAdministrators([]);
-        setActiveAdministratorId(null);
+      setAdministrators([]);
+      setActiveAdministratorId(null);
         setLoading(false);
         return;
       }
@@ -326,7 +326,10 @@ export const ManagerAdministradorasProvider = ({ children }: { children: React.R
       return;
     }
 
-    const planData = paymentData?.plans as any;
+    const planData = paymentData?.plans as { 
+      name?: string; 
+      max_admins?: number; 
+    } | null;
     const latestPlanName = planData?.name ?? null;
     const maxAdmins = planData?.max_admins ?? null;
     
@@ -503,4 +506,3 @@ export const useManagerAdministradoras = () => {
   }
   return context;
 };
-

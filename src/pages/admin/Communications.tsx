@@ -1,6 +1,7 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
+import { Communication } from "@/types/entities";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,7 +44,7 @@ const Communications = () => {
     if (error) {
       showRadixError("Erro ao buscar comunicados.");
     } else {
-      setCommunications(data as any[] || []);
+      setCommunications(data as Communication[] || []);
     }
     setLoading(false);
   };

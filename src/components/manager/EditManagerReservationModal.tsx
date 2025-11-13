@@ -1,7 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { CommonArea, Resident } from "@/types/entities";
 import {
   Dialog,
   DialogContent,
@@ -160,7 +161,7 @@ export const EditManagerReservationModal = ({
     if (error) {
       console.error("Error fetching common areas:", error);
     } else {
-      setCommonAreas(data as any[] || []);
+      setCommonAreas(data as CommonArea[] || []);
     }
   };
 
@@ -179,7 +180,7 @@ export const EditManagerReservationModal = ({
     if (error) {
       console.error("Error fetching residents:", error);
     } else {
-      setResidents(data as any[] || []);
+      setResidents(data as Resident[] || []);
     }
   };
 

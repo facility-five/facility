@@ -21,28 +21,60 @@ import {
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "./LoadingSpinner";
 
+// Esquema de validação robusto para login
 const formSchema = z.object({
-  email: z.string().email({
-    message: "Por favor, insira um e-mail válido.",
-  }),
-  password: z.string().min(1, {
-    message: "A senha é obrigatória.",
-  }),
+  email: z
+    .string()
+    .min(1, { message: "O e-mail é obrigatório." })
+    .email({ message: "Por favor, insira um e-mail válido." })
+    .max(100, { message: "O e-mail não pode ter mais de 100 caracteres." })
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { 
+      message: "O formato do e-mail é inválido." 
+    }),
+  password: z
+    .string()
+    .min(1, { message: "A senha é obrigatória." })
+    .min(6, { message: "A senha deve ter pelo menos 6 caracteres." })
+    .max(128, { message: "A senha não pode ter mais de 128 caracteres." })
+    .regex(/.*[a-z].*/, { 
+      message: "A senha deve conter pelo menos uma letra minúscula." 
+    })
+    .regex(/.*[A-Z].*/, { 
+      message: "A senha deve conter pelo menos uma letra maiúscula." 
+    })
+    .regex(/.*\d.*/, { 
+      message: "A senha deve conter pelo menos um número." 
+    })
+    .regex(/.*[!@#$%^&*(),.?":{}|<>].*/, { 
+      message: "A senha deve conter pelo menos um caractere especial." 
+    }),
+});
+ 
+// Esquema simplificado para login (sem requisitos complexos de senha)
+const simpleLoginSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: "O e-mail é obrigatório." })
+    .email({ message: "Por favor, insira um e-mail válido." }),
+  password: z
+    .string()
+    .min(1, { message: "A senha é obrigatória." })
+    .min(6, { message: "A senha deve ter pelo menos 6 caracteres." }),
 });
 
 export function AuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof simpleLoginSchema>>({
+    resolver: zodResolver(simpleLoginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof simpleLoginSchema>) {
     setIsLoading(true);
     try {
       // Marcar que o fluxo de login foi iniciado para permitir redireciono pós-login

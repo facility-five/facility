@@ -16,6 +16,7 @@ import { PlanGuard } from "@/components/PlanGuard";
 
 import { usePlan } from "@/hooks/usePlan";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
+import { Condominium, NormalizedCondominium } from "@/types/entities";
 
 const ManagerCondominios = () => {
   const { activeAdministratorId, activeAdministrator, loading: adminLoading } = useManagerAdministradoras();
@@ -71,7 +72,9 @@ const ManagerCondominios = () => {
         console.error("❌ Error fetching condominiums (first attempt):", result.error);
 
         const msg = String((result.error && (result.error.message || result.error.msg)) || "").toLowerCase();
-        const status = (result.error && ((result.error as any).status || (result.error as any).statusCode || (result.error as any).status_code)) || null;
+        const status = (result.error && ((result.error as { status?: number }).status || 
+                          (result.error as { statusCode?: number }).statusCode || 
+                          (result.error as { status_code?: number }).status_code)) || null;
         const looksLikeMissingColumn = msg.includes("does not exist") || msg.includes("column") || status === 400;
 
         // First fallback: try without explicit `type` column
@@ -101,23 +104,26 @@ const ManagerCondominios = () => {
       if (result.error) {
         // Still an error after fallbacks
         console.error("❌ Error fetching condominiums (final):", result.error);
-        if ((result.error as any).code !== "PGRST116") {
+        if ((result.error as { code?: string }).code !== "PGRST116") {
           showRadixError("Erro ao buscar condomínios. Tente novamente.");
         }
         setCondos([]);
         return;
       }
 
-      const condosData = result.data as any[] | null;
+      const condosData = result.data as Condominium[] | null;
       const list = condosData || [];
       // Normalize: ensure older code that expects `condo_type` still works and
       // expose `type` when available.
-      const normalized = list.map((c) => ({ ...c, condo_type: (c as any).type ?? (c as any).condo_type }));
+      const normalized = list.map((c) => ({ 
+        ...c, 
+        condo_type: c.type ?? c.condo_type ?? "residencial" 
+      } as NormalizedCondominium));
 
       console.log('==========================================');
       console.log('✅ [Condomínios] RESPOSTA RECEBIDA');
       console.log('✅ Total de registros:', normalized.length);
-      console.log('✅ Dados sample:', normalized.slice(0, 5).map((c) => ({ id: c.id, name: c.name, type: (c as any).type ?? null })));
+      console.log('✅ Dados sample:', normalized.slice(0, 5).map((c) => ({ id: c.id, name: c.name, type: c.type ?? null })));
       console.log('✅ Filtrado por administrator_id:', activeAdministratorId);
       console.log('==========================================');
 

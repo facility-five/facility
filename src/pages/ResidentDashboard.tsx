@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ResidentLayout } from "@/components/resident/ResidentLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,8 +23,10 @@ const StatCard = ({ icon: Icon, title, description, action, actionText, count }:
 
 const ResidentDashboard = () => {
   const { profile, user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ reservationsTotal: 0, reservationsPending: 0, communicationsNew: 0, requestsTotal: 0 });
   const [nextReservation, setNextReservation] = useState<{ area?: string; date?: string; start?: string; end?: string } | null>(null);
+  const [importantNotices, setImportantNotices] = useState<Array<{ id: string | number; title: string }>>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -49,17 +52,18 @@ const ResidentDashboard = () => {
       if (resident.condo_id) {
         const { data: comms } = await supabase
           .from('communications')
-          .select('id, created_at')
+          .select('id, title, created_at')
           .eq('condo_id', resident.condo_id)
           .order('created_at', { ascending: false })
           .limit(20);
         communicationsNew = (comms || []).filter(c => Date.now() - new Date(c.created_at).getTime() <= 7 * 24 * 60 * 60 * 1000).length;
+        setImportantNotices((comms || []).slice(0, 3).map(c => ({ id: c.id, title: c.title })));
       }
 
       const { data: requests } = await supabase
         .from('resident_requests')
         .select('id')
-        .eq('resident_id', user.id);
+        .eq('resident_id', resident.id);
 
       setStats({ reservationsTotal: total, reservationsPending: pending, communicationsNew, requestsTotal: (requests || []).length });
     };
@@ -80,7 +84,7 @@ const ResidentDashboard = () => {
             title="Minhas Reservas"
             description="Veja e gestione suas reservas de áreas comuns."
             count={`${stats.reservationsTotal} reservas (${stats.reservationsPending} pendentes)`}
-            action={() => {}}
+            action={() => navigate('/morador/reservas')}
             actionText="Nova Reserva"
           />
           <StatCard 
@@ -121,16 +125,18 @@ const ResidentDashboard = () => {
               <CardTitle>Avisos Importantes</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <Dot className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                  <span>Manutenção da piscina agendada para 25/06.</span>
-                </li>
-                <li className="flex items-start">
-                  <Dot className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                  <span>Reunião de condomínio será no dia 30/06 às 20h.</span>
-                </li>
-              </ul>
+              {importantNotices.length > 0 ? (
+                <ul className="space-y-3">
+                  {importantNotices.map((n) => (
+                    <li key={n.id} className="flex items-start">
+                      <Dot className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                      <span>{n.title || 'Aviso do condomínio'}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-center text-gray-400">Sem avisos importantes no momento.</p>
+              )}
             </CardContent>
           </Card>
         </div>

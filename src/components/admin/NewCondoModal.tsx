@@ -35,32 +35,27 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
-  name: z.string().min(1, "O nome √© obrigat√≥rio."),
+  name: z.string().min(1, "O nome È obrigatÛrio."),
   nif: z.string().optional(),
   website: z.string().optional(),
   area: z.string().optional(),
   type: z.enum(['residencial', 'comercial', 'mixto']).optional(),
   total_blocks: z.coerce.number().optional(),
   total_units: z.coerce.number().optional(),
-  email: z.string().email("E-mail inv√°lido.").optional().or(z.literal('')),
+  email: z.string().email("E-mail inv·lido.").optional().or(z.literal('')),
   phone: z.string().optional(),
   observations: z.string().optional(),
   responsible_name: z.string().optional(),
 });
 
 interface NewCondoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  initialAdministratorId?: string; // ID da administradora selecionada
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export const NewCondoModal = ({
-  isOpen,
-  onClose,
-  onSuccess,
-  initialAdministratorId,
-}: NewCondoModalProps) => {
+export function NewCondoModal({ open, onOpenChange, onSuccess }: NewCondoModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -79,247 +74,257 @@ export const NewCondoModal = ({
     },
   });
 
-  useEffect(() => {
-    if (isOpen) {
-      form.reset({
-        name: "",
-        nif: "",
-        website: "",
-        area: "",
-        type: "residencial",
-        total_blocks: 0,
-        total_units: 0,
-        email: "",
-        phone: "",
-        observations: "",
-        responsible_name: "",
-      });
-    }
-  }, [isOpen, initialAdministratorId, form]);
-
-  const generateCode = () => `CO-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!initialAdministratorId) {
-      showRadixError("Nenhuma administradora selecionada");
-      return;
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.from("condominiums").insert([
+        {
+          name: values.name,
+          nif: values.nif || null,
+          website: values.website || null,
+          area: values.area ? parseFloat(values.area) : null,
+          type: values.type,
+          total_blocks: values.total_blocks || 0,
+          total_units: values.total_units || 0,
+          email: values.email || null,
+          phone: values.phone || null,
+          observations: values.observations || null,
+          responsible_name: values.responsible_name || null,
+          status: "active",
+        },
+      ]);
+
+      if (error) {
+        showRadixError("Erro ao criar condomÌnio: " + error.message);
+        return;
+      }
+
+      showRadixSuccess("CondomÌnio criado com sucesso!");
+      form.reset();
+      onOpenChange(false);
+      onSuccess?.();
+    } catch (error) {
+      showRadixError("Erro inesperado ao criar condomÌnio.");
+      console.error("Error creating condominium:", error);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Build a defensive payload. Some DBs have `type`, others `condo_type`.
-    const raw: any = { ...values };
-    const typeValue = raw.type ?? raw.condo_type;
-
-    // Clean up incoming values: remove empty strings
-    Object.keys(raw).forEach((k) => {
-      if (typeof raw[k] === "string" && raw[k].trim() === "") delete raw[k];
-    });
-
-    // Base row to insert
-    const baseRow: any = {
-      ...raw,
-      administrator_id: initialAdministratorId,
-      code: generateCode(),
-    };
-
-    // Try 1: send `type` if we have a value
-    const tryRow = { ...baseRow };
-    if (typeValue !== undefined && typeValue !== "") tryRow.type = typeValue;
-
-    // Use safeInsert helper which retries by removing missing columns reported by the server
-    const { safeInsert } = await import("@/lib/supabaseHelpers");
-    const insertRes = await safeInsert("condominiums", tryRow as Record<string, any>);
-
-    if (insertRes.error) {
-      showRadixError(insertRes.error.message || "Erro ao criar condom√≠nio");
-      return;
-    }
-
-    showRadixSuccess("Condom√≠nio registrado com sucesso!");
-    onSuccess();
-    onClose();
-    form.reset();
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl bg-admin-card border-admin-border text-admin-foreground">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Nuevo Condominio</DialogTitle>
-          <DialogDescription className="text-admin-foreground-muted">
-            Complete los datos del nuevo condominio.
+          <DialogTitle>Criar Novo CondomÌnio</DialogTitle>
+          <DialogDescription>
+            Preencha os dados do novo condomÌnio. Campos obrigatÛrios s„o marcados com *.
           </DialogDescription>
         </DialogHeader>
+        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4" autoComplete="off">
-            {/* Hidden fields to prevent browser autofill from populating visible inputs (email/password capture) */}
-            <input aria-hidden="true" style={{position: 'absolute', opacity: 0, height: 0, width: 0, overflow: 'hidden', pointerEvents: 'none'}} type="text" name="__email_autofill" autoComplete="email" />
-            <input aria-hidden="true" style={{position: 'absolute', opacity: 0, height: 0, width: 0, overflow: 'hidden', pointerEvents: 'none'}} type="password" name="__password_autofill" autoComplete="new-password" />
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre</FormLabel>
-                    <FormControl>
-                    <Input placeholder="Escriba el nombre del condominio" {...field} className="bg-admin-background border-admin-border" autoComplete="name" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do CondomÌnio *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Residencial Parque das NaÁıes" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
               <FormField
                 control={form.control}
                 name="nif"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>NIF</FormLabel>
-                      <FormControl>
-                      <Input placeholder="NIF" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sitio web</FormLabel>
-                      <FormControl>
-                      <Input placeholder="Ingrese el sitio web" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="area"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>√Årea</FormLabel>
-                      <FormControl>
-                      <Input placeholder="Ingrese el √°rea" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo</FormLabel>
                     <FormControl>
-                      <Select onValueChange={field.onChange} value={field.value || "residencial"}>
-                        <SelectTrigger className="bg-admin-background border-admin-border">
-                          <SelectValue placeholder="Seleccione el tipo" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
-                          <SelectItem value="residencial">Residencial</SelectItem>
-                          <SelectItem value="comercial">Comercial</SelectItem>
-                          <SelectItem value="mixto">Mixto</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input placeholder="N˙mero de identificaÁ„o fiscal" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="total_blocks"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total de Bloques</FormLabel>
-                      <FormControl>
-                      <Input type="number" placeholder="Ingrese el n√∫mero total de bloques" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="total_units"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total de Unidades</FormLabel>
-                      <FormControl>
-                      <Input type="number" placeholder="Ingrese el n√∫mero total de unidades" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Correo electr√≥nico</FormLabel>
-                      <FormControl>
-                      <Input placeholder="Ingrese el correo electr√≥nico" {...field} className="bg-admin-background border-admin-border" autoComplete="email" />
+                    <FormLabel>E-mail</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="condominio@email.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              
               <FormField
                 control={form.control}
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tel√©fono</FormLabel>
-                      <FormControl>
-                      <Input placeholder="Ingrese el tel√©fono" {...field} className="bg-admin-background border-admin-border" autoComplete="tel" />
+                    <FormLabel>Telefone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="(00) 0000-0000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-             <FormField
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
                 control={form.control}
-                name="responsible_name"
+                name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Respons√°vel</FormLabel>
+                    <FormLabel>Tipo</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                      <Input placeholder="Nome do respons√°vel" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="residencial">Residencial</SelectItem>
+                        <SelectItem value="comercial">Comercial</SelectItem>
+                        <SelectItem value="mixto">Misto</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Website</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://www.condominio.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="total_blocks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>N˙mero de Blocos</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field} 
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="total_units"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>N˙mero de Unidades</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field} 
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="area"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>¡rea Total (m≤)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        placeholder="15000.50" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="responsible_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do Respons·vel</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nome do sÌndico ou respons·vel" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="observations"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Observaciones</FormLabel>
+                  <FormLabel>ObservaÁıes</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Ingrese las observaciones" {...field} className="bg-admin-background border-admin-border" />
+                    <Textarea 
+                      placeholder="InformaÁıes adicionais sobre o condomÌnio..." 
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={onClose}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
                 Cancelar
               </Button>
-              <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
-                Registrar
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Criando..." : "Criar CondomÌnio"}
               </Button>
             </DialogFooter>
           </form>
@@ -327,4 +332,4 @@ export const NewCondoModal = ({
       </DialogContent>
     </Dialog>
   );
-};
+}

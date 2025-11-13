@@ -302,7 +302,7 @@ const ManagerPetsContent = () => {
       
     } catch (error) {
       console.error("Error al cargar mascotas:", error);
-      showRadixError(`Error al cargar mascotas: ${(error as any).message || 'Error desconocido'}`);
+      showRadixError(`Error al cargar mascotas: ${(error as Error).message || 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }
@@ -442,7 +442,12 @@ const ManagerPetsContent = () => {
       resetForm();
       fetchPets();
     } catch (error) {
-      const err = error as any;
+      const err = error as { 
+        message?: string; 
+        code?: string; 
+        details?: string; 
+        hint?: string; 
+      };
       console.error("[Pets] Complete error:", err);
       console.error("[Pets] Error message:", err.message);
       console.error("[Pets] Error code:", err.code);

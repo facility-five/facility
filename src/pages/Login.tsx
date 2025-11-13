@@ -8,6 +8,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { toast } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+import { authLogger } from "@/utils/logger";
 
 type RedirectOptions = {
   keepSpinner?: boolean;
@@ -64,7 +65,7 @@ function Login() {
 
       // Se não há profile, aguardar um pouco e tentar novamente (o trigger deve criar)
       if (!profile) {
-        console.log("Login: Usuário sem profile, aguardando criação automática...");
+        authLogger.info("Usuário sem profile, aguardando criação automática");
         // Aguardar 2 segundos e recarregar para dar tempo do trigger criar o profile
         setTimeout(() => {
           window.location.reload();
@@ -73,12 +74,12 @@ function Login() {
       }
 
       // Detecta papel via profile ou, como fallback, via user_metadata
-      const roleSource = profile?.role || (session.user?.user_metadata as any)?.role || "";
+      const roleSource = profile?.role || (session.user?.user_metadata as { role?: string })?.role || "";
       const normalizedRole = normalizeRole(roleSource);
 
       // Se não há role definido, não redirecionar (evitar loop)
       if (!normalizedRole) {
-        console.log("Login: Usuário sem role definido");
+        authLogger.warn("Usuário sem role definido");
         toast.error("Seu perfil não está configurado corretamente. Entre em contato com o suporte.");
         return;
       }
@@ -107,7 +108,7 @@ function Login() {
           goTo("/morador-dashboard");
           break;
         default:
-          console.log("Login: Role não reconhecido:", normalizedRole);
+          authLogger.error("Role não reconhecido", { role: normalizedRole });
           toast.error("Tipo de perfil não reconhecido. Entre em contato com o suporte.");
           break;
       }

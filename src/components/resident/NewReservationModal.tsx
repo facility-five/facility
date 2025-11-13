@@ -119,7 +119,7 @@ export const NewReservationModal = ({
       return;
     }
 
-    const reservationId = (fnResp as any)?.id as string | undefined;
+    const reservationId = (fnResp as { id?: string })?.id as string | undefined;
 
     // Notificar administradora responsável pelo condomínio da área comum
     if (selectedArea.condo_id) {

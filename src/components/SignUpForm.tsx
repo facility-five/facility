@@ -9,6 +9,7 @@ import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { useTranslation } from "react-i18next";
+import { signUpSchema } from "@/utils/validationSchemas";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,23 +30,13 @@ export function SignUpForm() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const formSchema = z
-    .object({
-      firstName: z.string().min(2, {
-        message: t("auth.signup.errors.firstNameMin"),
-      }),
-      lastName: z.string().min(2, {
-        message: t("auth.signup.errors.lastNameMin"),
-      }),
-      email: z.string().email({
-        message: t("auth.signup.errors.emailInvalid"),
-      }),
-      password: z.string().min(6, {
-        message: t("auth.signup.errors.passwordMin"),
-      }),
-      confirmPassword: z.string().min(6, {
-        message: t("auth.signup.errors.confirmPasswordMin"),
-      }),
+  // Criar schema com mensagens traduzidas
+  const formSchema = signUpSchema
+    .extend({
+      firstName: signUpSchema.shape.firstName.min(2, t("auth.signup.errors.firstNameMin")),
+      lastName: signUpSchema.shape.lastName.min(2, t("auth.signup.errors.lastNameMin")),
+      password: signUpSchema.shape.password.min(6, t("auth.signup.errors.passwordMin")),
+      confirmPassword: signUpSchema.shape.confirmPassword.min(6, t("auth.signup.errors.confirmPasswordMin")),
     })
     .refine((data) => data.password === data.confirmPassword, {
       message: t("auth.signup.errors.passwordsMismatch"),

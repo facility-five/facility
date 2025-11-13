@@ -5,6 +5,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 import { Profile, User as AppUser } from '@/types/entities';
+import { authLogger } from '@/utils/logger';
 
 // Interface local para manter compatibilidade com código existente
 interface LocalProfile extends Profile {
@@ -54,15 +55,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  const signOut = useCallback(async () => {
+ const signOut = useCallback(async () => {
     try {
-      console.log('🔓 AuthContext: Executando signOut...');
+      authLogger.info('Executando signOut...');
       
       // Verificar se há sessão ativa antes de tentar logout
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        console.log('⚠️ AuthContext: Nenhuma sessão ativa encontrada');
+        authLogger.warn('Nenhuma sessão ativa encontrada');
         // Limpar estados locais mesmo sem sessão ativa
         setSession(null);
         setUser(null);
@@ -76,14 +77,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) {
         // Se o erro é de sessão ausente, não é crítico
         if (error.message && error.message.includes('Auth session missing')) {
-          console.log('⚠️ AuthContext: Sessão já expirada, apenas limpando estados...');
+          authLogger.warn('Sessão já expirada, apenas limpando estados...');
         } else {
-          console.error('❌ AuthContext: Erro no signOut:', error);
+          authLogger.error('Erro no signOut', error);
           throw error;
         }
       }
       
-      console.log('✅ AuthContext: SignOut executado com sucesso');
+      authLogger.info('SignOut executado com sucesso');
       
       // Limpar estados locais sempre
       setSession(null);

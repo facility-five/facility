@@ -57,10 +57,10 @@ const SystemTitle = () => {
   useEffect(() => {
     let cancelled = false;
 
-    const fetchPublicName = async () => {
+      const fetchPublicName = async () => {
       const { data, error } = await supabase.functions.invoke("system-name");
       if (!cancelled) {
-        const name = (data as any)?.system_name ?? null;
+        const name = (data as { system_name?: string })?.system_name ?? null;
         if (!error) setSystemName(name);
       }
     };
@@ -102,8 +102,8 @@ const SystemTitle = () => {
           },
           (payload) => {
             const nextName =
-              (payload as any)?.new?.system_name ??
-              (payload as any)?.old?.system_name ??
+              (payload as { new?: { system_name?: string } })?.new?.system_name ??
+              (payload as { old?: { system_name?: string } })?.old?.system_name ??
               null;
             apply(nextName);
           }

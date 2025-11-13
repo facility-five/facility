@@ -48,6 +48,26 @@ export interface Administrator {
   status: 'active' | 'inactive';
 }
 
+export interface Communication {
+  id: string;
+  title: string;
+  content: string;
+  type: 'announcement' | 'maintenance' | 'emergency' | 'general';
+  condominium_id: string;
+  created_by: string;
+  priority: 'low' | 'medium' | 'high';
+  target_audience: 'all' | 'residents' | 'owners' | 'managers';
+  is_active: boolean;
+  scheduled_for?: string;
+  expires_at?: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+  condominiums?: {
+    name: string;
+  };
+}
+
 export interface Condominium {
   id: string;
   administrator_id: string;
@@ -64,8 +84,49 @@ export interface Condominium {
   postal_code?: string;
   area?: number;
   type?: string;
+  // Campo legado para compatibilidade retroativa
+  condo_type?: string;
   total_blocks: number;
   total_units: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+  status: 'active' | 'inactive';
+}
+
+// Tipo auxiliar para normalização de condomínios
+export interface NormalizedCondominium extends Condominium {
+  condo_type: string; // Garante que existe para código legado
+}
+
+export interface CommonArea {
+  id: string;
+  name: string;
+  description?: string;
+  condominium_id: string;
+  type?: string;
+  capacity?: number;
+  hourly_rate?: number;
+  daily_rate?: number;
+  rules?: string;
+  images?: string[];
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+  status: 'active' | 'inactive';
+}
+
+export interface Resident {
+  id: string;
+  user_id: string;
+  condominium_id: string;
+  unit_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  is_owner: boolean;
+  move_in_date?: string;
   created_at: string;
   updated_at: string;
   deleted_at?: string;

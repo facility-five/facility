@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
-import { Condo } from "@/components/admin/CondoCard"; // Reusing the type from admin
+import { condominiumSchema, emailSchema, phoneSchema } from "@/utils/validationSchemas";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +25,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -33,82 +32,105 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+// Schema melhorado para condomínio com validações robustas
 const formSchema = z.object({
-  administrator_id: z.string().min(1, "Selecione a administradora."),
-  name: z.string().min(1, "O nome é obrigatório."),
-  nif: z.string().optional(),
-  website: z.string().optional(),
-  area: z.string().optional(),
-  type: z.enum(['residencial', 'comercial', 'mixto']).optional(),
-  total_blocks: z.coerce.number().optional(),
-  total_units: z.coerce.number().optional(),
-  email: z.string().email("E-mail inválido.").optional().or(z.literal('')),
-  phone: z.string().optional(),
-  observations: z.string().optional(),
-  responsible_name: z.string().optional(),
-  status: z.string().min(1, "O status é obrigatório."),
+  name: z
+    .string()
+    .min(1, "O nome do condomínio é obrigatório.")
+    .max(200, "O nome não pode ter mais de 200 caracteres.")
+    .regex(/^[a-zA-ZÀ-ÿ\s\d\-_.,()'\"]+$/, {
+      message: "O nome deve conter apenas letras, números e espaços."
+    }),
+  nif: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+$/.test(val), {
+      message: "O NIF deve conter apenas números."
+    })
+    .refine((val) => !val || val.length >= 8, {
+      message: "O NIF deve ter pelo menos 8 dígitos."
+    }),
+  website: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^https?:\/\/.+/.test(val), {
+      message: "O website deve começar com http:// ou https://."
+    }),
+  area: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\d+(\.\d+)?$/.test(val), {
+      message: "A área deve ser um número válido."
+    }),
+  type: z.enum(['residencial', 'comercial', 'misto']).default('residencial'),
+  total_blocks: z.coerce
+    .number()
+    .int("O número de blocos deve ser um número inteiro.")
+    .min(0, "O número de blocos não pode ser negativo.")
+    .max(999, "O número de blocos não pode ser maior que 999.")
+    .optional(),
+  total_units: z.coerce
+    .number()
+    .int("O número de unidades deve ser um número inteiro.")
+    .min(0, "O número de unidades não pode ser negativo.")
+    .max(9999, "O número de unidades não pode ser maior que 9999.")
+    .optional(),
+  email: emailSchema.optional().or(z.literal('')),
+  phone: phoneSchema.optional().or(z.literal('')),
+  observations: z
+    .string()
+    .optional()
+    .max(1000, "As observações não podem ter mais de 1000 caracteres."),
+  responsible_name: z
+    .string()
+    .optional()
+    .max(100, "O nome do responsável não pode ter mais de 100 caracteres.")
+    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, {
+      message: "O nome do responsável deve conter apenas letras e espaços."
+    }),
 });
 
-interface EditCondoModalProps {
+
+
+});
+
+interface NewCondoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  condo: Condo | null;
-  managerAdministratorId: string | null; // Pass the manager's administrator ID
+  initialAdministratorId?: string; // ID da administradora selecionada
 }
 
-type Administrator = {
-  id: string;
-  name: string;
-};
-
-export const EditCondoModal = ({
+export const NewCondoModal = ({
   isOpen,
   onClose,
   onSuccess,
-  condo,
-  managerAdministratorId,
-}: EditCondoModalProps) => {
-  const [administrators, setAdministrators] = useState<Administrator[]>([]);
+  initialAdministratorId,
+}: NewCondoModalProps) => {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      nif: "",
+      website: "",
+      area: "",
+      type: "residencial",
+      total_blocks: 0,
+      total_units: 0,
+      email: "",
+      phone: "",
+      observations: "",
+      responsible_name: "",
+    },
   });
 
   useEffect(() => {
-    const fetchAdministrators = async () => {
-      const { data } = await supabase.from("administrators").select("id, name");
-      setAdministrators(data || []);
-    };
     if (isOpen) {
-      fetchAdministrators();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (condo && isOpen) {
       form.reset({
-        administrator_id: condo.administrator_id || managerAdministratorId || "",
-        name: condo.name || "",
-        nif: condo.nif || "",
-        website: condo.website || "",
-        area: condo.area || "",
-        // Use DB column `type` when available
-        type: condo.type ?? (condo as { condo_type?: string }).condo_type ?? "residencial",
-        total_blocks: condo.total_blocks || 0,
-        total_units: condo.total_units || 0,
-        email: condo.email || "",
-        phone: condo.phone || "",
-        observations: condo.observations || "",
-        responsible_name: condo.responsible_name || "",
-        status: condo.status || "active",
-      });
-    } else if (isOpen) {
-      // Reset for new condo if no condo prop is passed, or if it's closed
-      form.reset({
-        administrator_id: managerAdministratorId || "", // Pre-fill with manager's admin ID
         name: "",
         nif: "",
         website: "",
@@ -120,61 +142,60 @@ export const EditCondoModal = ({
         phone: "",
         observations: "",
         responsible_name: "",
-        status: "active",
       });
     }
-  }, [condo, isOpen, form, managerAdministratorId]);
+  }, [isOpen, initialAdministratorId, form]);
+
+  const generateCode = () => `CO-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!condo) return; // Should only be called for editing existing condos
-
-    // Build a safe payload based on what the server actually returned for this condo.
-    // Some deployments use `type` column, others use `condo_type`. The condo prop contains
-    // whatever the server returned; prefer that as the source of truth for which column to send.
-    const payload: any = { ...values };
-
-    // Capture any type value present in either shape (form may expose `condo_type` or `type`)
-    const typeValue = payload.type ?? payload.condo_type;
-
-    // Remove both keys so we can re-assign only the one that exists on the server
-    delete payload.type;
-    delete payload.condo_type;
-
-    const serverHasType = Object.prototype.hasOwnProperty.call(condo as { type?: string }, "type");
-    const serverHasCondoType = Object.prototype.hasOwnProperty.call(condo as { condo_type?: string }, "condo_type");
-
-    if (typeValue !== undefined && typeValue !== "") {
-      if (serverHasType) payload.type = typeValue;
-      else if (serverHasCondoType) payload.condo_type = typeValue;
-      // if neither column exists on this server, don't send a type at all
+    if (!initialAdministratorId) {
+      showRadixError("Nenhuma administradora selecionada");
+      return;
     }
 
-    // Remove empty-string fields to avoid enum validation errors or postgres complaints
-    Object.keys(payload).forEach((k) => {
-      if (typeof payload[k] === "string" && payload[k].trim() === "") {
-        delete payload[k];
-      }
+    // Build a defensive payload. Some DBs have `type`, others `condo_type`.
+    const raw: any = { ...values };
+    const typeValue = raw.type ?? raw.condo_type;
+
+    // Clean up incoming values: remove empty strings
+    Object.keys(raw).forEach((k) => {
+      if (typeof raw[k] === "string" && raw[k].trim() === "") delete raw[k];
     });
 
-    const { safeUpdate } = await import("@/lib/supabaseHelpers");
-    const res = await safeUpdate("condominiums", payload as Record<string, any>, "id", condo.id);
+    // Base row to insert
+    const baseRow: any = {
+      ...raw,
+      administrator_id: initialAdministratorId,
+      code: generateCode(),
+    };
 
-    if (res.error) {
-      showRadixError(res.error.message || "Erro ao atualizar condomínio");
-    } else {
-      showRadixSuccess("Condomínio atualizado com sucesso!");
-      onSuccess();
-      onClose();
+    // Try 1: send `type` if we have a value
+    const tryRow = { ...baseRow };
+    if (typeValue !== undefined && typeValue !== "") tryRow.type = typeValue;
+
+    // Use safeInsert helper which retries by removing missing columns reported by the server
+    const { safeInsert } = await import("@/lib/supabaseHelpers");
+    const insertRes = await safeInsert("condominiums", tryRow as Record<string, any>);
+
+    if (insertRes.error) {
+      showRadixError(insertRes.error.message || "Erro ao criar condomínio");
+      return;
     }
+
+    showRadixSuccess("Condomínio registrado com sucesso!");
+    onSuccess();
+    onClose();
+    form.reset();
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl bg-admin-card border-admin-border text-admin-foreground">
         <DialogHeader>
-          <DialogTitle>Editar Condomínio</DialogTitle>
+          <DialogTitle>Registrar Nuevo Condominio</DialogTitle>
           <DialogDescription className="text-admin-foreground-muted">
-            Atualize os dados do condomínio.
+            Complete los datos del nuevo condominio.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -184,37 +205,13 @@ export const EditCondoModal = ({
             <input aria-hidden="true" style={{position: 'absolute', opacity: 0, height: 0, width: 0, overflow: 'hidden', pointerEvents: 'none'}} type="password" name="__password_autofill" autoComplete="new-password" />
             <FormField
               control={form.control}
-              name="administrator_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Administradora</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""} disabled={true}> {/* Disable for manager, should be fixed */}
-                    <FormControl>
-                      <SelectTrigger className="bg-admin-background border-admin-border">
-                        <SelectValue placeholder="Seleccione la administradora" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
-                      {administrators.map((admin) => (
-                        <SelectItem key={admin.id} value={admin.id}>
-                          {admin.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome</FormLabel>
+                  <FormLabel>Nombre</FormLabel>
                     <FormControl>
-                      <Input placeholder="Escriba el nombre del condominio" {...field} className="bg-admin-background border-admin-border" autoComplete="name" />
-                    </FormControl>
+                    <Input placeholder="Escriba el nombre del condominio" {...field} className="bg-admin-background border-admin-border" autoComplete="name" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -254,14 +251,14 @@ export const EditCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Área</FormLabel>
-                    <FormControl>
+                      <FormControl>
                       <Input placeholder="Ingrese el área" {...field} className="bg-admin-background border-admin-border" autoComplete="off" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            <FormField
+              <FormField
                 control={form.control}
                 name="type"
                 render={({ field }) => (
@@ -319,7 +316,7 @@ export const EditCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Correo electrónico</FormLabel>
-                    <FormControl>
+                      <FormControl>
                       <Input placeholder="Ingrese el correo electrónico" {...field} className="bg-admin-background border-admin-border" autoComplete="email" />
                     </FormControl>
                     <FormMessage />
@@ -332,7 +329,7 @@ export const EditCondoModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Teléfono</FormLabel>
-                    <FormControl>
+                      <FormControl>
                       <Input placeholder="Ingrese el teléfono" {...field} className="bg-admin-background border-admin-border" autoComplete="tel" />
                     </FormControl>
                     <FormMessage />
@@ -366,33 +363,12 @@ export const EditCondoModal = ({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estado</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
-                    <FormControl>
-                      <SelectTrigger className="bg-admin-background border-admin-border">
-                        <SelectValue placeholder="Seleccione el estado" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-admin-card border-admin-border text-admin-foreground">
-                      <SelectItem value="active">Activo</SelectItem>
-                      <SelectItem value="inactive">Inactivo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose}>
                 Cancelar
               </Button>
               <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
-                Salvar Alterações
+                Registrar
               </Button>
             </DialogFooter>
           </form>

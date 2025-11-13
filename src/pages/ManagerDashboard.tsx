@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
 import { showRadixSuccess, showRadixError } from "@/utils/toast";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
+import { logger } from "@/utils/logger";
 
 interface Stats {
   condos: number;
@@ -108,7 +109,10 @@ const ManagerDashboardContent = () => {
     
     const fetchStats = async () => {
       setLoading(true);
-      console.log("📊 Buscando estatísticas para administradora:", activeAdministratorId, activeAdministrator?.name);
+      logger.info("Buscando estatísticas para administradora", { 
+        administratorId: activeAdministratorId, 
+        name: activeAdministrator?.name 
+      });
 
       // Buscar condomínios da administradora selecionada
       const { data: condosData, error: condosError } = await supabase
@@ -117,7 +121,7 @@ const ManagerDashboardContent = () => {
         .eq("administrator_id", activeAdministratorId);
 
       if (condosError) {
-        console.error("❌ Error fetching condominiums:", condosError);
+        logger.error("Error fetching condominiums", condosError);
         setLoading(false);
         return;
       }
@@ -152,7 +156,7 @@ const ManagerDashboardContent = () => {
         residentCount = residents || 0;
       }
 
-      console.log("📊 Estatísticas carregadas:", {
+      logger.info("Estatísticas carregadas", {
         administradora: activeAdministrator?.name,
         condos: condoCount,
         blocks: blockCount,
@@ -202,7 +206,7 @@ const ManagerDashboardContent = () => {
 };
 
 const ManagerDashboard = () => {
-  console.log('🏠 ManagerDashboard: Componente carregado');
+  logger.info('ManagerDashboard: Componente carregado');
   
   return (
     <ManagerLayout>
@@ -213,8 +217,6 @@ const ManagerDashboard = () => {
 
 // Exportação explícita como default
 export default ManagerDashboard;
-
-
 
 
 

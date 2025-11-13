@@ -93,10 +93,15 @@ export const usePlan = (): PlanStatus & { refreshPlanStatus: () => void; checkPl
       if (error) throw error;
 
       // console.log("usePlan: Verificando payments array:", payments);
-      // console.log("usePlan: Payments length:", payments?.length);
+     // console.log("usePlan: Payments length:", payments?.length);
       
       if (payments && payments.length > 0) {
-        const payment = payments[0] as any;
+        const payment = payments[0] as { 
+          plans?: Plan; 
+          plan?: Plan; 
+          plan_id?: string;
+          [key: string]: any 
+        };
         // console.log("usePlan: Pagamento ativo encontrado:", payment);
         // console.log("usePlan: payment.plans:", payment.plans);
         // console.log("usePlan: payment.plan:", payment.plan);

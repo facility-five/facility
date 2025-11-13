@@ -689,7 +689,7 @@ export const GeneralConfigModal = ({ open, onOpenChange }: GeneralConfigModalPro
                         {getLevelIcon(log.level)}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <Badge variant={getLevelBadgeColor(log.level) as any} className="text-xs">
+                            <Badge variant={getLevelBadgeColor(log.level) as "default" | "secondary" | "destructive" | "outline"} className="text-xs">
                               {log.level}
                             </Badge>
                             <span className="text-xs text-muted-foreground">{log.module}</span>

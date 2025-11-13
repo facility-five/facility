@@ -87,7 +87,7 @@ const Plans = () => {
       showRadixError(`Error al iniciar el checkout: ${error.message}`);
       return;
     }
-    const url = (data as any)?.url;
+    const url = (data as { url?: string })?.url;
     if (url) {
       window.location.href = url;
     } else {

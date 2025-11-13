@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CommonArea } from "@/types/entities";
 import {
   ManagerTable,
   ManagerTableBody,
@@ -89,7 +90,7 @@ const AreasComunsContent = () => {
       if (error) throw error;
 
       console.log("✅ Áreas Comuns - Áreas carregadas:", data?.length || 0);
-      setAreas(data as any[] || []);
+      setAreas(data as CommonArea[] || []);
     } catch (error) {
       console.error("❌ Erro ao buscar áreas comuns:", error);
       showRadixError("Error al buscar áreas comunes.");

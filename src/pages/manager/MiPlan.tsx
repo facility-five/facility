@@ -241,12 +241,12 @@ const MiPlan = () => {
 
   // 🔹 Atualização automática a cada 15s
   useEffect(() => {
-    if (currentPlan && session?.user?.id) {
-      fetchUsage();
-      const interval = setInterval(fetchUsage, 15000);
-      return () => clearInterval(interval);
-    }
-  }, [currentPlan, session?.user?.id]);
+  if (currentPlan && session?.user?.id) {
+    fetchUsage();
+    const interval = setInterval(fetchUsage, 60000); // Reduzido para 1 minuto
+    return () => clearInterval(interval);
+  }
+}, [currentPlan, session?.user?.id, fetchUsage]);
 
   const loadPlans = async () => {
     try {

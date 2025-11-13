@@ -1,9 +1,10 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Unit } from "@/types/entities";
 import {
   Table,
   TableBody,
@@ -47,7 +48,7 @@ const Units = () => {
     if (error) {
       showRadixError("Erro ao buscar unidades.");
     } else {
-      setUnits(data as any[] || []);
+      setUnits(data as Unit[] || []);
     }
     setLoading(false);
   };

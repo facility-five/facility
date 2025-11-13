@@ -41,9 +41,9 @@ const ProtectedRoute = ({ children, allowedRoles, allowWithoutProfile }: Protect
     return <Navigate to="/" replace state={{ from: location }} />;
   }
 
-  if (!profile) {
+ if (!profile) {
     // Se não há profile, tentamos usar o papel do user_metadata como fallback
-    const metadataRole = (session?.user?.user_metadata as any)?.role as string | undefined;
+    const metadataRole = (session?.user?.user_metadata as { role?: string })?.role as string | undefined;
     if (metadataRole && isAllowedRole(metadataRole, allowedRoles)) {
       return <>{children}</>;
     }

@@ -2,8 +2,20 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Use environment variables for flexible configuration
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://riduqdqarirfqouazgwf.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpZHVxZHFhcmlyZnFvdWF6Z3dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxMDQzODUsImV4cCI6MjA3NDY4MDM4NX0.sXrlOxHDKde3xo0aKIoIoPsuvEPIqIcvCIzwfegP4T0";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Security validation - prevent app from starting without proper configuration
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error(
+    'Missing required Supabase environment variables. Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your .env file.'
+  );
+}
+
+// Validate URL format
+if (!SUPABASE_URL.startsWith('https://')) {
+  throw new Error('Invalid Supabase URL format. URL must start with https://');
+}
 
 // Export the URL to allow other parts of the app to construct endpoints (e.g., webhooks)
 export { SUPABASE_URL };
