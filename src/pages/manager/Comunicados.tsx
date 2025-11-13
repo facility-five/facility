@@ -38,7 +38,7 @@ type Condominium = {
 
 const Communications = () => {
   const { t } = useTranslation();
-  const { currentPlan, isLoading: planLoading } = usePlan();
+  const { currentPlan, isLoading: planLoading, isFreePlan } = usePlan();
   const { activeAdministratorId } = useManagerAdministradoras();
 
   const [communications, setCommunications] = useState<Communication[]>([]);
@@ -157,7 +157,7 @@ const Communications = () => {
         </h1>
         {!planLoading && (
           <>
-            {!currentPlan ? (
+            {currentPlan && !isFreePlan ? (
               // Botão normal para usuários com plano pago
               <Button
                 onClick={() => setIsNewModalOpen(true)}
@@ -167,7 +167,7 @@ const Communications = () => {
                 {t("manager.communications.newCommunication")}
               </Button>
             ) : (
-              // Botão de upgrade para usuários com plano gratuito
+              // Botão de upgrade para usuários sem plano ou com plano gratuito
               <Button 
                 onClick={() => window.location.href = '/gestor/mi-plan'}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
