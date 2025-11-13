@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PayPalCheckout from './PayPalCheckout';
-import StripeCheckout from './StripeCheckout';
+// import StripeCheckout from './StripeCheckout'; // TODO: Implementar
 import { PaymentProvider } from '../../types/payment';
 
 interface DualCheckoutProps {
@@ -56,15 +56,19 @@ const DualCheckout: React.FC<DualCheckoutProps> = ({
 
       <div className="checkout-container">
         {selectedProvider === 'stripe' && (
-          <StripeCheckout
-            amount={amount}
-            currency={currency}
-            planId={planId}
-            planName={planName}
-            onSuccess={handleStripeSuccess}
-            onError={onError}
-            onCancel={onCancel}
-          />
+          <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-800">
+              ⚠️ Stripe Checkout ainda não implementado nesta versão.
+              <br />
+              Por favor, use PayPal por enquanto.
+            </p>
+            <button 
+              onClick={() => setSelectedProvider('paypal')}
+              className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Usar PayPal
+            </button>
+          </div>
         )}
         
         {selectedProvider === 'paypal' && (

@@ -4,7 +4,7 @@ import { SystemSettingsTab } from "@/components/admin/SystemSettingsTab";
 import { SystemUsersTab } from "@/components/admin/SystemUsersTab";
 import { EmailTemplatesTab } from "@/components/admin/EmailTemplatesTab";
 import StripeSettings from "@/components/admin/StripeSettings";
-import PayPalSettings from "@/components/admin/PayPalSettings";
+import PayPalSettings from "@/components/admin/PayPalSettingsLocal";
 
 const Settings = () => {
   return (

@@ -1,10 +1,4 @@
-import { loadScript, PayPalScriptOptions } from '@paypal/react-paypal-js';
-
-declare global {
-  interface Window {
-    paypal: any;
-  }
-}
+import type { ReactPayPalScriptOptions } from '@paypal/react-paypal-js';
 
 export interface PayPalConfig {
   clientId: string;
@@ -66,22 +60,38 @@ class PayPalService {
       throw new Error('PayPal SDK não pode ser carregado no servidor');
     }
 
-    if (window.paypal) {
+    if ((window as any).paypal) {
       this.isLoaded = true;
       return;
     }
 
     try {
-      const options: PayPalScriptOptions = {
-        'client-id': this.config!.clientId,
-        currency: this.config!.currency || 'BRL',
-        intent: 'capture',
-        components: 'buttons',
-        locale: this.config!.locale || 'pt_BR'
-      };
+      // Implementação manual do carregamento do script PayPal
+      const scriptId = 'paypal-sdk';
+      const existingScript = document.getElementById(scriptId);
+      
+      if (existingScript) {
+        this.isLoaded = true;
+        return;
+      }
 
-      await loadScript(options);
-      this.isLoaded = true;
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.id = scriptId;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${this.config!.clientId}&currency=${this.config!.currency || 'BRL'}&intent=capture&components=buttons&locale=${this.config!.locale || 'pt_BR'}`;
+        script.async = true;
+        
+        script.onload = () => {
+          this.isLoaded = true;
+          resolve();
+        };
+        
+        script.onerror = () => {
+          reject(new Error('Falha ao carregar SDK do PayPal'));
+        };
+        
+        document.head.appendChild(script);
+      });
     } catch (error) {
       throw new Error(`Falha ao carregar SDK do PayPal: ${error}`);
     }
@@ -91,7 +101,11 @@ class PayPalService {
     if (!this.isInitialized()) {
       throw new Error('PayPal não está inicializado');
     }
-    return window.paypal.Buttons;
+    const paypal = (window as any).paypal;
+    if (!paypal || !paypal.Buttons) {
+      throw new Error('PayPal Buttons não disponível');
+    }
+    return paypal.Buttons;
   }
 
   async createOrder(amount: number, currency: string = 'BRL'): Promise<string> {

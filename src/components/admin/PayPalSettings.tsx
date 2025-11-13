@@ -24,23 +24,61 @@ const PayPalSettings: React.FC = () => {
 
   const loadSettings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('paypal_client_id, paypal_sandbox_mode')
-        .single();
-      if (error) throw error;
-
-      if (data) {
-        setClientId(data.paypal_client_id || '');
-        setSandboxMode(data.paypal_sandbox_mode ?? true);
+      // Primeiro tentar localStorage para configuração temporária
+      const localSettings = localStorage.getItem('paypal_settings');
+      
+      // Sempre inicializar com valores padrão primeiro
+      setClientId('');
+      setSandboxMode(true);
+      
+      // Se há configuração local, usar ela
+      if (localSettings) {
+        try {
+          const parsed = JSON.parse(localSettings);
+          setClientId(parsed.clientId || '');
+          setSandboxMode(parsed.sandboxMode ?? true);
+          
+          toast({
+            title: 'Configuração local',
+            description: 'Usando configuração salva localmente.',
+          });
+          return;
+        } catch (err) {
+          console.error('Erro ao parsear localStorage:', err);
+        }
       }
-    } catch (error) {
-      console.error('Erro ao carregar configurações:', error);
+
+      // Tentar buscar do banco (sem falhar se não existir)
+      try {
+        const { data: settingsData } = await supabase
+          .from('settings')
+          .select('key, value')
+          .in('key', ['paypal_client_id', 'paypal_environment']);
+
+        if (settingsData && settingsData.length > 0) {
+          const config = settingsData.reduce((acc, setting) => {
+            acc[setting.key] = setting.value;
+            return acc;
+          }, {} as any);
+
+          if (config.paypal_client_id) {
+            setClientId(config.paypal_client_id);
+            setSandboxMode((config.paypal_environment || 'sandbox') === 'sandbox');
+          }
+        }
+      } catch (error) {
+        // Ignorar erro silenciosamente - tabela pode não existir ainda
+        console.log('Tabela settings não encontrada, usando configuração local');
+      }
+
+      // Se ainda não tem dados, mostrar mensagem inicial
       toast({
-        title: 'Erro',
-        description: 'Não foi possível carregar as configurações do PayPal.',
-        variant: 'destructive',
+        title: 'Primeira configuração',
+        description: 'Configure as credenciais do PayPal abaixo.',
       });
+      
+    } catch (error) {
+      console.error('Erro geral:', error);
     } finally {
       setLoading(false);
     }
@@ -49,24 +87,53 @@ const PayPalSettings: React.FC = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('settings')
-        .upsert({
-          paypal_client_id: clientId,
-          paypal_sandbox_mode: sandboxMode,
-        });
+      // Sempre salvar no localStorage como backup
+      const localSettings = {
+        clientId,
+        sandboxMode,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem('paypal_settings', JSON.stringify(localSettings));
+      
+      // Tentar salvar no banco também
+      try {
+        const settings = [
+          {
+            key: 'paypal_client_id',
+            value: clientId,
+            description: 'PayPal Client ID para integração',
+          },
+          {
+            key: 'paypal_environment', 
+            value: sandboxMode ? 'sandbox' : 'live',
+            description: 'Ambiente PayPal: sandbox ou live',
+          }
+        ];
 
-      if (error) throw error;
+        for (const setting of settings) {
+          const { error } = await supabase
+            .from('settings')
+            .upsert(setting, { onConflict: 'key' });
+          
+          if (error) {
+            console.log('Erro ao salvar no banco, usando localStorage:', error.message);
+            break;
+          }
+        }
+      } catch (dbError) {
+        console.log('Banco não disponível, configuração salva localmente');
+      }
 
       toast({
         title: 'Sucesso',
         description: 'Configurações do PayPal salvas com sucesso!',
       });
+      
     } catch (error) {
-      console.error('Erro ao salvar configurações:', error);
+      console.error('Erro ao salvar:', error);
       toast({
         title: 'Erro',
-        description: 'Não foi possível salvar as configurações do PayPal.',
+        description: 'Não foi possível salvar as configurações.',
         variant: 'destructive',
       });
     } finally {

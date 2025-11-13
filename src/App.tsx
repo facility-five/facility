@@ -75,6 +75,7 @@ const ResidentSettings = lazy(() => import("./pages/resident/Settings"));
 // Lazy imports - Syndic
 const SyndicDashboard = lazy(() => import("./pages/sindico/Dashboard"));
 const RegisterAdministrator = lazy(() => import("./pages/RegisterAdministrator"));
+const PayPalTest = lazy(() => import("./pages/PayPalTest"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -109,6 +110,11 @@ const App = () => (
                 <Route path="/email-confirmation" element={<EmailConfirmation />} />
                 <Route path="/acesso-morador" element={<ResidentAccess />} />
                 <Route path="/test-toast" element={<TestToast />} />
+                <Route path="/test-paypal" element={
+                  <Suspense fallback={<SuspenseFallback />}>
+                    <PayPalTest />
+                  </Suspense>
+                } />
                 <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* Rotas do Gestor (protegidas) */}
