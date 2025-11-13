@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { paypalService } from '../../services/payment/paypalService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PayPalCheckoutProps {
   amount: number;
+  currency?: string;
   onSuccess: (data: any) => void;
   onError: (error: any) => void;
   onCancel?: () => void;
@@ -10,45 +13,69 @@ interface PayPalCheckoutProps {
 
 const PayPalCheckout: React.FC<PayPalCheckoutProps> = ({
   amount,
+  currency = 'BRL',
   onSuccess,
   onError,
   onCancel,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paypalConfig, setPaypalConfig] = useState<{ clientId: string; environment: string } | null>(null);
 
   useEffect(() => {
-    initializePayPal();
+    loadPayPalConfig();
   }, []);
 
-  const initializePayPal = async () => {
+  const loadPayPalConfig = async () => {
     try {
-      await paypalService.initialize();
+      // Buscar configurações do PayPal do Supabase
+      const { data: settings, error } = await supabase
+        .from('settings')
+        .select('key, value')
+        .in('key', ['paypal_client_id', 'paypal_environment']);
+
+      if (error) throw error;
+
+      const config = settings?.reduce((acc, setting) => {
+        const key = setting.key.replace('paypal_', '');
+        acc[key] = setting.value;
+        return acc;
+      }, {} as any);
+
+      if (!config?.client_id) {
+        throw new Error('Configurações do PayPal não encontradas');
+      }
+
+      setPaypalConfig({
+        clientId: config.client_id,
+        environment: config.environment || 'sandbox'
+      });
+
       setIsLoading(false);
     } catch (err) {
+      console.error('Erro ao carregar configurações PayPal:', err);
       setError('Erro ao carregar PayPal');
       setIsLoading(false);
     }
   };
 
-  const handleApprove = async (data: any, actions: any) => {
+  const handleCreateOrder = async () => {
     try {
-      const capture = await paypalService.captureOrder(data.orderID);
-      onSuccess(capture);
-      return capture;
+      const orderId = await paypalService.createOrder(amount, currency);
+      return orderId;
     } catch (error) {
-      console.error('Erro ao capturar pagamento:', error);
+      console.error('Erro ao criar ordem:', error);
       onError(error);
       throw error;
     }
   };
 
-  const handleCreateOrder = async (data: any, actions: any) => {
+  const handleApprove = async (data: any) => {
     try {
-      const orderId = await paypalService.createOrder(amount);
-      return orderId;
+      const capture = await paypalService.captureOrder(data.orderID);
+      onSuccess(capture);
     } catch (error) {
-      console.error('Erro ao criar ordem:', error);
+      console.error('Erro ao capturar pagamento:', error);
       onError(error);
       throw error;
     }
@@ -67,23 +94,60 @@ const PayPalCheckout: React.FC<PayPalCheckoutProps> = ({
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
         <p className="text-red-600">{error}</p>
+        <button 
+          onClick={loadPayPalConfig}
+          className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+        >
+          Tentar novamente
+        </button>
       </div>
     );
   }
 
+  if (!paypalConfig) {
+    return (
+      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p className="text-yellow-600">PayPal não configurado</p>
+      </div>
+    );
+  }
+
+  const initialOptions = {
+    clientId: paypalConfig.clientId,
+    currency: currency,
+    intent: 'capture' as const,
+    components: 'buttons',
+    locale: 'pt_BR'
+  };
+
   return (
-    <div className="paypal-checkout">
-      <div id="paypal-button-container"></div>
-      <PayPalButtons
-        amount={amount}
-        onApprove={handleApprove}
-        onCreateOrder={handleCreateOrder}
-        onError={onError}
-        onCancel={onCancel}
-      />
+    <div className="paypal-checkout w-full">
+      <PayPalScriptProvider options={initialOptions}>
+        <PayPalButtons
+          style={{
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'rect',
+            label: 'pay',
+            tagline: false,
+          }}
+          createOrder={handleCreateOrder}
+          onApprove={handleApprove}
+          onError={(err) => {
+            console.error('Erro no PayPal:', err);
+            onError(err);
+          }}
+          onCancel={() => {
+            console.log('Pagamento cancelado');
+            onCancel?.();
+          }}
+        />
+      </PayPalScriptProvider>
     </div>
   );
 };
+
+export default PayPalCheckout;
 
 interface PayPalButtonsProps {
   amount: number;

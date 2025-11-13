@@ -1,3 +1,5 @@
+import { loadScript, PayPalScriptOptions } from '@paypal/react-paypal-js';
+
 declare global {
   interface Window {
     paypal: any;
@@ -7,6 +9,8 @@ declare global {
 export interface PayPalConfig {
   clientId: string;
   environment: 'sandbox' | 'production';
+  currency?: string;
+  locale?: string;
 }
 
 export interface PayPalOrderData {
@@ -58,30 +62,29 @@ class PayPalService {
   }
 
   private async loadPayPalSDK(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (typeof window === 'undefined') {
-        reject(new Error('PayPal SDK não pode ser carregado no servidor'));
-        return;
-      }
+    if (typeof window === 'undefined') {
+      throw new Error('PayPal SDK não pode ser carregado no servidor');
+    }
 
-      if (window.paypal) {
-        this.isLoaded = true;
-        resolve();
-        return;
-      }
+    if (window.paypal) {
+      this.isLoaded = true;
+      return;
+    }
 
-      const script = document.createElement('script');
-      script.src = `https://www.paypal.com/sdk/js?client-id=${this.config!.clientId}&currency=BRL&intent=capture`;
-      script.async = true;
-      script.onload = () => {
-        this.isLoaded = true;
-        resolve();
+    try {
+      const options: PayPalScriptOptions = {
+        'client-id': this.config!.clientId,
+        currency: this.config!.currency || 'BRL',
+        intent: 'capture',
+        components: 'buttons',
+        locale: this.config!.locale || 'pt_BR'
       };
-      script.onerror = () => {
-        reject(new Error('Falha ao carregar SDK do PayPal'));
-      };
-      document.head.appendChild(script);
-    });
+
+      await loadScript(options);
+      this.isLoaded = true;
+    } catch (error) {
+      throw new Error(`Falha ao carregar SDK do PayPal: ${error}`);
+    }
   }
 
   getPayPalButtons(): any {
@@ -93,10 +96,11 @@ class PayPalService {
 
   async createOrder(amount: number, currency: string = 'BRL'): Promise<string> {
     try {
-      const response = await fetch('/api/payment/paypal/create-order', {
+      const response = await fetch('/functions/v1/paypal-create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`,
         },
         body: JSON.stringify({
           amount: amount.toFixed(2),
@@ -105,7 +109,8 @@ class PayPalService {
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao criar ordem no PayPal');
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao criar ordem no PayPal');
       }
 
       const data = await response.json();
@@ -118,16 +123,18 @@ class PayPalService {
 
   async captureOrder(orderId: string): Promise<PayPalCaptureData> {
     try {
-      const response = await fetch('/api/payment/paypal/capture-order', {
+      const response = await fetch('/functions/v1/paypal-capture-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('sb-access-token')}`,
         },
         body: JSON.stringify({ orderId }),
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao capturar ordem no PayPal');
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao capturar ordem no PayPal');
       }
 
       const data = await response.json();
