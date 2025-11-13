@@ -32,56 +32,42 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
 
   const loadPayPalConfig = async () => {
     try {
-      let clientId = '';
-      let environment = 'sandbox';
+      // Buscar configurações do banco de dados
+      const { data: settingsData, error } = await supabase
+        .from('settings')
+        .select('key, value')
+        .in('key', ['paypal_client_id', 'paypal_environment', 'paypal_enabled']);
 
-      // Primeiro tentar localStorage
-      const localSettings = localStorage.getItem('paypal_settings');
-      if (localSettings) {
-        try {
-          const parsed = JSON.parse(localSettings);
-          clientId = parsed.clientId || '';
-          environment = parsed.sandboxMode ? 'sandbox' : 'live';
-          
-          if (clientId) {
-            setPaypalConfig({ clientId, environment });
-            setIsLoading(false);
-            return;
-          }
-        } catch (err) {
-          console.error('Erro ao ler localStorage:', err);
-        }
+      if (error) {
+        throw new Error(`Erro ao carregar configurações: ${error.message}`);
       }
 
-      // Tentar buscar do banco sem falhar
-      try {
-        const { data: settingsData } = await supabase
-          .from('settings')
-          .select('key, value')
-          .in('key', ['paypal_client_id', 'paypal_environment']);
-
-        if (settingsData && settingsData.length > 0) {
-          const config = settingsData.reduce((acc, setting) => {
-            acc[setting.key] = setting.value;
-            return acc;
-          }, {} as any);
-
-          clientId = config.paypal_client_id || '';
-          environment = config.paypal_environment || 'sandbox';
-        }
-      } catch (error) {
-        // Silenciosamente ignorar erro de tabela não existente
-        console.log('Banco não disponível, verificando localStorage...');
+      if (!settingsData || settingsData.length === 0) {
+        throw new Error('PayPal não configurado. Configure em Configurações > PayPal.');
       }
+
+      // Converter array para objeto
+      const config = settingsData.reduce((acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {} as any);
+
+      const clientId = config.paypal_client_id || '';
+      const environment = config.paypal_environment || 'sandbox';
+      const enabled = config.paypal_enabled === 'true';
 
       if (!clientId) {
-        throw new Error('PayPal não configurado. Vá em Configurações > PayPal para configurar.');
+        throw new Error('PayPal Client ID não configurado.');
+      }
+
+      if (!enabled) {
+        throw new Error('PayPal está desabilitado. Ative em Configurações > PayPal.');
       }
 
       setPaypalConfig({ clientId, environment });
       setIsLoading(false);
       
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao carregar configurações PayPal:', err);
       setError(err.message || 'Erro ao carregar PayPal');
       setIsLoading(false);
