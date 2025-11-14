@@ -644,30 +644,6 @@ const LandingPageV2 = () => {
                     if (span) span.style.color = 'rgba(255, 255, 255, 0.5)';
                   }}
                 >
-                  <Eye className="w-5 h-5 transition-colors duration-300" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                  <span 
-                    className="transition-colors duration-300" 
-                    style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '20px' }}
-                  >
-                    Transparencia
-                  </span>
-                </div>
-                
-                <div 
-                  className="flex items-center space-x-2 cursor-pointer"
-                  onMouseEnter={(e) => {
-                    const icon = e.currentTarget.querySelector('svg');
-                    const span = e.currentTarget.querySelector('span');
-                    if (icon) icon.style.color = '#ffffff';
-                    if (span) span.style.color = '#ffffff';
-                  }}
-                  onMouseLeave={(e) => {
-                    const icon = e.currentTarget.querySelector('svg');
-                    const span = e.currentTarget.querySelector('span');
-                    if (icon) icon.style.color = 'rgba(255, 255, 255, 0.5)';
-                    if (span) span.style.color = 'rgba(255, 255, 255, 0.5)';
-                  }}
-                >
                   <MessageCircle className="w-5 h-5 transition-colors duration-300" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
                   <span 
                     className="transition-colors duration-300" 
@@ -716,6 +692,30 @@ const LandingPageV2 = () => {
                     if (span) span.style.color = 'rgba(255, 255, 255, 0.5)';
                   }}
                 >
+                  <Lightbulb className="w-5 h-5 transition-colors duration-300" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                  <span 
+                    className="transition-colors duration-300" 
+                    style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '20px' }}
+                  >
+                    Innovación
+                  </span>
+                </div>
+                
+                <div 
+                  className="flex items-center space-x-2 cursor-pointer"
+                  onMouseEnter={(e) => {
+                    const icon = e.currentTarget.querySelector('svg');
+                    const span = e.currentTarget.querySelector('span');
+                    if (icon) icon.style.color = '#ffffff';
+                    if (span) span.style.color = '#ffffff';
+                  }}
+                  onMouseLeave={(e) => {
+                    const icon = e.currentTarget.querySelector('svg');
+                    const span = e.currentTarget.querySelector('span');
+                    if (icon) icon.style.color = 'rgba(255, 255, 255, 0.5)';
+                    if (span) span.style.color = 'rgba(255, 255, 255, 0.5)';
+                  }}
+                >
                   <Shield className="w-5 h-5 transition-colors duration-300" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
                   <span 
                     className="transition-colors duration-300" 
@@ -740,12 +740,12 @@ const LandingPageV2 = () => {
                     if (span) span.style.color = 'rgba(255, 255, 255, 0.5)';
                   }}
                 >
-                  <Lightbulb className="w-5 h-5 transition-colors duration-300" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+                  <Eye className="w-5 h-5 transition-colors duration-300" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
                   <span 
                     className="transition-colors duration-300" 
                     style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '20px' }}
                   >
-                    Innovación
+                    Transparencia
                   </span>
                 </div>
               </div>
