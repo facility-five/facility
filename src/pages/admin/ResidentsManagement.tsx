@@ -104,6 +104,15 @@ const ResidentsManagement = () => {
     console.log('🔍 [DEBUG] Starting fetchResidents...');
     try {
       console.log('🔍 [DEBUG] Making Supabase query...');
+      
+      // First, test basic access to residents table
+      const { data: basicData, error: basicError } = await supabase
+        .from('residents')
+        .select('*')
+        .limit(5);
+      
+      console.log('🔍 [DEBUG] Basic residents query:', { basicData, basicError, count: basicData?.length });
+
       const { data, error } = await supabase
         .from('residents')
         .select(`
