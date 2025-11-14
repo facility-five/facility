@@ -12,16 +12,16 @@ export const Header = () => {
 
   return (
     <header className="bg-admin-card border-b border-admin-border px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center h-12">
+        <div className="flex items-center h-16">
           {hasLogoError ? (
-            <div className="h-10 w-10 bg-purple-600 rounded-md flex items-center justify-center text-white">
-              <Building size={24} />
+            <div className="h-16 w-16 bg-purple-600 rounded-md flex items-center justify-center text-white">
+              <Building size={32} />
             </div>
           ) : (
             <img
               src="/logo_main.png"
               alt="Facility Fincas Logo"
-              className="h-10 w-auto max-h-10 object-contain"
+              className="h-16 w-auto max-h-16 object-contain"
               onError={() => setHasLogoError(true)}
             />
           )}
