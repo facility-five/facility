@@ -48,8 +48,8 @@ const NavItem = ({ href, icon: Icon, labelKey, onClick }: NavItemProps) => {
       onClick={onClick}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-4 rounded-lg px-4 py-4 text-base font-medium transition-all hover:bg-purple-700 active:bg-purple-800",
-          isActive ? "bg-purple-800 text-white" : "text-purple-100"
+          "flex items-center gap-4 rounded-lg px-4 py-4 text-base font-medium transition-all hover:bg-gray-800 active:bg-gray-700",
+          isActive ? "bg-gray-800 text-white" : "text-gray-300"
         )
       }
     >
@@ -83,18 +83,18 @@ export const ResidentSidebar = ({ isOpen = false, onClose }: ResidentSidebarProp
     <>
       {/* Mobile Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-80 transform bg-gradient-to-b from-purple-600 to-purple-700 text-white transition-transform duration-300 ease-in-out lg:hidden",
+        "fixed inset-y-0 left-0 z-50 w-80 transform bg-gray-900 text-white transition-transform duration-300 ease-in-out lg:hidden",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex h-full flex-col">
           {/* Mobile Header */}
-          <div className="flex h-20 items-center justify-between border-b border-purple-500 px-6">
+          <div className="flex h-20 items-center justify-between border-b border-gray-800 px-6">
             <DynamicSidebarLogo />
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="text-purple-100 hover:bg-purple-500 hover:text-white h-10 w-10"
+              className="text-gray-300 hover:bg-gray-800 hover:text-white h-10 w-10"
             >
               <X className="h-6 w-6" />
             </Button>
@@ -110,16 +110,16 @@ export const ResidentSidebar = ({ isOpen = false, onClose }: ResidentSidebarProp
           </div>
           
           {/* Mobile Footer */}
-          <div className="mt-auto border-t border-purple-500 p-6">
+          <div className="mt-auto border-t border-gray-800 p-6">
             <nav className="space-y-2">
               {accountNav.map((item) => (
                 <NavItem key={item.href} {...item} onClick={handleNavClick} />
               ))}
-              <Separator className="my-4 bg-purple-500" />
+              <Separator className="my-4 bg-gray-700" />
               <Button
                 variant="ghost"
                 onClick={handleLogout}
-                className="flex w-full items-center justify-start gap-4 rounded-lg px-4 py-4 text-base font-medium text-purple-100 transition-all hover:bg-purple-700 hover:text-white active:bg-purple-800"
+                className="flex w-full items-center justify-start gap-4 rounded-lg px-4 py-4 text-base font-medium text-gray-300 transition-all hover:bg-gray-800 hover:text-white active:bg-gray-700"
               >
                 <LogOut className="h-6 w-6" />
                 <span>{t('auth.logout')}</span>
