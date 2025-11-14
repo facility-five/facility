@@ -101,7 +101,9 @@ const ResidentsManagement = () => {
 
   // Fetch data functions
   const fetchResidents = async () => {
+    console.log('🔍 [DEBUG] Starting fetchResidents...');
     try {
+      console.log('🔍 [DEBUG] Making Supabase query...');
       const { data, error } = await supabase
         .from('residents')
         .select(`
@@ -124,7 +126,14 @@ const ResidentsManagement = () => {
           )
         `);
 
-      if (error) throw error;
+      console.log('🔍 [DEBUG] Query result:', { data, error, dataLength: data?.length });
+
+      if (error) {
+        console.error('🔍 [DEBUG] Supabase error:', error);
+        throw error;
+      }
+
+      console.log('🔍 [DEBUG] Raw data sample:', data?.slice(0, 2));
 
       const formattedResidents: Resident[] = (data || []).map(resident => ({
         id: resident.id,
@@ -143,6 +152,8 @@ const ResidentsManagement = () => {
         last_access: resident.last_access || ''
       }));
 
+      console.log('🔍 [DEBUG] Formatted residents:', formattedResidents.length, formattedResidents.slice(0, 2));
+
       setResidents(formattedResidents);
       setFilteredResidents(formattedResidents);
       
@@ -152,9 +163,10 @@ const ResidentsManagement = () => {
       const inactive = formattedResidents.filter(r => r.status === 'inactive').length;
       const pending = formattedResidents.filter(r => r.status === 'pending').length;
       
+      console.log('🔍 [DEBUG] Stats calculated:', { total, active, inactive, pending });
       setStats({ total, active, inactive, pending });
     } catch (error) {
-      console.error('Error fetching residents:', error);
+      console.error('🔍 [DEBUG] Error in fetchResidents:', error);
       showRadixError("Erro ao buscar moradores.");
     }
   };
