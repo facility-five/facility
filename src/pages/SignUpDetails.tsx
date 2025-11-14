@@ -80,7 +80,7 @@ const SignUpDetails = () => {
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4">
         <div className="w-full sm:w-[645px] mx-auto rounded-2xl overflow-hidden border border-admin-border shadow-xl bg-white p-6 dark:bg-[#1E1E2D]">
           <div className="mb-4 flex items-start justify-start">
-            <DynamicLogo className="mb-0" imageClassName="h-[4rem] w-auto max-h-[4rem] object-contain" />
+            <StaticLogo className="mb-0" imageClassName="h-[4rem] w-auto max-h-[4rem] object-contain" />
           </div>
           {plan ? (
             <div className="mb-4 rounded-lg border border-purple-200 bg-purple-50 p-3">

@@ -41,7 +41,38 @@ import {
   Calendar,
   Shield
 } from "lucide-react";
-import { DynamicLogo } from "./DynamicLogo";
+import { Building } from "lucide-react";
+import { useState } from "react";
+
+interface StaticLogoProps {
+  className?: string;
+  imageClassName?: string;
+}
+
+const StaticLogo = ({ className, imageClassName }: StaticLogoProps) => {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return (
+      <div className={className}>
+        <div className="h-12 w-12 bg-purple-600 rounded-md flex items-center justify-center text-white">
+          <Building size={24} />
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className={className}>
+      <img
+        src="/logo_main.png"
+        alt="Facility Fincas Logo"
+        className={imageClassName}
+        onError={() => setHasError(true)}
+      />
+    </div>
+  );
+};
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { PlanCard } from "./PlanCard";
@@ -404,7 +435,7 @@ const LandingPageContent = () => {
       >
         <div className="mx-auto flex w-full max-w-7xl items-center gap-6 px-4 py-4">
           <Link to="/" className="flex items-center gap-2">
-            <DynamicLogo className="mb-0 h-[3rem]" imageClassName="h-[3rem] w-auto max-h-[3rem]" />
+            <StaticLogo className="mb-0 h-[3rem]" imageClassName="h-[3rem] w-auto max-h-[3rem]" />
           </Link>
           <div className="hidden md:flex flex-1 justify-center space-x-8 text-sm font-medium text-gray-700">
             <Link to="#produto" className="hover:text-[var(--glass-primary)] transition-colors duration-300">Produto</Link>
@@ -901,7 +932,7 @@ const LandingPageContent = () => {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <DynamicLogo className="mb-6 h-[3.5rem]" imageClassName="h-[3.5rem] w-auto max-h-[3.5rem]" />
+                <StaticLogo className="mb-6 h-[3.5rem]" imageClassName="h-[3.5rem] w-auto max-h-[3.5rem]" />
                 <p className="text-gray-300 mb-6 text-lg leading-relaxed max-w-md">
                   Revolucionando a gestão condominial com tecnologia inteligente, 
                   transparência total e experiência excepcional para síndicos, 

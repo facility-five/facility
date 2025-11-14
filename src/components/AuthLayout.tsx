@@ -1,7 +1,33 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { DynamicLogo } from "@/components/DynamicLogo"; // Adicionado esta linha
+import { Building } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+const StaticLogo = () => {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return (
+      <div className="flex flex-col items-center justify-center mb-8">
+        <div className="h-16 w-16 bg-purple-600 rounded-md flex items-center justify-center text-white">
+          <Building size={32} />
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="flex flex-col items-center justify-center mb-8">
+      <img
+        src="/logo_main.png"
+        alt="Facility Fincas Logo"
+        className="w-auto max-w-xs max-h-20 object-contain"
+        onError={() => setHasError(true)}
+      />
+    </div>
+  );
+};
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -33,7 +59,7 @@ export const AuthLayout = ({ children, title, description, variant = "two-column
         <div className="mx-auto w-full max-w-[645px] space-y-6">
           {!hideHeader && (
             <div className="flex flex-col items-center text-center space-y-4">
-              <DynamicLogo />
+              <StaticLogo />
               <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
               <p className="mt-2 text-sm text-gray-600">{description}</p>
             </div>
@@ -83,7 +109,7 @@ export const AuthLayout = ({ children, title, description, variant = "two-column
         <div className="mx-auto w-full max-w-md space-y-6">
           {!hideHeader && (
             <div className="flex flex-col items-center text-center space-y-4">
-              <DynamicLogo />
+              <StaticLogo />
               <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
               <p className="mt-2 text-sm text-gray-600">{description}</p>
             </div>

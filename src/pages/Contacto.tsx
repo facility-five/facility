@@ -88,7 +88,7 @@ const Contacto = () => {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
               </Button>
-              <DynamicLogo className="h-8 w-auto" />
+              <StaticLogo className="h-8 w-auto" />
             </div>
           </div>
         </div>

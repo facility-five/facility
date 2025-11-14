@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { DynamicLogo } from "@/components/DynamicLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   Building2, 
@@ -39,6 +38,36 @@ import {
   User,
   LogOut,
 } from "lucide-react";
+
+interface StaticLogoProps {
+  className?: string;
+  imageClassName?: string;
+}
+
+const StaticLogo = ({ className, imageClassName }: StaticLogoProps) => {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return (
+      <div className={className}>
+        <div className="h-16 w-16 bg-purple-600 rounded-md flex items-center justify-center text-white">
+          <Building2 size={32} />
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className={className}>
+      <img
+        src="/logo_main.png"
+        alt="Facility Fincas Logo"
+        className={imageClassName}
+        onError={() => setHasError(true)}
+      />
+    </div>
+  );
+};
 
 const LandingPageV2 = () => {
   const navigate = useNavigate();
@@ -182,7 +211,7 @@ const LandingPageV2 = () => {
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
-              <DynamicLogo className="flex-row mb-0 h-16" imageClassName="h-16 w-auto max-h-16" />
+              <StaticLogo className="flex-row mb-0 h-16" imageClassName="h-16 w-auto max-h-16" />
             </div>
             <nav className="hidden md:flex space-x-8">
               <a href="#features" className="text-gray-600 hover:text-purple-600 transition-colors">Características</a>
@@ -1157,7 +1186,7 @@ const LandingPageV2 = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-1">
-              <DynamicLogo className="flex-row mb-4 h-16" imageClassName="h-16 w-auto max-h-16" />
+              <StaticLogo className="flex-row mb-4 h-16" imageClassName="h-16 w-auto max-h-16" />
               <p className="text-gray-400 mb-4">
                 Transforma tu presencia digital con sistemas de diseño inteligentes y experiencias multilingües sin fricción.
               </p>
