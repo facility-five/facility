@@ -48,12 +48,12 @@ const NavItem = ({ href, icon: Icon, labelKey, onClick }: NavItemProps) => {
       onClick={onClick}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all hover:bg-purple-700 active:bg-purple-800",
-          isActive ? "bg-purple-600 text-white" : "text-gray-300"
+          "flex items-center gap-4 rounded-lg px-4 py-4 text-base font-medium transition-all hover:bg-purple-700 active:bg-purple-800",
+          isActive ? "bg-purple-800 text-white" : "text-purple-100"
         )
       }
     >
-      <Icon className="h-5 w-5" />
+      <Icon className="h-6 w-6" />
       <span>{t(labelKey)}</span>
     </NavLink>
   );
@@ -83,26 +83,26 @@ export const ResidentSidebar = ({ isOpen = false, onClose }: ResidentSidebarProp
     <>
       {/* Mobile Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 transform bg-gradient-to-b from-purple-600 to-purple-700 text-white transition-transform duration-300 ease-in-out lg:hidden",
+        "fixed inset-y-0 left-0 z-50 w-80 transform bg-gradient-to-b from-purple-600 to-purple-700 text-white transition-transform duration-300 ease-in-out lg:hidden",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex h-full flex-col">
           {/* Mobile Header */}
-          <div className="flex h-16 items-center justify-between border-b border-purple-500 px-4">
+          <div className="flex h-20 items-center justify-between border-b border-purple-500 px-6">
             <DynamicSidebarLogo />
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="text-purple-100 hover:bg-purple-500 hover:text-white"
+              className="text-purple-100 hover:bg-purple-500 hover:text-white h-10 w-10"
             >
-              <X className="h-5 w-5" />
+              <X className="h-6 w-6" />
             </Button>
           </div>
           
           {/* Mobile Navigation */}
-          <div className="flex-1 overflow-auto py-4">
-            <nav className="space-y-1 px-4">
+          <div className="flex-1 overflow-auto py-6">
+            <nav className="space-y-2 px-4">
               {mainNav.map((item) => (
                 <NavItem key={item.href} {...item} onClick={handleNavClick} />
               ))}
@@ -110,18 +110,18 @@ export const ResidentSidebar = ({ isOpen = false, onClose }: ResidentSidebarProp
           </div>
           
           {/* Mobile Footer */}
-          <div className="mt-auto border-t border-gray-800 p-4">
-            <nav className="space-y-1">
+          <div className="mt-auto border-t border-purple-500 p-6">
+            <nav className="space-y-2">
               {accountNav.map((item) => (
                 <NavItem key={item.href} {...item} onClick={handleNavClick} />
               ))}
-              <Separator className="my-2 bg-gray-700" />
+              <Separator className="my-4 bg-purple-500" />
               <Button
                 variant="ghost"
                 onClick={handleLogout}
-                className="flex w-full items-center justify-start gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-300 transition-all hover:bg-purple-700 hover:text-white active:bg-purple-800"
+                className="flex w-full items-center justify-start gap-4 rounded-lg px-4 py-4 text-base font-medium text-purple-100 transition-all hover:bg-purple-700 hover:text-white active:bg-purple-800"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-6 w-6" />
                 <span>{t('auth.logout')}</span>
               </Button>
             </nav>

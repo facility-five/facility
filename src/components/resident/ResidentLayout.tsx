@@ -2,7 +2,6 @@ import { ResidentSidebar } from "./ResidentSidebar";
 import { ResidentHeader } from "./ResidentHeader";
 import { ResidentPreloadManager } from "./ResidentPreloadManager";
 import { FloatingActionButton } from "./FloatingActionButton";
-import { MenuDebug } from "@/components/MenuDebug";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { offlineManager } from "@/utils/offlineManager";
@@ -15,11 +14,6 @@ interface ResidentLayoutProps {
 export const ResidentLayout = ({ children }: ResidentLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isOnline } = useNetworkStatus();
-
-  // Debug: Log state changes
-  useEffect(() => {
-    console.log('🍔 Menu state changed:', sidebarOpen);
-  }, [sidebarOpen]);
 
   // Auto-sync offline actions when coming back online
   useEffect(() => {
@@ -36,13 +30,11 @@ export const ResidentLayout = ({ children }: ResidentLayoutProps) => {
   // Swipe gestures for mobile navigation
   useSwipeGesture({
     onSwipeRight: () => {
-      console.log('👉 Swipe right detected');
       if (!sidebarOpen && window.innerWidth < 1024) {
         setSidebarOpen(true);
       }
     },
     onSwipeLeft: () => {
-      console.log('👈 Swipe left detected');
       if (sidebarOpen && window.innerWidth < 1024) {
         setSidebarOpen(false);
       }
@@ -51,7 +43,6 @@ export const ResidentLayout = ({ children }: ResidentLayoutProps) => {
   });
 
   const handleMenuClick = () => {
-    console.log('🍔 Menu button clicked, current state:', sidebarOpen);
     setSidebarOpen(true);
   };
 
@@ -86,9 +77,6 @@ export const ResidentLayout = ({ children }: ResidentLayoutProps) => {
           {/* Floating Action Button - Mobile Only */}
           <FloatingActionButton />
         </div>
-
-        {/* Debug Menu - TEMPORÁRIO */}
-        <MenuDebug />
       </div>
     </ResidentPreloadManager>
   );
