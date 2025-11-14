@@ -16,6 +16,7 @@ import {
   Sparkles,
   PawPrint,
   AlertTriangle,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/gestor/residentes", icon: Users, labelKey: "navigation.residents" },
   { href: "/gestor/mascotas", icon: PawPrint, labelKey: "navigation.pets" },
   { href: "/gestor/comunicados", icon: MessageSquare, labelKey: "navigation.communications" },
+  { href: "/gestor/solicitacoes", icon: ClipboardList, labelKey: "navigation.requests" },
   { href: "/gestor/mi-plan", icon: CreditCard, labelKey: "navigation.plans" },
   { href: "/gestor/configuracoes", icon: Settings, labelKey: "navigation.settings" },
 ];

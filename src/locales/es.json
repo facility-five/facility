@@ -96,6 +96,7 @@
     "vehicles": "Vehículos",
     "commonAreas": "Areas Comunes",
     "communications": "Comunicados",
+    "requests": "Solicitudes",
     "support": "Soporte",
     "tasks": "Tareas",
     "users": "Usuarios",
@@ -107,7 +108,6 @@
     "settings": "Configuraciones",
     "designSystem": "Sistema de Diseño",
     "reservations": "Reservas",
-    "requests": "Solicitudes",
     "unit": "Unidad",
     "documents": "Documentos"
   },
