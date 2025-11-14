@@ -7,6 +7,7 @@ interface ResidentStatCardProps {
   icon: LucideIcon;
   iconColorClass?: string;
   description?: string;
+  compact?: boolean;
 }
 
 export const ResidentStatCard = ({ 
@@ -14,18 +15,25 @@ export const ResidentStatCard = ({
   value, 
   icon: Icon, 
   iconColorClass = "text-muted-foreground",
-  description 
+  description,
+  compact = false
 }: ResidentStatCardProps) => {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className={`h-4 w-4 ${iconColorClass}`} />
+    <Card className="transition-shadow hover:shadow-md">
+      <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${compact ? 'pb-1' : 'pb-2'}`}>
+        <CardTitle className="text-sm font-medium text-gray-700 truncate pr-2">
+          {title}
+        </CardTitle>
+        <Icon className={`h-4 w-4 flex-shrink-0 ${iconColorClass}`} />
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+      <CardContent className={compact ? 'pt-1' : 'pt-0'}>
+        <div className={`font-bold text-gray-900 ${compact ? 'text-lg' : 'text-xl lg:text-2xl'}`}>
+          {value}
+        </div>
         {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+            {description}
+          </p>
         )}
       </CardContent>
     </Card>
