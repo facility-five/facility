@@ -108,16 +108,16 @@ const ResidentsManagement = () => {
         .from('residents')
         .select(`
           *,
-          units!inner(
+          units(
             id,
             number,
-            blocks!inner(
+            blocks(
               id,
               name,
-              condominiums!blocks_condominium_id_fkey!inner(
+              condominiums(
                 id,
                 name,
-                administrators!condominiums_administrator_id_fkey!inner(
+                administrators(
                   id,
                   name
                 )
@@ -143,11 +143,11 @@ const ResidentsManagement = () => {
         phone: resident.phone || '',
         document_number: resident.document_number || '',
         status: resident.status || 'pending',
-        unit_id: resident.units.id,
-        unit_number: resident.units.number,
-        block_name: resident.units.blocks.name,
-        condominium_name: resident.units.blocks.condominiums.name,
-        administrator_name: resident.units.blocks.condominiums.administrators.name,
+        unit_id: resident.units?.id || '',
+        unit_number: resident.units?.number || 'N/A',
+        block_name: resident.units?.blocks?.name || 'N/A',
+        condominium_name: resident.units?.blocks?.condominiums?.name || 'N/A',
+        administrator_name: resident.units?.blocks?.condominiums?.administrators?.name || 'N/A',
         created_at: resident.created_at,
         last_access: resident.last_access || ''
       }));
