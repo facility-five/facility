@@ -38,7 +38,7 @@ export const ResidentPreloadManager = ({ children }: PreloadManagerProps) => {
           supabase
             .from('common_areas')
             .select('id, name, description, hourly_rate, status')
-            .eq('condo_id', residentProfile.condo_id)
+            .eq('condominium_id', residentProfile.condo_id)
             .eq('status', 'active')
             .then(({ data }) => {
               console.debug('Common areas preloaded:', data?.length || 0);

@@ -74,32 +74,32 @@ self.addEventListener('fetch', (event) => {
           // But also update cache in background if older than 5 minutes
           const cachedTime = cached.headers.get('sw-cached-time');
           if (!cachedTime || Date.now() - parseInt(cachedTime) > 300000) {
-            fetch(event.request).then((response) => {
+            fetch(event.request).then(async (response) => {
               if (response.ok) {
-                // Create new response with timestamp header
                 const newHeaders = new Headers(response.headers);
                 newHeaders.set('sw-cached-time', Date.now().toString());
-                const responseWithTime = new Response(response.body, {
+                const body = await response.clone().arrayBuffer();
+                const responseWithTime = new Response(body, {
                   status: response.status,
                   statusText: response.statusText,
                   headers: newHeaders
                 });
                 caches.open(DYNAMIC_CACHE).then((cache) => {
-                  cache.put(event.request, responseWithTime);
+                  cache.put(event.request, responseWithTime.clone());
                 });
               }
-            }).catch(() => {}); // Silent fail for background update
+            }).catch(() => {});
           }
           return cached;
         }
         
         // No cache, fetch from network
-        return fetch(event.request).then((response) => {
+        return fetch(event.request).then(async (response) => {
           if (response.ok && sameOrigin) {
-            // Create new response with timestamp header
             const newHeaders = new Headers(response.headers);
             newHeaders.set('sw-cached-time', Date.now().toString());
-            const responseWithTime = new Response(response.body, {
+            const body = await response.clone().arrayBuffer();
+            const responseWithTime = new Response(body, {
               status: response.status,
               statusText: response.statusText,
               headers: newHeaders
