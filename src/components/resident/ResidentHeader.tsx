@@ -35,7 +35,7 @@ export const ResidentHeader = ({ onMenuClick }: ResidentHeaderProps) => {
   };
 
   return (
-    <header className="flex h-14 items-center justify-between gap-4 border-b bg-white px-4 lg:h-16 lg:px-6">
+    <header className="flex h-16 items-center justify-between gap-4 border-b bg-white px-4 lg:h-16 lg:px-6">
       <div className="flex items-center gap-3">
         {/* Mobile Menu Button */}
         <Button
@@ -64,8 +64,10 @@ export const ResidentHeader = ({ onMenuClick }: ResidentHeaderProps) => {
       </div>
       
       <div className="flex items-center gap-2 lg:gap-4">
-        {/* Network Indicator */}
-        <NetworkIndicator />
+        {/* Network Indicator - apenas desktop */}
+        <div className="hidden lg:block">
+          <NetworkIndicator />
+        </div>
         
         {/* Notificações */}
         <ResidentNotificationsDropdown />
