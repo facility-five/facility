@@ -39,7 +39,7 @@ export const FloatingActionButton = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-3 z-30 lg:hidden">
+    <div className="fixed bottom-6 left-4 z-30 lg:hidden">
       {/* Backdrop */}
       {isOpen && (
         <div
@@ -49,7 +49,7 @@ export const FloatingActionButton = () => {
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col-reverse items-end gap-3 mb-3">
+      <div className="flex flex-col-reverse items-start gap-3 mb-3">
         {actions.map((action, index) => (
           <div
             key={index}
@@ -63,11 +63,6 @@ export const FloatingActionButton = () => {
               transitionDelay: isOpen ? `${index * 50}ms` : `${(actions.length - index - 1) * 50}ms`,
             }}
           >
-            {/* Label */}
-            <div className="bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap">
-              {action.label}
-            </div>
-            
             {/* Button */}
             <Button
               size="icon"
@@ -80,6 +75,11 @@ export const FloatingActionButton = () => {
               <action.icon className="h-5 w-5" />
               <span className="sr-only">{action.label}</span>
             </Button>
+            
+            {/* Label */}
+            <div className="bg-black/80 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap">
+              {action.label}
+            </div>
           </div>
         ))}
       </div>
