@@ -11,8 +11,8 @@ export const Header = () => {
 
   return (
     <header className="bg-admin-card border-b border-admin-border px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center">
-            <DynamicLogo className="h-10 mb-0" imageClassName="h-10 w-auto max-h-10" />
+        <div className="flex items-center h-12">
+            <DynamicLogo className="mb-0 h-full" imageClassName="h-10 w-auto max-h-10 object-contain" />
         </div>
       <div className="flex items-center gap-4">
         <div className="text-xs text-right text-admin-foreground-muted">

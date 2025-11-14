@@ -51,6 +51,7 @@ const MiPlan = () => {
     condominiums: { used: 0, limit: 0 },
     units: { used: 0, limit: 0 },
   });
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
 
   // 🔹 Proteção: redirecionar se não houver sessão
   useEffect(() => {
@@ -463,9 +464,53 @@ const MiPlan = () => {
 
         {/* 🔹 Planos disponíveis */}
         <div id="planos-disponiveis">
-          <h2 className="text-2xl font-bold mb-4">Planos Disponíveis</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+            <h2 className="text-2xl font-bold mb-4 sm:mb-0">Planos Disponíveis</h2>
+            
+            {/* Billing Cycle Toggle */}
+            <div className="inline-flex bg-gray-100 rounded-lg p-1">
+              <Button
+                onClick={() => setBillingCycle("monthly")}
+                variant="ghost"
+                size="sm"
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  billingCycle === "monthly"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Mensual
+              </Button>
+              <Button
+                onClick={() => setBillingCycle("annual")}
+                variant="ghost"
+                size="sm"
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  billingCycle === "annual"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Anual
+                <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800 text-xs">
+                  -20%
+                </Badge>
+              </Button>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {plans.map((plan) => (
+            {plans
+              .filter(plan => {
+                // Mapear os valores da database para o frontend
+                const planPeriod = plan.interval || plan.period;
+                if (billingCycle === "monthly") {
+                  return planPeriod === "month" || planPeriod === "monthly";
+                } else {
+                  return planPeriod === "year" || planPeriod === "annual";
+                }
+              })
+              .map((plan) => (
               <Card key={plan.id} className={`relative ${plan.is_popular ? "border-green-200 shadow-lg" : ""}`}>
                 {plan.is_popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -480,7 +525,9 @@ const MiPlan = () => {
                   <CardDescription>{plan.description}</CardDescription>
                   <div className="text-3xl font-bold">
                     R$ {plan.price}
-                    <span className="text-sm font-normal text-muted-foreground">/mês</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                      /{(plan.interval || plan.period) === "month" || (plan.interval || plan.period) === "monthly" ? "mês" : "ano"}
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">

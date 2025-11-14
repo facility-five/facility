@@ -35,7 +35,7 @@ import { showRadixError, showRadixSuccess } from "@/utils/toast";
 import { Pencil, Trash2, Plus, Building2 } from "lucide-react";
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 import { PlanGuard } from "@/components/PlanGuard";
-
+import { DeleteManagerBlockModal } from "@/components/manager/DeleteManagerBlockModal";
 import { usePlan } from "@/hooks/usePlan";
 
 const CONDO_PLACEHOLDER_VALUE = "__no_condo_available__";
@@ -82,6 +82,10 @@ const ManagerBlocosContent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBlock, setEditingBlock] = useState<BlockForEdit | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Delete confirmation modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [blockToDelete, setBlockToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const fetchCondos = useCallback(async () => {
     // // // console.log("🔍 Blocos - Iniciando busca de condomínios");
@@ -220,24 +224,30 @@ const ManagerBlocosContent = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteBlock = async (blockId: string, blockName: string) => {
-    if (!confirm(`Tem certeza que deseja excluir o bloco "${blockName}"?`)) {
-      return;
-    }
+  const handleDeleteBlock = (blockId: string, blockName: string) => {
+    setBlockToDelete({ id: blockId, name: blockName });
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteBlock = async () => {
+    if (!blockToDelete) return;
 
     try {
       const { error } = await supabase
         .from("blocks")
         .delete()
-        .eq("id", blockId);
+        .eq("id", blockToDelete.id);
 
       if (error) throw error;
 
-      showRadixSuccess("Bloco excluído com sucesso");
+      showRadixSuccess("Bloque excluído com sucesso");
       fetchBlocks();
     } catch (error) {
       console.error("Error deleting block:", error);
-      showRadixError("Erro ao excluir bloco");
+      showRadixError("Erro ao excluir bloque");
+    } finally {
+      setIsDeleteModalOpen(false);
+      setBlockToDelete(null);
     }
   };
 
@@ -577,6 +587,17 @@ const ManagerBlocosContent = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteManagerBlockModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setBlockToDelete(null);
+        }}
+        onConfirm={confirmDeleteBlock}
+        blockName={blockToDelete?.name}
+      />
     </div>
   );
 };
