@@ -1,4 +1,4 @@
-const CACHE_NAME = 'facility-cache-v1';
+const CACHE_NAME = 'facility-cache-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -10,6 +10,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -18,14 +19,20 @@ self.addEventListener('activate', (event) => {
       if (key !== CACHE_NAME) return caches.delete(key);
     })))
   );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  const sameOrigin = url.origin === self.location.origin;
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
-        const cloned = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+        if (networkResponse && networkResponse.ok && sameOrigin) {
+          const cloned = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+        }
         return networkResponse;
       }).catch(() => cached);
       return cached || fetchPromise;

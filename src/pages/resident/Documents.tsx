@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { showRadixSuccess } from "@/utils/toast";
@@ -19,7 +20,8 @@ import {
   FileCheck,
   AlertCircle,
   Clock,
-  Building2
+  Building2,
+  Trash2
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -57,6 +59,9 @@ const Documents = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadType, setUploadType] = useState<string>("outros");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<ResidentAttachment | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -130,6 +135,31 @@ const Documents = () => {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (!attachmentToDelete) return;
+
+    setDeletingId(attachmentToDelete.id);
+    try {
+      const { error } = await supabase
+        .from('resident_documents')
+        .delete()
+        .eq('id', attachmentToDelete.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setAttachments(prev => prev.filter(att => att.id !== attachmentToDelete.id));
+      showRadixSuccess('Anexo excluído com sucesso!');
+    } catch (error: any) {
+      showError('Erro ao excluir anexo: ' + error.message, 'DOCUMENTS_DELETE_ERROR');
+    } finally {
+      setDeletingId(null);
+      setAttachmentToDelete(null);
+      setIsDeleteOpen(false);
+    }
+  };
+
   const handleUpload = async () => {
     if (!user || !uploadFile) {
       showError("Selecione um arquivo para enviar.", "DOCUMENTS_UPLOAD_VALIDATION");
@@ -144,20 +174,30 @@ const Documents = () => {
         .single();
       if (!resident) throw new Error('Perfil de morador não encontrado');
 
-      const path = `${resident.id}/${Date.now()}-${uploadFile.name}`;
+      const path = `resident-documents/${resident.id}/${Date.now()}-${uploadFile.name}`;
       const { error: uploadError } = await supabase.storage
-        .from('resident-documents')
+        .from('system-assets')
         .upload(path, uploadFile, { upsert: false });
       if (uploadError) throw uploadError;
 
       const { data: publicUrl } = supabase.storage
-        .from('resident-documents')
+        .from('system-assets')
         .getPublicUrl(path);
 
-      const { error: insertError } = await supabase
+      const { data: insertedDocs, error: insertError } = await supabase
         .from('resident_documents')
-        .insert([{ resident_id: resident.id, type: uploadType, file_url: publicUrl.publicUrl }]);
+        .insert([{ resident_id: resident.id, type: uploadType, file_url: publicUrl.publicUrl }])
+        .select('id, type, file_url, created_at')
+        .order('created_at', { ascending: false });
       if (insertError) throw insertError;
+
+      // Atualiza a lista local imediatamente, mesmo que o refetch falhe
+      if (insertedDocs && insertedDocs.length > 0) {
+        setAttachments(prev => [
+          ...(insertedDocs as ResidentAttachment[]),
+          ...prev,
+        ]);
+      }
 
       showRadixSuccess('Documento anexado com sucesso!');
       setUploadFile(null);
@@ -304,13 +344,55 @@ const Documents = () => {
                       <Badge className={getDocumentTypeColor(att.type)}>{getDocumentTypeLabel(att.type)}</Badge>
                       <span className="text-sm text-muted-foreground">{formatDate(att.created_at)}</span>
                     </div>
-                    <a href={att.file_url} target="_blank" rel="noreferrer" className="text-sm text-purple-600">Abrir</a>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={att.file_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-purple-600"
+                      >
+                        Abrir
+                      </a>
+                      <button
+                        type="button"
+                        className="text-sm text-red-600 hover:text-red-700"
+                        onClick={() => {
+                          setAttachmentToDelete(att);
+                          setIsDeleteOpen(true);
+                        }}
+                        disabled={deletingId === att.id}
+                      >
+                        <div className="flex items-center gap-1">
+                          <Trash2 className="h-4 w-4" />
+                          <span>{deletingId === att.id ? 'Excluindo...' : 'Excluir'}</span>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
+
+        <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Excluir anexo</DialogTitle>
+              <DialogDescription>
+                Tem certeza que deseja excluir este anexo? Esta ação não pode ser desfeita.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmDelete} disabled={!attachmentToDelete || deletingId === attachmentToDelete?.id}>
+                {deletingId === attachmentToDelete?.id ? 'Excluindo...' : 'Excluir'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-4">
@@ -350,6 +432,9 @@ const Documents = () => {
                   ? "Tente ajustar os filtros de busca."
                   : "Não há documentos disponíveis no momento."
                 }
+              </p>
+              <p className="text-muted-foreground text-center mt-2">
+                Aqui ficam os documentos compartilhados pela administradora.
               </p>
             </CardContent>
           </Card>

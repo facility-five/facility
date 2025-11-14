@@ -17,8 +17,7 @@ import { NewCommunicationModal } from "@/components/manager/NewCommunicationModa
 import { DeleteCommunicationModal } from "@/components/manager/DeleteCommunicationModal";
 import { useTranslation } from "react-i18next";
 
-import { usePlan } from "@/hooks/usePlan";
-import { PlanGuard } from "@/components/PlanGuard";
+
 import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 export type Communication = {
@@ -38,7 +37,6 @@ type Condominium = {
 
 const Communications = () => {
   const { t } = useTranslation();
-  const { currentPlan, isLoading: planLoading, isFreePlan } = usePlan();
   const { activeAdministratorId } = useManagerAdministradoras();
 
   const [communications, setCommunications] = useState<Communication[]>([]);
@@ -51,7 +49,6 @@ const Communications = () => {
 
   const fetchCommunications = async () => {
     if (!activeAdministratorId) {
-      console.log('📋 Comunicados: Skip fetch - no administrator selected');
       setLoading(false);
       setCommunications([]);
       return;
@@ -59,26 +56,35 @@ const Communications = () => {
 
     try {
       setLoading(true);
-      console.log('[Comunicados] Fetching for administrator:', activeAdministratorId);
       
-      let query = supabase
-        .from("communications")
-        .select(`
-          *,
-          condominiums!inner (
-            id,
-            name,
-            administrator_id
-          )
-        `)
-        .eq("condominiums.administrator_id", activeAdministratorId)
-        .order("created_at", { ascending: false });
+      const { data: condosData, error: condosError } = await supabase
+        .from("condominiums")
+        .select("id, name")
+        .eq("administrator_id", activeAdministratorId)
+        .order("name");
 
-      if (selectedCondominium !== "all") {
-        query = query.eq("condominium_id", selectedCondominium);
+      if (condosError) {
+        console.error("Error fetching condominiums:", condosError);
+        showRadixError(t("manager.communications.errorFetching"));
+        setCommunications([]);
+        return;
       }
 
-      const { data, error } = await query;
+      setCondominiums(condosData || []);
+
+      const condoIds = (condosData || []).map(c => c.id);
+      if (condoIds.length === 0) {
+        setCommunications([]);
+        return;
+      }
+
+      const filterIds = selectedCondominium === "all" ? condoIds : [selectedCondominium];
+
+      const { data, error } = await supabase
+        .from("communications")
+        .select("*")
+        .in("condo_id", filterIds)
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching communications:", error);
@@ -86,7 +92,12 @@ const Communications = () => {
         return;
       }
 
-      setCommunications(data || []);
+      const withNames = (data || []).map((comm: any) => ({
+        ...comm,
+        condominiums: { name: (condosData || []).find(c => c.id === comm.condo_id)?.name || null }
+      }));
+
+      setCommunications(withNames);
     } catch (error) {
       console.error("Error:", error);
       showRadixError(t("manager.communications.errorFetching"));
@@ -155,29 +166,13 @@ const Communications = () => {
         <h1 className="text-2xl font-bold text-gray-900">
           {t("manager.communications.title")}
         </h1>
-        {!planLoading && (
-          <>
-            {currentPlan && !isFreePlan ? (
-              // Botão normal para usuários com plano pago
-              <Button
-                onClick={() => setIsNewModalOpen(true)}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {t("manager.communications.newCommunication")}
-              </Button>
-            ) : (
-              // Botão de upgrade para usuários sem plano ou com plano gratuito
-              <Button 
-                onClick={() => window.location.href = '/gestor/mi-plan'}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Fazer Upgrade para Criar Comunicados
-              </Button>
-            )}
-          </>
-        )}
+        <Button
+          onClick={() => setIsNewModalOpen(true)}
+          className="bg-purple-600 hover:bg-purple-700"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          {t("manager.communications.newCommunication")}
+        </Button>
       </div>
 
 

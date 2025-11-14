@@ -13,7 +13,6 @@ BEGIN
     FROM public.residents r
     WHERE r.condo_id = NEW.condo_id
       AND r.profile_id IS NOT NULL
-      AND r.deleted_at IS NULL
   LOOP
     PERFORM public.create_notification(
       resident_rec.profile_id,

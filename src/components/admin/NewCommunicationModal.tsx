@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -144,6 +145,7 @@ export const NewCommunicationModal = ({
       <DialogContent className="sm:max-w-lg bg-admin-card border-admin-border text-admin-foreground">
         <DialogHeader>
           <DialogTitle>Comunicado</DialogTitle>
+          <DialogDescription>Complete los datos del comunicado.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

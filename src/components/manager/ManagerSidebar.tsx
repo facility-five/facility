@@ -15,6 +15,7 @@ import {
   Crown,
   Sparkles,
   PawPrint,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";

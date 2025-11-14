@@ -94,18 +94,38 @@ const Unit = () => {
         return;
       }
 
+      // Get condominium information in a separate query to avoid ambiguous relationships
+      let condo: { id: string; name: string } | null = null;
+      if (residentData.condo_id) {
+        const { data: condoData, error: condoError } = await supabase
+          .from("condominiums")
+          .select("id, name")
+          .eq("id", residentData.condo_id)
+          .maybeSingle();
+
+        if (condoError) {
+          console.error("Error fetching condominium:", condoError);
+        } else if (condoData) {
+          condo = condoData;
+        }
+      }
+
       // Get unit information
       const { data: unitData, error: unitError } = await supabase
         .from("units")
-        .select("*, blocks(name, condominiums(name))")
+        .select("*, blocks(name)")
         .eq("id", residentData.unit_id)
-        .single();
+        .maybeSingle();
 
       if (unitError) {
         console.error("Error fetching unit:", unitError);
         showError("Erro ao buscar informações da unidade: " + unitError.message, "UNIT_INFO_FETCH_ERROR");
-      } else {
-        setUnitInfo({ ...unitData, condominiums: unitData?.blocks?.condominiums || null });
+      } else if (unitData) {
+        setUnitInfo({
+          ...unitData,
+          blocks: unitData?.blocks || null,
+          condominiums: condo ? { name: condo.name } : null,
+        });
       }
 
       // Get all residents of the same unit

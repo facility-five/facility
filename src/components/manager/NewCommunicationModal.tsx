@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Communication } from "@/pages/manager/Comunicados";
 import { useTranslation } from "react-i18next";
+import { useManagerAdministradoras } from "@/contexts/ManagerAdministradorasContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +53,7 @@ export const NewCommunicationModal = ({
 }: NewCommunicationModalProps) => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { activeAdministratorId } = useManagerAdministradoras();
   const [condos, setCondos] = useState<Condo[]>([]);
 
   const formSchema = z.object({
@@ -67,19 +69,43 @@ export const NewCommunicationModal = ({
 
   useEffect(() => {
     const fetchCondos = async () => {
-      const { data } = await supabase.from("condominiums").select("id, name");
-      setCondos(data || []);
+      if (!activeAdministratorId) {
+        console.log('📋 NewCommunicationModal: No administrator selected, clearing condos');
+        setCondos([]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("condominiums")
+          .select("id, name")
+          .eq("administrator_id", activeAdministratorId)
+          .order("name");
+
+        if (error) {
+          console.error("Error fetching condos:", error);
+          return;
+        }
+
+        setCondos(data || []);
+      } catch (error) {
+        console.error("Error:", error);
+        setCondos([]);
+      }
     };
+
     if (isOpen) {
       fetchCondos();
     }
-  }, [isOpen]);
+  }, [isOpen, activeAdministratorId]);
 
   useEffect(() => {
     if (communication) {
       form.reset({
-        ...communication,
+        title: communication.title || '',
+        content: communication.content || '',
         expiration_date: communication.expiration_date ? communication.expiration_date.split('T')[0] : '',
+        condo_id: communication.condo_id || communication.condominium_id || '',
       });
     } else {
       form.reset({
@@ -110,6 +136,8 @@ export const NewCommunicationModal = ({
       created_by: user.id,
     };
 
+    console.log('🔄 Dados para submissão:', submissionData);
+
     try {
       let error;
       if (communication) {
@@ -119,13 +147,20 @@ export const NewCommunicationModal = ({
           .eq("id", communication.id);
         error = updateError;
       } else {
-        const { error: insertError } = await supabase
+        const finalData = { ...submissionData, code: generateCode() };
+        console.log('🚀 Inserindo dados:', finalData);
+        
+        const { data: insertData, error: insertError } = await supabase
           .from("communications")
-          .insert([{ ...submissionData, code: generateCode() }]);
+          .insert(finalData);
+        
+        console.log('📊 Resultado insert:', { insertData, insertError });
         error = insertError;
       }
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       toast({
         title: t("common.success"),
@@ -182,7 +217,7 @@ export const NewCommunicationModal = ({
             <FormField control={form.control} name="condo_id" render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("manager.communications.form.condominiumLabel")}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                <Select onValueChange={field.onChange} value={field.value || ""}>
                   <FormControl>
                     <SelectTrigger className="bg-white border-gray-200">
                       <SelectValue placeholder={t("manager.communications.form.condominiumPlaceholder")} />
