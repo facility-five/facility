@@ -76,10 +76,16 @@ self.addEventListener('fetch', (event) => {
           if (!cachedTime || Date.now() - parseInt(cachedTime) > 300000) {
             fetch(event.request).then((response) => {
               if (response.ok) {
-                const cloned = response.clone();
-                cloned.headers.append('sw-cached-time', Date.now().toString());
+                // Create new response with timestamp header
+                const newHeaders = new Headers(response.headers);
+                newHeaders.set('sw-cached-time', Date.now().toString());
+                const responseWithTime = new Response(response.body, {
+                  status: response.status,
+                  statusText: response.statusText,
+                  headers: newHeaders
+                });
                 caches.open(DYNAMIC_CACHE).then((cache) => {
-                  cache.put(event.request, cloned);
+                  cache.put(event.request, responseWithTime);
                 });
               }
             }).catch(() => {}); // Silent fail for background update
@@ -90,11 +96,18 @@ self.addEventListener('fetch', (event) => {
         // No cache, fetch from network
         return fetch(event.request).then((response) => {
           if (response.ok && sameOrigin) {
-            const cloned = response.clone();
-            cloned.headers.append('sw-cached-time', Date.now().toString());
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(event.request, cloned);
+            // Create new response with timestamp header
+            const newHeaders = new Headers(response.headers);
+            newHeaders.set('sw-cached-time', Date.now().toString());
+            const responseWithTime = new Response(response.body, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: newHeaders
             });
+            caches.open(DYNAMIC_CACHE).then((cache) => {
+              cache.put(event.request, responseWithTime.clone());
+            });
+            return responseWithTime;
           }
           return response;
         });
