@@ -154,17 +154,29 @@ const Solicitacoes = () => {
   };
 
   const handleUpdate = async () => {
-    if (!selectedRequest) return;
-    const { error } = await supabase
+    if (!selectedRequest) {
+      console.error("No selected request");
+      return;
+    }
+    
+    console.log("Updating request:", {
+      id: selectedRequest.id,
+      status: updateStatus,
+      notes: updateNotes
+    });
+    
+    const { error, data } = await supabase
       .from("resident_requests")
       .update({ status: updateStatus, resolution_notes: updateNotes })
       .eq("id", selectedRequest.id);
 
     if (error) {
+      console.error("Update error:", error);
       showRadixError("Error al actualizar solicitud: " + error.message);
       return;
     }
 
+    console.log("Update successful:", data);
     showRadixSuccess("Solicitud actualizada");
     setIsViewModalOpen(false);
     fetchRequests();
