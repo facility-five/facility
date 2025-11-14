@@ -98,6 +98,16 @@ export const ManagerSidebar = () => {
               Ver Planes
             </Button>
           </div>
+          <div className="mt-4 text-center">
+            <a 
+              href="https://fiveagenciadigital.com.br/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-xs text-gray-400 hover:text-purple-300 transition-colors"
+            >
+              Five Agência Digital
+            </a>
+          </div>
         </div>
       </div>
     </div>
